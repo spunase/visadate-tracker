@@ -1,93 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, ExternalLink, Search, X } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card, CardContent } from "@/components/ui/card";
-
-interface GlossaryTerm {
-  term: string;
-  definition: string;
-}
-
-const glossaryTerms: GlossaryTerm[] = [
-  {
-    term: "Priority Date",
-    definition:
-      "The date that establishes your place in the visa queue. For employment-based cases, this is typically the date your PERM labor certification was filed, or the date your I-140 petition was filed if no PERM was required.",
-  },
-  {
-    term: "Final Action Date",
-    definition:
-      "The date on which visa availability is determined for applicants who have completed all processing steps. If your priority date is before this date, a visa number is available for you.",
-  },
-  {
-    term: "Filing Date (Dates for Filing)",
-    definition:
-      "An earlier cut-off date that indicates when you can submit your adjustment of status (I-485) application, even though a visa number may not yet be immediately available.",
-  },
-  {
-    term: "EB1 / EB2 / EB3",
-    definition:
-      "Employment-based preference categories. EB1 is for priority workers (extraordinary ability, outstanding researchers, multinational managers). EB2 is for professionals with advanced degrees or exceptional ability. EB3 is for skilled workers, professionals, and other workers.",
-  },
-  {
-    term: "Adjustment of Status (AOS)",
-    definition:
-      "The process of applying for permanent residence (green card) while physically present in the United States. Filed using Form I-485.",
-  },
-  {
-    term: "Consular Processing (CP)",
-    definition:
-      "The process of obtaining an immigrant visa at a U.S. consulate or embassy abroad, rather than adjusting status within the United States.",
-  },
-  {
-    term: "Retrogression",
-    definition:
-      "When visa bulletin dates move backward, meaning fewer visa numbers are available. This typically happens when demand exceeds the annual allocation for a particular category or country.",
-  },
-  {
-    term: "PERM Labor Certification",
-    definition:
-      "A process by which the Department of Labor certifies that there are no qualified U.S. workers available for a position, allowing an employer to sponsor a foreign worker for permanent residence.",
-  },
-  {
-    term: "I-140 (Immigrant Petition)",
-    definition:
-      "Form I-140, Immigrant Petition for Alien Workers. Filed by an employer (or self-petitioner for EB1A/NIW) to classify a foreign national under an employment-based preference category.",
-  },
-  {
-    term: "I-485 (Adjustment of Status)",
-    definition:
-      "Application to Register Permanent Residence or Adjust Status. The final step in the green card process for applicants inside the United States.",
-  },
-  {
-    term: "National Visa Center (NVC)",
-    definition:
-      "The processing center that handles immigrant visa petitions after USCIS approval and before consular interview scheduling for those pursuing consular processing.",
-  },
-  {
-    term: "Country of Chargeability",
-    definition:
-      "The country to which an applicant is charged for visa quota purposes, generally the applicant's country of birth. This determines which visa bulletin column applies to your case.",
-  },
-  {
-    term: "EAD (Employment Authorization Document)",
-    definition:
-      "A work permit issued to individuals who are authorized to work in the United States. I-485 pending applicants can apply for an EAD using Form I-765.",
-  },
-  {
-    term: "Advance Parole (AP)",
-    definition:
-      "A travel document (Form I-131) that allows certain applicants with pending I-485s to travel internationally and return to the United States without abandoning their application.",
-  },
-  {
-    term: "RFE (Request for Evidence)",
-    definition:
-      "A notice from USCIS requesting additional documentation or information to support a pending petition or application. Must be responded to within the stated deadline.",
-  },
-];
+import { SourceBadge } from "@/components/ui/source-badge";
+import { GLOSSARY_TERMS, getRelatedTerms } from "@/lib/content/glossary-data";
 
 const container = {
   hidden: { opacity: 0 },
@@ -98,21 +17,81 @@ const item = {
   show: { opacity: 1, y: 0, transition: { duration: 0.18 } },
 };
 
+/** Check if a source URL is from USCIS or DOS (State Department). */
+function isOfficialGovSource(url: string): boolean {
+  return (
+    url.includes("uscis.gov") || url.includes("travel.state.gov")
+  );
+}
+
 export default function GlossaryPage() {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const [search, setSearch] = useState("");
 
-  const toggle = (term: string) => {
+  const toggle = useCallback((id: string) => {
     setExpanded((prev) => {
       const next = new Set(prev);
-      if (next.has(term)) next.delete(term);
-      else next.add(term);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
       return next;
     });
-  };
+  }, []);
+
+  const expandTerm = useCallback((id: string) => {
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      next.add(id);
+      return next;
+    });
+    // Scroll to the term card
+    const el = document.getElementById(`glossary-${id}`);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, []);
+
+  const filteredTerms = useMemo(() => {
+    if (!search.trim()) return GLOSSARY_TERMS;
+    const q = search.toLowerCase();
+    return GLOSSARY_TERMS.filter(
+      (t) =>
+        t.term.toLowerCase().includes(q) ||
+        t.definition.toLowerCase().includes(q)
+    );
+  }, [search]);
 
   return (
     <div className="mx-auto max-w-lg">
       <PageHeader title="Glossary" subtitle="Immigration terms explained" />
+
+      {/* Search / filter input */}
+      <div className="px-4 pb-3">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <input
+            type="text"
+            placeholder="Search terms..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full rounded-[18px] border border-border/50 bg-card py-2.5 pl-9 pr-9 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/40"
+          />
+          {search && (
+            <button
+              onClick={() => setSearch("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              aria-label="Clear search"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
+        </div>
+        {search && (
+          <p className="mt-1.5 px-1 text-xs text-muted-foreground">
+            {filteredTerms.length} term{filteredTerms.length !== 1 ? "s" : ""}{" "}
+            found
+          </p>
+        )}
+      </div>
 
       <motion.div
         variants={container}
@@ -120,22 +99,35 @@ export default function GlossaryPage() {
         animate="show"
         className="flex flex-col gap-2 px-4 pb-8"
       >
-        {glossaryTerms.map((entry) => {
-          const isOpen = expanded.has(entry.term);
+        {filteredTerms.map((entry) => {
+          const isOpen = expanded.has(entry.id);
+          const related = getRelatedTerms(entry.relatedTerms);
+          const isOfficial = isOfficialGovSource(entry.officialSource);
+
           return (
-            <motion.div key={entry.term} variants={item}>
+            <motion.div
+              key={entry.id}
+              id={`glossary-${entry.id}`}
+              variants={item}
+            >
               <Card className="rounded-[18px] border border-border/50 shadow-sm">
                 <CardContent className="p-0">
                   <button
-                    onClick={() => toggle(entry.term)}
+                    onClick={() => toggle(entry.id)}
                     className="flex w-full items-center justify-between px-4 py-3.5 text-left"
                   >
-                    <span className="text-sm font-semibold text-foreground">
-                      {entry.term}
-                    </span>
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="text-sm font-semibold text-foreground">
+                        {entry.term}
+                      </span>
+                      {isOfficial && (
+                        <SourceBadge source="official" className="shrink-0" />
+                      )}
+                    </div>
                     <motion.div
                       animate={{ rotate: isOpen ? 180 : 0 }}
                       transition={{ duration: 0.2 }}
+                      className="shrink-0 ml-2"
                     >
                       <ChevronDown className="h-4 w-4 text-muted-foreground" />
                     </motion.div>
@@ -153,6 +145,41 @@ export default function GlossaryPage() {
                           <p className="text-sm leading-relaxed text-muted-foreground">
                             {entry.definition}
                           </p>
+
+                          {/* Related terms */}
+                          {related.length > 0 && (
+                            <div className="mt-3">
+                              <p className="text-xs font-medium text-muted-foreground mb-1.5">
+                                Related terms
+                              </p>
+                              <div className="flex flex-wrap gap-1.5">
+                                {related.map((rel) => (
+                                  <button
+                                    key={rel.id}
+                                    onClick={() => expandTerm(rel.id)}
+                                    className="rounded-[999px] bg-accent px-2.5 py-1 text-xs font-medium text-accent-foreground transition-colors hover:bg-accent/80 hover:text-foreground"
+                                  >
+                                    {rel.term}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Official source link */}
+                          {entry.officialSource && (
+                            <div className="mt-3">
+                              <a
+                                href={entry.officialSource}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1.5 text-xs font-medium text-calm-blue hover:underline"
+                              >
+                                <ExternalLink className="h-3 w-3" />
+                                Official source
+                              </a>
+                            </div>
+                          )}
                         </div>
                       </motion.div>
                     )}
@@ -162,6 +189,14 @@ export default function GlossaryPage() {
             </motion.div>
           );
         })}
+
+        {filteredTerms.length === 0 && (
+          <div className="py-12 text-center">
+            <p className="text-sm text-muted-foreground">
+              No terms match &ldquo;{search}&rdquo;
+            </p>
+          </div>
+        )}
       </motion.div>
     </div>
   );

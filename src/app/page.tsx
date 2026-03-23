@@ -1,69 +1,24 @@
 "use client";
 
+import { useMemo } from "react";
 import { motion } from "framer-motion";
-import { ArrowUpRight, ArrowDownRight, Minus, Bell } from "lucide-react";
+import { Bell, AlertCircle } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { MovementChip } from "@/components/ui/movement-chip";
+import { FreshnessIndicator } from "@/components/ui/freshness-indicator";
+import { SourceBadge } from "@/components/ui/source-badge";
+import { GLOBAL_DISCLAIMER } from "@/lib/content/disclaimers";
+import { useBulletin, type CutoffRow } from "@/lib/hooks/use-bulletin";
+import { useNews } from "@/lib/hooks/use-news";
+import {
+  formatBulletinMonth,
+  formatCutoffDate,
+  formatRelativeDate,
+} from "@/lib/utils/format-date";
 
-type Direction = "forward" | "backward" | "none";
-
-const movementData: {
-  category: string;
-  finalAction: string;
-  movement: string;
-  direction: Direction;
-}[] = [
-  {
-    category: "EB1 India",
-    finalAction: "Jan 01, 2022",
-    movement: "+2 months",
-    direction: "forward",
-  },
-  {
-    category: "EB2 India",
-    finalAction: "Sep 01, 2012",
-    movement: "+3 weeks",
-    direction: "forward",
-  },
-  {
-    category: "EB3 India",
-    finalAction: "Jan 08, 2012",
-    movement: "No change",
-    direction: "none",
-  },
-];
-
-const newsPreview = [
-  {
-    id: "1",
-    badge: "USCIS",
-    headline: "March 2026 Visa Bulletin Released",
-    summary: "Department of State publishes updated priority dates for employment-based categories.",
-    date: "Mar 10, 2026",
-  },
-  {
-    id: "2",
-    badge: "H-1B",
-    headline: "FY2027 H-1B Registration Opens April 1",
-    summary: "USCIS announces electronic registration period for H-1B cap-subject petitions.",
-    date: "Mar 8, 2026",
-  },
-  {
-    id: "3",
-    badge: "Policy",
-    headline: "USCIS Updates Filing Date Policy",
-    summary: "New guidance on when Filing Date chart can be used for AOS applications.",
-    date: "Mar 5, 2026",
-  },
-];
-
-const directionIcon = {
-  forward: <ArrowUpRight className="h-4 w-4 text-emerald-500" />,
-  backward: <ArrowDownRight className="h-4 w-4 text-red-500" />,
-  none: <Minus className="h-4 w-4 text-muted-foreground" />,
-};
+// ─── Animation Variants ───────────────────────────────────────
 
 const container = {
   hidden: { opacity: 0 },
@@ -78,7 +33,137 @@ const item = {
   show: { opacity: 1, y: 0, transition: { duration: 0.22 } },
 };
 
+// ─── Helpers ──────────────────────────────────────────────────
+
+const INDIA_EB_CATEGORIES = ["EB1", "EB2", "EB3"];
+
+function filterIndiaFinalAction(rows: CutoffRow[]) {
+  return rows.filter(
+    (r) =>
+      r.chart_type === "final_action" &&
+      r.country_bucket === "india" &&
+      INDIA_EB_CATEGORIES.includes(r.category),
+  );
+}
+
+function generateNarrative(rows: CutoffRow[]): string {
+  const indiaRows = filterIndiaFinalAction(rows);
+  if (indiaRows.length === 0) {
+    return "No cutoff data available for the current bulletin. Check back when the new bulletin is published.";
+  }
+
+  const parts = indiaRows.map((row) => {
+    const date = formatCutoffDate(row.cutoff_date);
+    if (row.cutoff_kind === "current") {
+      return `${row.category} India is now current`;
+    }
+    return `${row.category} India has a Final Action Date of ${date}`;
+  });
+
+  return (
+    parts.join(". ") +
+    ". Filing dates should be verified with the official bulletin for consular processing applicants."
+  );
+}
+
+// ─── Loading Skeletons ────────────────────────────────────────
+
+function HeroSkeleton() {
+  return (
+    <Card className="overflow-hidden rounded-[18px] border-0 bg-gradient-to-br from-[#2F6BFF] to-[#1B4FCC] text-white shadow-lg">
+      <CardContent className="p-5">
+        <Skeleton className="h-4 w-28 bg-white/20" />
+        <Skeleton className="mt-2 h-7 w-40 bg-white/20" />
+        <Skeleton className="mt-3 h-4 w-full bg-white/20" />
+      </CardContent>
+    </Card>
+  );
+}
+
+function MovementSkeleton() {
+  return (
+    <div className="flex flex-col gap-3">
+      {[1, 2, 3].map((i) => (
+        <Card
+          key={i}
+          className="rounded-[18px] border border-border/50 shadow-sm"
+        >
+          <CardContent className="flex items-center justify-between p-4">
+            <div>
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="mt-1.5 h-3 w-32" />
+            </div>
+            <Skeleton className="h-6 w-20 rounded-full" />
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+}
+
+function NewsSkeleton() {
+  return (
+    <div className="flex flex-col gap-3">
+      {[1, 2, 3].map((i) => (
+        <Card
+          key={i}
+          className="rounded-[18px] border border-border/50 shadow-sm"
+        >
+          <CardContent className="p-4">
+            <Skeleton className="h-4 w-20" />
+            <Skeleton className="mt-2 h-4 w-full" />
+            <Skeleton className="mt-1.5 h-3 w-3/4" />
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+}
+
+function ErrorBanner({ message }: { message: string }) {
+  return (
+    <Card className="rounded-[18px] border border-red-200 bg-red-50 shadow-sm dark:border-red-900 dark:bg-red-950">
+      <CardContent className="flex items-center gap-3 p-4">
+        <AlertCircle className="h-5 w-5 shrink-0 text-red-500" />
+        <div>
+          <p className="text-sm font-medium text-red-800 dark:text-red-200">
+            Unable to load latest data
+          </p>
+          <p className="mt-0.5 text-xs text-red-600 dark:text-red-400">
+            {message}. Showing last available data if possible.
+          </p>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+// ─── Page Component ───────────────────────────────────────────
+
 export default function HomePage() {
+  const {
+    bulletin,
+    cutoffRows,
+    isLoading: bulletinLoading,
+    error: bulletinError,
+  } = useBulletin();
+
+  const {
+    news,
+    isLoading: newsLoading,
+    error: newsError,
+  } = useNews();
+
+  const indiaFinalAction = useMemo(
+    () => filterIndiaFinalAction(cutoffRows),
+    [cutoffRows],
+  );
+
+  const narrative = useMemo(
+    () => generateNarrative(cutoffRows),
+    [cutoffRows],
+  );
+
   return (
     <div className="mx-auto max-w-lg">
       <PageHeader
@@ -100,22 +185,50 @@ export default function HomePage() {
         animate="show"
         className="flex flex-col gap-4 px-4 pb-8"
       >
+        {/* Error Banners */}
+        {bulletinError && (
+          <motion.div variants={item}>
+            <ErrorBanner message={bulletinError} />
+          </motion.div>
+        )}
+        {newsError && !bulletinError && (
+          <motion.div variants={item}>
+            <ErrorBanner message={newsError} />
+          </motion.div>
+        )}
+
         {/* Hero / Bulletin Month */}
         <motion.div variants={item}>
-          <Card className="overflow-hidden rounded-[18px] border-0 bg-gradient-to-br from-[#2F6BFF] to-[#1B4FCC] text-white shadow-lg">
-            <CardContent className="p-5">
-              <p className="text-sm font-medium text-white/70">
-                Current Bulletin
-              </p>
-              <h2 className="mt-1 text-2xl font-bold tracking-tight">
-                March 2026
-              </h2>
-              <p className="mt-2 text-sm text-white/80">
-                Visa Bulletin for employment-based preferences. Data below
-                reflects Final Action Dates.
-              </p>
-            </CardContent>
-          </Card>
+          {bulletinLoading ? (
+            <HeroSkeleton />
+          ) : (
+            <Card className="overflow-hidden rounded-[18px] border-0 bg-gradient-to-br from-[#2F6BFF] to-[#1B4FCC] text-white shadow-lg">
+              <CardContent className="p-5">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-medium text-white/70">
+                    Current Bulletin
+                  </p>
+                  {bulletin?.source_published_at && (
+                    <FreshnessIndicator
+                      updatedAt={new Date(bulletin.source_published_at)}
+                      staleAfterDays={35}
+                      freshWithinDays={3}
+                      className="text-white/70"
+                    />
+                  )}
+                </div>
+                <h2 className="mt-1 text-2xl font-bold tracking-tight">
+                  {bulletin
+                    ? formatBulletinMonth(bulletin.bulletin_month)
+                    : "No Data"}
+                </h2>
+                <p className="mt-2 text-sm text-white/80">
+                  Visa Bulletin for employment-based preferences. Data below
+                  reflects Final Action Dates.
+                </p>
+              </CardContent>
+            </Card>
+          )}
         </motion.div>
 
         {/* Movement Summary Cards */}
@@ -123,61 +236,76 @@ export default function HomePage() {
           <h3 className="mb-2.5 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
             Key Movements
           </h3>
-          <div className="flex flex-col gap-3">
-            {movementData.map((row) => (
-              <Card
-                key={row.category}
-                className="rounded-[18px] border border-border/50 shadow-sm"
-              >
-                <CardContent className="flex items-center justify-between p-4">
-                  <div>
-                    <p className="text-sm font-semibold text-foreground">
-                      {row.category}
-                    </p>
-                    <p className="mt-0.5 text-xs text-muted-foreground">
-                      Final Action: {row.finalAction}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    {directionIcon[row.direction]}
-                    <span
-                      className={`text-sm font-medium ${
-                        row.direction === "forward"
-                          ? "text-emerald-600 dark:text-emerald-400"
-                          : row.direction === "backward"
-                            ? "text-red-600 dark:text-red-400"
-                            : "text-muted-foreground"
-                      }`}
-                    >
-                      {row.movement}
-                    </span>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          {bulletinLoading ? (
+            <MovementSkeleton />
+          ) : (
+            <div className="flex flex-col gap-3">
+              {indiaFinalAction.map((row) => {
+                const movementLabel =
+                  row.cutoff_kind === "current"
+                    ? "Current"
+                    : formatCutoffDate(row.cutoff_date);
+
+                return (
+                  <Card
+                    key={`${row.category}-${row.country_bucket}`}
+                    className="rounded-[18px] border border-border/50 shadow-sm"
+                  >
+                    <CardContent className="flex items-center justify-between p-4">
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">
+                          {row.category} India
+                        </p>
+                        <p className="mt-0.5 text-xs text-muted-foreground">
+                          Final Action: {formatCutoffDate(row.cutoff_date)}
+                        </p>
+                      </div>
+                      <MovementChip
+                        label={movementLabel}
+                        direction={
+                          row.cutoff_kind === "current" ? "advanced" : "flat"
+                        }
+                      />
+                    </CardContent>
+                  </Card>
+                );
+              })}
+              {indiaFinalAction.length === 0 && !bulletinError && (
+                <p className="text-sm text-muted-foreground">
+                  No movement data available for India EB categories.
+                </p>
+              )}
+            </div>
+          )}
         </motion.div>
 
         {/* What Changed This Month */}
         <motion.div variants={item}>
-          <Card className="rounded-[18px] border border-border/50 shadow-sm">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base font-semibold">
-                What Changed This Month
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2 text-sm text-muted-foreground">
-              <p>
-                EB1 India advanced by two months, reflecting continued demand
-                and available visa numbers. EB2 India saw modest forward
-                movement of three weeks. EB3 India remained unchanged.
-              </p>
-              <p>
-                Filing dates were not advanced for the March bulletin. Consular
-                processing applicants should verify dates with their NVC case.
-              </p>
-            </CardContent>
-          </Card>
+          {bulletinLoading ? (
+            <Card className="rounded-[18px] border border-border/50 shadow-sm">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base font-semibold">
+                  What Changed This Month
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-5/6" />
+                <Skeleton className="h-4 w-3/4" />
+              </CardContent>
+            </Card>
+          ) : (
+            <Card className="rounded-[18px] border border-border/50 shadow-sm">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base font-semibold">
+                  What Changed This Month
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2 text-sm text-muted-foreground">
+                <p>{narrative}</p>
+              </CardContent>
+            </Card>
+          )}
         </motion.div>
 
         {/* Top News Preview */}
@@ -185,43 +313,51 @@ export default function HomePage() {
           <h3 className="mb-2.5 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
             Top News
           </h3>
-          <div className="flex flex-col gap-3">
-            {newsPreview.map((article) => (
-              <Card
-                key={article.id}
-                className="rounded-[18px] border border-border/50 shadow-sm"
-              >
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-2">
-                    <Badge
-                      variant="secondary"
-                      className="text-[10px] font-semibold uppercase"
-                    >
-                      {article.badge}
-                    </Badge>
-                    <span className="text-[11px] text-muted-foreground">
-                      {article.date}
-                    </span>
-                  </div>
-                  <p className="mt-1.5 text-sm font-semibold leading-snug text-foreground">
-                    {article.headline}
-                  </p>
-                  <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                    {article.summary}
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          {newsLoading ? (
+            <NewsSkeleton />
+          ) : (
+            <div className="flex flex-col gap-3">
+              {news.map((article) => (
+                <Card
+                  key={article.id}
+                  className="rounded-[18px] border border-border/50 shadow-sm"
+                >
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-2">
+                      <SourceBadge
+                        source={
+                          article.source_type === "official"
+                            ? "official"
+                            : "derived"
+                        }
+                        label={article.publisher}
+                      />
+                      <span className="text-[11px] text-muted-foreground">
+                        {formatRelativeDate(article.published_at)}
+                      </span>
+                    </div>
+                    <p className="mt-1.5 text-sm font-semibold leading-snug text-foreground">
+                      {article.title}
+                    </p>
+                    <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                      {article.summary}
+                    </p>
+                  </CardContent>
+                </Card>
+              ))}
+              {news.length === 0 && !newsError && (
+                <p className="text-sm text-muted-foreground">
+                  No recent news available.
+                </p>
+              )}
+            </div>
+          )}
         </motion.div>
 
         {/* Disclaimer */}
         <motion.div variants={item}>
           <p className="mt-2 rounded-xl bg-muted/60 px-4 py-3 text-[11px] leading-relaxed text-muted-foreground">
-            This app provides informational tracking only. It does not
-            constitute legal advice. Visa bulletin data is sourced from the U.S.
-            Department of State. Always consult an immigration attorney for
-            guidance specific to your situation.
+            {GLOBAL_DISCLAIMER.text}
           </p>
         </motion.div>
       </motion.div>

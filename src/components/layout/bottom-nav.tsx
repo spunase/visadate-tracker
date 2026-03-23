@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Search, TrendingUp, Flag, Newspaper } from "lucide-react";
+import { Home, Search, TrendingUp, Flag, Newspaper, BookOpen } from "lucide-react";
 import { motion } from "framer-motion";
 
 const tabs = [
@@ -11,6 +11,7 @@ const tabs = [
   { href: "/trends", label: "Trends", icon: TrendingUp },
   { href: "/milestones", label: "Milestones", icon: Flag },
   { href: "/news", label: "News", icon: Newspaper },
+  { href: "/glossary", label: "Glossary", icon: BookOpen },
 ] as const;
 
 export function BottomNav() {

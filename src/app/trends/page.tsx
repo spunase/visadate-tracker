@@ -1,21 +1,19 @@
 "use client";
 
-import { useState } from "react";
 import { motion } from "framer-motion";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { TrendLineChart } from "@/components/charts/trend-line-chart";
+import { MovementBarChart } from "@/components/charts/movement-bar-chart";
+import { TrendNarrative } from "@/components/charts/trend-narrative";
+import { useHistory } from "@/lib/hooks/use-history";
+import { useState } from "react";
 
 const categories = ["EB1", "EB2", "EB3"] as const;
 const countries = ["India", "China", "All Other"] as const;
 const chartModes = ["Final Action", "Filing"] as const;
-
-const retrogressionHistory = [
-  { date: "Oct 2024", category: "EB2 India", description: "Retrogressed by 6 months due to high demand." },
-  { date: "Jul 2023", category: "EB3 India", description: "Retrogressed to Jan 2012 after brief advancement." },
-  { date: "Oct 2022", category: "EB1 India", description: "Retrogressed for first time in FY2023." },
-];
 
 const container = {
   hidden: { opacity: 0 },
@@ -29,7 +27,14 @@ const item = {
 export default function TrendsPage() {
   const [category, setCategory] = useState<(typeof categories)[number]>("EB2");
   const [country, setCountry] = useState<(typeof countries)[number]>("India");
-  const [chartMode, setChartMode] = useState<(typeof chartModes)[number]>("Final Action");
+  const [chartMode, setChartMode] =
+    useState<(typeof chartModes)[number]>("Final Action");
+
+  const { history, isLoading, error } = useHistory(category, country, chartMode);
+
+  const retrogressions = history.filter(
+    (h) => h.movementDirection === "backward",
+  );
 
   return (
     <div className="mx-auto max-w-lg">
@@ -94,7 +99,7 @@ export default function TrendsPage() {
           </div>
         </motion.div>
 
-        {/* Chart Placeholder */}
+        {/* Trend Line Chart */}
         <motion.div variants={item}>
           <Card className="rounded-[18px] border border-border/50 shadow-sm">
             <CardHeader className="pb-2">
@@ -103,12 +108,49 @@ export default function TrendsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="p-5 pt-0">
-              <div className="flex h-48 flex-col items-center justify-center rounded-xl bg-muted/40">
-                <Skeleton className="h-32 w-full rounded-lg" />
-                <p className="mt-3 text-xs text-muted-foreground">
-                  Chart will render historical priority date movement here.
-                </p>
-              </div>
+              {error ? (
+                <div className="flex h-48 items-center justify-center rounded-xl bg-muted/40">
+                  <p className="text-xs text-destructive">
+                    Failed to load chart data. Please try again later.
+                  </p>
+                </div>
+              ) : isLoading ? (
+                <div className="flex h-48 flex-col items-center justify-center rounded-xl bg-muted/40">
+                  <Skeleton className="h-32 w-full rounded-lg" />
+                  <p className="mt-3 text-xs text-muted-foreground">
+                    Loading trend data&hellip;
+                  </p>
+                </div>
+              ) : (
+                <TrendLineChart
+                  data={history}
+                  category={category}
+                  country={country}
+                  chartMode={chartMode}
+                />
+              )}
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Movement Bar Chart */}
+        <motion.div variants={item}>
+          <Card className="rounded-[18px] border border-border/50 shadow-sm">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-semibold">
+                Monthly Movement
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-5 pt-0">
+              {error ? (
+                <div className="flex h-24 items-center justify-center rounded-xl bg-muted/40">
+                  <p className="text-xs text-destructive">Unable to load.</p>
+                </div>
+              ) : isLoading ? (
+                <Skeleton className="h-24 w-full rounded-lg" />
+              ) : (
+                <MovementBarChart data={history} />
+              )}
             </CardContent>
           </Card>
         </motion.div>
@@ -121,13 +163,25 @@ export default function TrendsPage() {
                 Movement Narrative
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-1 text-sm text-muted-foreground">
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-5/6" />
-              <Skeleton className="h-4 w-4/6" />
-              <p className="pt-2 text-xs">
-                Narrative analysis will be generated from historical bulletin data.
-              </p>
+            <CardContent>
+              {error ? (
+                <p className="text-xs text-destructive">
+                  Unable to generate narrative.
+                </p>
+              ) : isLoading ? (
+                <div className="space-y-1">
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-5/6" />
+                  <Skeleton className="h-4 w-4/6" />
+                </div>
+              ) : (
+                <TrendNarrative
+                  data={history}
+                  category={category}
+                  country={country}
+                  chartMode={chartMode}
+                />
+              )}
             </CardContent>
           </Card>
         </motion.div>
@@ -137,31 +191,60 @@ export default function TrendsPage() {
           <h3 className="mb-2.5 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
             Retrogression History
           </h3>
-          <div className="flex flex-col gap-2">
-            {retrogressionHistory.map((event, i) => (
-              <Card
-                key={i}
-                className="rounded-[18px] border border-border/50 shadow-sm"
-              >
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-2">
-                    <Badge variant="destructive" className="text-[10px] font-semibold">
-                      Retrogression
-                    </Badge>
-                    <Badge variant="secondary" className="text-[10px]">
-                      {event.category}
-                    </Badge>
-                    <span className="text-[11px] text-muted-foreground">
-                      {event.date}
-                    </span>
-                  </div>
-                  <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
-                    {event.description}
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          {isLoading ? (
+            <div className="flex flex-col gap-2">
+              {[1, 2].map((i) => (
+                <Skeleton key={i} className="h-16 w-full rounded-[18px]" />
+              ))}
+            </div>
+          ) : retrogressions.length === 0 ? (
+            <Card className="rounded-[18px] border border-border/50 shadow-sm">
+              <CardContent className="p-4">
+                <p className="text-xs text-muted-foreground">
+                  No retrogressions in the last {history.length} months for{" "}
+                  {category} {country}.
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="flex flex-col gap-2">
+              {retrogressions.map((event, i) => {
+                const monthDate = new Date(event.bulletinMonth + "-01");
+                const monthLabel = monthDate.toLocaleDateString("en-US", {
+                  month: "short",
+                  year: "numeric",
+                });
+
+                return (
+                  <Card
+                    key={i}
+                    className="rounded-[18px] border border-border/50 shadow-sm"
+                  >
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-2">
+                        <Badge
+                          variant="destructive"
+                          className="text-[10px] font-semibold"
+                        >
+                          Retrogression
+                        </Badge>
+                        <Badge variant="secondary" className="text-[10px]">
+                          {category} {country}
+                        </Badge>
+                        <span className="text-[11px] text-muted-foreground">
+                          {monthLabel}
+                        </span>
+                      </div>
+                      <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
+                        Moved backward by {Math.abs(event.movementDays)} day
+                        {Math.abs(event.movementDays) !== 1 ? "s" : ""}.
+                      </p>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
         </motion.div>
       </motion.div>
     </div>

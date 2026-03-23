@@ -1,33 +1,141 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Save, Trash2, CheckCircle2 } from "lucide-react";
+import { Save, Trash2, Loader2 } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
+import { ResultCard } from "@/components/track/result-card";
 import { useTrackerStore, type SavedTracker } from "@/stores/tracker-store";
+import { evaluateScenario } from "@/lib/rules-engine";
+import type {
+  EvaluationInput,
+  EvaluationResult,
+  CutoffValue,
+} from "@/lib/rules-engine";
+import type { VisaCutoffRow } from "@/types/database";
+
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
 
 const categories = ["EB1", "EB2", "EB3"] as const;
 const countries = ["India", "China", "Mexico", "Philippines", "All Other"] as const;
 const paths = ["AOS", "CP"] as const;
+
+/** Map display country names to the API's country_bucket values */
+const countryToApiKey: Record<string, string> = {
+  India: "india",
+  China: "china_mainland",
+  Mexico: "mexico",
+  Philippines: "philippines",
+  "All Other": "all_other",
+};
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+/** Convert a cutoff row to a CutoffValue understood by the rules engine */
+function rowToCutoffValue(row: VisaCutoffRow | undefined): CutoffValue {
+  if (!row) return "U";
+  if (row.cutoff_kind === "current") return "C";
+  if (row.cutoff_kind === "unavailable") return "U";
+  if (row.cutoff_date) return new Date(row.cutoff_date + "T00:00:00");
+  return "U";
+}
+
+/** Find a cutoff row matching a given chart_type, category, and country_bucket */
+function findRow(
+  rows: VisaCutoffRow[],
+  chartType: string,
+  category: string,
+  countryBucket: string,
+): VisaCutoffRow | undefined {
+  return rows.find(
+    (r) =>
+      r.chart_type === chartType &&
+      r.category === category &&
+      r.country_bucket === countryBucket,
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Page Component
+// ---------------------------------------------------------------------------
 
 export default function TrackPage() {
   const [category, setCategory] = useState<SavedTracker["category"]>("EB2");
   const [country, setCountry] = useState<SavedTracker["country"]>("India");
   const [priorityDate, setPriorityDate] = useState("");
   const [path, setPath] = useState<SavedTracker["path"]>("AOS");
-  const [checked, setChecked] = useState(false);
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<EvaluationResult | null>(null);
+  const [bulletinMonth, setBulletinMonth] = useState<string>("");
 
   const { savedTrackers, addTracker, removeTracker } = useTrackerStore();
 
-  const handleCheck = () => {
+  // ── Check Status handler ──────────────────────────────────────────────
+  const handleCheck = useCallback(async () => {
     if (!priorityDate) return;
-    setChecked(true);
+
+    setLoading(true);
+    setError(null);
+    setResult(null);
+
+    try {
+      // 1. Fetch current bulletin data
+      const res = await fetch("/api/bulletin/current");
+      if (!res.ok) {
+        throw new Error(`Failed to fetch bulletin data (${res.status})`);
+      }
+      const data = await res.json();
+      const rows: VisaCutoffRow[] = data.cutoffRows;
+      const month: string = data.bulletin?.bulletin_month ?? "";
+
+      // 2. Find matching cutoff rows
+      const apiCountry = countryToApiKey[country] ?? "all_other";
+
+      const faRow = findRow(rows, "final_action", category, apiCountry);
+      const dfRow = findRow(rows, "dates_for_filing", category, apiCountry);
+
+      const finalActionCutoff = rowToCutoffValue(faRow);
+      const datesForFilingCutoff = rowToCutoffValue(dfRow);
+
+      // 3. Build evaluation input
+      const input: EvaluationInput = {
+        priorityDate: new Date(priorityDate + "T00:00:00"),
+        category,
+        country,
+        finalActionCutoff,
+        datesForFilingCutoff,
+        bulletinMonth: month,
+        path,
+      };
+
+      // 4. Run evaluation (pure function, client-side)
+      const evaluation = evaluateScenario(input);
+
+      setResult(evaluation);
+      setBulletinMonth(month);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An unexpected error occurred.");
+    } finally {
+      setLoading(false);
+    }
+  }, [priorityDate, category, country, path]);
+
+  // ── Reset result when form changes ────────────────────────────────────
+  const resetResult = () => {
+    setResult(null);
+    setError(null);
   };
 
+  // ── Save handler ──────────────────────────────────────────────────────
   const handleSave = () => {
     if (!priorityDate) return;
     addTracker({
@@ -47,7 +155,7 @@ export default function TrackPage() {
       />
 
       <div className="flex flex-col gap-4 px-4 pb-8">
-        {/* Input Form */}
+        {/* ── Input Form ── */}
         <Card className="rounded-[18px] border border-border/50 shadow-sm">
           <CardContent className="flex flex-col gap-4 p-5">
             {/* Category */}
@@ -59,7 +167,10 @@ export default function TrackPage() {
                 {categories.map((c) => (
                   <button
                     key={c}
-                    onClick={() => { setCategory(c); setChecked(false); }}
+                    onClick={() => {
+                      setCategory(c);
+                      resetResult();
+                    }}
                     className={`flex-1 rounded-xl py-2 text-sm font-semibold transition-all duration-200 ${
                       category === c
                         ? "bg-[#2F6BFF] text-white shadow-md"
@@ -79,7 +190,10 @@ export default function TrackPage() {
               </label>
               <select
                 value={country}
-                onChange={(e) => { setCountry(e.target.value as SavedTracker["country"]); setChecked(false); }}
+                onChange={(e) => {
+                  setCountry(e.target.value as SavedTracker["country"]);
+                  resetResult();
+                }}
                 className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm font-medium text-foreground outline-none transition-colors focus:border-[#2F6BFF] focus:ring-2 focus:ring-[#2F6BFF]/20"
               >
                 {countries.map((c) => (
@@ -98,7 +212,10 @@ export default function TrackPage() {
               <input
                 type="date"
                 value={priorityDate}
-                onChange={(e) => { setPriorityDate(e.target.value); setChecked(false); }}
+                onChange={(e) => {
+                  setPriorityDate(e.target.value);
+                  resetResult();
+                }}
                 className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm font-medium text-foreground outline-none transition-colors focus:border-[#2F6BFF] focus:ring-2 focus:ring-[#2F6BFF]/20"
               />
             </div>
@@ -112,7 +229,10 @@ export default function TrackPage() {
                 {paths.map((p) => (
                   <button
                     key={p}
-                    onClick={() => { setPath(p); setChecked(false); }}
+                    onClick={() => {
+                      setPath(p);
+                      resetResult();
+                    }}
                     className={`flex-1 rounded-xl py-2 text-sm font-semibold transition-all duration-200 ${
                       path === p
                         ? "bg-[#2F6BFF] text-white shadow-md"
@@ -128,59 +248,82 @@ export default function TrackPage() {
             {/* Check Button */}
             <Button
               onClick={handleCheck}
-              disabled={!priorityDate}
+              disabled={!priorityDate || loading}
               className="mt-1 w-full rounded-xl bg-[#2F6BFF] py-5 text-sm font-semibold text-white shadow-md transition-all duration-200 hover:bg-[#254FCC] disabled:opacity-50"
             >
-              Check Status
+              {loading ? (
+                <span className="flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Checking...
+                </span>
+              ) : (
+                "Check Status"
+              )}
             </Button>
           </CardContent>
         </Card>
 
-        {/* Result Card */}
+        {/* ── Error State ── */}
         <AnimatePresence>
-          {checked && (
+          {error && (
             <motion.div
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.22 }}
             >
-              <Card className="rounded-[18px] border border-emerald-200 bg-emerald-50/50 shadow-sm dark:border-emerald-800 dark:bg-emerald-950/20">
+              <Card className="rounded-[18px] border border-rose-200 bg-rose-50/50 shadow-sm dark:border-rose-800 dark:bg-rose-950/20">
                 <CardContent className="p-5">
-                  <div className="flex items-start gap-3">
-                    <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-500" />
-                    <div>
-                      <p className="text-sm font-semibold text-foreground">
-                        {category} {country} &mdash; {path}
-                      </p>
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        Priority Date: {new Date(priorityDate).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
-                      </p>
-                      <div className="mt-3 rounded-lg bg-white/60 p-3 dark:bg-white/5">
-                        <Skeleton className="h-4 w-3/4" />
-                        <Skeleton className="mt-2 h-4 w-1/2" />
-                        <p className="mt-3 text-[11px] text-muted-foreground">
-                          Detailed status will be available once bulletin data is connected.
-                        </p>
-                      </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={handleSave}
-                        className="mt-3 gap-1.5 rounded-lg text-xs"
-                      >
-                        <Save className="h-3.5 w-3.5" />
-                        Save Tracker
-                      </Button>
-                    </div>
-                  </div>
+                  <p className="text-sm font-medium text-rose-700 dark:text-rose-300">
+                    {error}
+                  </p>
+                  <p className="mt-1 text-xs text-rose-600/70 dark:text-rose-400/70">
+                    Please try again. If the problem persists, the bulletin data may be
+                    temporarily unavailable.
+                  </p>
                 </CardContent>
               </Card>
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* Saved Trackers */}
+        {/* ── Result Card ── */}
+        <AnimatePresence>
+          {result && (
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.22 }}
+            >
+              <ResultCard
+                evaluation={result}
+                scenario={{
+                  category,
+                  country,
+                  priorityDate,
+                  path,
+                }}
+                bulletinMonth={bulletinMonth}
+              />
+
+              {/* Save button below the result card */}
+              <div className="mt-3 flex justify-end">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleSave}
+                  className="gap-1.5 rounded-lg text-xs"
+                >
+                  <Save className="h-3.5 w-3.5" />
+                  Save Tracker
+                </Button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* ── Saved Trackers ── */}
         {savedTrackers.length > 0 && (
           <div>
             <h3 className="mb-2.5 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
@@ -211,7 +354,11 @@ export default function TrackPage() {
                           </Badge>
                         </div>
                         <p className="mt-1.5 text-xs text-muted-foreground">
-                          PD: {new Date(tracker.priorityDate).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}
+                          PD:{" "}
+                          {new Date(tracker.priorityDate + "T00:00:00").toLocaleDateString(
+                            "en-US",
+                            { year: "numeric", month: "short", day: "numeric" },
+                          )}
                         </p>
                       </div>
                       <button
