@@ -9,6 +9,14 @@ import type {
 } from "@/types/database";
 
 // ---------------------------------------------------------------------------
+// NOTE: This endpoint performs client-side evaluation using a static cutoff
+// map. It does not fetch from Supabase directly — instead, the frontend
+// calls /api/bulletin/current (which is Supabase-backed) and passes results
+// here. A future enhancement could have this endpoint fetch cutoffs from
+// Supabase on-the-fly, but for now the static map is kept as-is.
+// ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
 // Mock cutoff map — matches /api/bulletin/current March 2026 data
 // Key: `${chart_type}:${category}:${country_bucket}`
 // ---------------------------------------------------------------------------

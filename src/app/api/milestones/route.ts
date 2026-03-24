@@ -2,6 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import type { Category, CountryBucket, PathType, MilestoneCard } from "@/types/database";
 
 // ---------------------------------------------------------------------------
+// NOTE: Milestones are computed client-side from static rule definitions in
+// this file. There is no corresponding Supabase table to fetch from — this
+// endpoint intentionally stays as-is with inline rules.
+// ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
 // Milestone rule definitions
 // ---------------------------------------------------------------------------
 

@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
+import { supabase } from "@/lib/supabase";
 import type { PolicyUpdate } from "@/types/database";
 
 // ---------------------------------------------------------------------------
-// Mock policy updates — realistic H-1B / EB immigration news
+// Mock policy updates — realistic H-1B / EB immigration news (fallback)
 // ---------------------------------------------------------------------------
 
 const mockUpdates: PolicyUpdate[] = [
@@ -86,6 +87,36 @@ const mockUpdates: PolicyUpdate[] = [
 // ---------------------------------------------------------------------------
 
 export async function GET() {
+  // --- Try Supabase first ---
+  if (supabase) {
+    try {
+      const { data: updates, error } = await supabase
+        .from("policy_updates")
+        .select("*")
+        .eq("is_active", true)
+        .order("published_at", { ascending: false })
+        .limit(20);
+
+      if (!error && updates && updates.length > 0) {
+        return NextResponse.json({
+          updates: updates as PolicyUpdate[],
+          count: updates.length,
+          _meta: {
+            source: "supabase",
+            generatedAt: new Date().toISOString(),
+          },
+        });
+      }
+
+      if (error) {
+        console.warn("Supabase news query failed, using mock fallback:", error.message);
+      }
+    } catch (err) {
+      console.error("Supabase error in /api/news:", err);
+    }
+  }
+
+  // --- Fallback to mock data ---
   return NextResponse.json({
     updates: mockUpdates,
     count: mockUpdates.length,

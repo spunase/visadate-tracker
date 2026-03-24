@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
+import { supabase } from "@/lib/supabase";
 import type { VisaBulletin, VisaCutoffRow } from "@/types/database";
 
 // ---------------------------------------------------------------------------
-// Mock data — March 2026 visa bulletin
+// Mock data — March 2026 visa bulletin (fallback)
 // ---------------------------------------------------------------------------
 
 const BULLETIN_ID = "b0000001-0000-0000-0000-000000000001";
@@ -54,6 +55,47 @@ const mockCutoffRows: VisaCutoffRow[] = [
 // ---------------------------------------------------------------------------
 
 export async function GET() {
+  // --- Try Supabase first ---
+  if (supabase) {
+    try {
+      // Fetch most recent published bulletin
+      const { data: bulletin, error: bulletinError } = await supabase
+        .from("visa_bulletins")
+        .select("*")
+        .eq("validation_status", "published")
+        .order("bulletin_month", { ascending: false })
+        .limit(1)
+        .single();
+
+      if (bulletinError || !bulletin) {
+        // No published bulletin in DB — fall through to mock
+        console.warn("Supabase bulletin query returned no data, using mock fallback:", bulletinError?.message);
+      } else {
+        // Fetch cutoff rows for this bulletin
+        const { data: cutoffRows, error: cutoffError } = await supabase
+          .from("visa_cutoff_rows")
+          .select("*")
+          .eq("bulletin_id", bulletin.id);
+
+        if (cutoffError) {
+          console.warn("Supabase cutoff rows query failed, using mock fallback:", cutoffError.message);
+        } else {
+          return NextResponse.json({
+            bulletin: bulletin as VisaBulletin,
+            cutoffRows: (cutoffRows ?? []) as VisaCutoffRow[],
+            _meta: {
+              source: "supabase",
+              generatedAt: new Date().toISOString(),
+            },
+          });
+        }
+      }
+    } catch (err) {
+      console.error("Supabase error in /api/bulletin/current:", err);
+    }
+  }
+
+  // --- Fallback to mock data ---
   return NextResponse.json({
     bulletin: mockBulletin,
     cutoffRows: mockCutoffRows,
