@@ -9,6 +9,11 @@ export {
   parseEmploymentTable,
 } from "./bulletin-parser";
 export { calculateMovement } from "./movement-calculator";
+export {
+  fetchLatestBulletin,
+  fetchBulletinForMonth,
+} from "./fetch-bulletin";
+export { saveParsedBulletin } from "./save-bulletin";
 export type {
   BulletinParseResult,
   Category,
@@ -20,3 +25,5 @@ export type {
   ParsedCutoffRow,
   RawCutoffValue,
 } from "./types";
+export type { FetchBulletinResult } from "./fetch-bulletin";
+export type { SaveBulletinOptions, SaveBulletinResult } from "./save-bulletin";

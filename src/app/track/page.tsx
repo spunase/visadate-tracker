@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ResultCard } from "@/components/track/result-card";
+import { ShareSnapshot } from "@/components/track/share-snapshot";
 import { useTrackerStore, type SavedTracker } from "@/stores/tracker-store";
 import { evaluateScenario } from "@/lib/rules-engine";
 import type {
@@ -331,6 +332,20 @@ export default function TrackPage() {
                     <Save className="h-3.5 w-3.5" aria-hidden="true" />
                     Save Tracker
                   </Button>
+                </div>
+
+                {/* Share Snapshot */}
+                <div className="mt-4">
+                  <ShareSnapshot
+                    evaluation={result}
+                    scenario={{
+                      category,
+                      country,
+                      priorityDate,
+                      path,
+                    }}
+                    bulletinMonth={bulletinMonth}
+                  />
                 </div>
               </motion.div>
             )}

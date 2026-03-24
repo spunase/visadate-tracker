@@ -12,19 +12,40 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "VisaDateTracker — Track Your Green Card Priority Date",
+  title: {
+    default: "VisaDateTracker — Green Card Priority Date Tracker",
+    template: "%s | VisaDateTracker",
+  },
   description:
-    "Track EB1, EB2, EB3 visa bulletin priority dates, monitor movement trends, and stay informed with the latest USCIS updates.",
+    "Track your employment-based green card priority date. View visa bulletin movement, EB2/EB3 trends, milestone checklists, and immigration news. Privacy-first, no account required.",
   keywords: [
     "visa bulletin",
+    "green card tracker",
     "priority date",
-    "green card",
-    "EB1",
     "EB2",
     "EB3",
+    "EB1",
+    "employment based immigration",
     "USCIS",
-    "immigration",
+    "H-1B",
   ],
+  authors: [{ name: "VisaDateTracker" }],
+  openGraph: {
+    title: "VisaDateTracker — Green Card Priority Date Tracker",
+    description:
+      "Track visa bulletin movement, check your EB2/EB3 priority date status, and plan your immigration journey.",
+    url: "https://visadate-tracker.netlify.app",
+    siteName: "VisaDateTracker",
+    type: "website",
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "VisaDateTracker",
+    description: "Privacy-first green card priority date tracker",
+  },
+  robots: { index: true, follow: true },
+  manifest: "/manifest.json",
 };
 
 export const viewport: Viewport = {

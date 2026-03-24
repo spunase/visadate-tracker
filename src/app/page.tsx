@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { Bell, AlertCircle, ArrowLeftRight } from "lucide-react";
@@ -18,6 +18,10 @@ import {
   formatCutoffDate,
   formatRelativeDate,
 } from "@/lib/utils/format-date";
+import { NotificationPrompt } from "@/components/notifications/notification-prompt";
+import { NotificationSettings } from "@/components/notifications/notification-settings";
+import { useNotificationStore } from "@/stores/notification-store";
+import { checkAndNotify } from "@/lib/notifications/check-bulletin";
 
 // ─── Animation Variants ───────────────────────────────────────
 
@@ -155,6 +159,15 @@ export default function HomePage() {
     error: newsError,
   } = useNews();
 
+  const notificationsEnabled = useNotificationStore((s) => s.enabled);
+  const syncPermission = useNotificationStore((s) => s.syncPermission);
+
+  // Sync permission state and check if a notification should fire on mount
+  useEffect(() => {
+    syncPermission();
+    checkAndNotify();
+  }, [syncPermission]);
+
   const indiaFinalAction = useMemo(
     () => filterIndiaFinalAction(cutoffRows),
     [cutoffRows],
@@ -229,6 +242,15 @@ export default function HomePage() {
                 </p>
               </CardContent>
             </Card>
+          )}
+        </motion.div>
+
+        {/* Notification Prompt / Settings */}
+        <motion.div variants={item}>
+          {notificationsEnabled ? (
+            <NotificationSettings />
+          ) : (
+            <NotificationPrompt />
           )}
         </motion.div>
 
