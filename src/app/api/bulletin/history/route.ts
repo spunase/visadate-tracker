@@ -27,7 +27,7 @@ const EB2_INDIA_FINAL_ACTION_HISTORY: HistoryRow[] = [
   { bulletin_month: "2025-12", cutoff_date: "2012-05-22", original_value: "22MAY12", movement_days: 37,   movement_direction: "forward" },
   { bulletin_month: "2026-01", cutoff_date: "2012-07-01", original_value: "01JUL12", movement_days: 40,   movement_direction: "forward" },
   { bulletin_month: "2026-02", cutoff_date: "2012-08-01", original_value: "01AUG12", movement_days: 31,   movement_direction: "forward" },
-  { bulletin_month: "2026-03", cutoff_date: "2012-09-01", original_value: "01SEP12", movement_days: 31,   movement_direction: "forward" },
+  { bulletin_month: "2026-03", cutoff_date: "2013-09-15", original_value: "15SEP13", movement_days: 411,  movement_direction: "forward" },
 ];
 
 // ---------------------------------------------------------------------------

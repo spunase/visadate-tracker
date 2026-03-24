@@ -26,27 +26,51 @@ interface CutoffEntry {
   date: string | null; // ISO YYYY-MM-DD
 }
 
+// Source: March 2026 DOS Visa Bulletin
+// https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin/2026/visa-bulletin-for-march-2026.html
 const CUTOFFS: Record<string, CutoffEntry> = {
-  // Final Action
-  "final_action:EB1:india":          { kind: "date",    date: "2022-02-01" },
-  "final_action:EB1:china_mainland": { kind: "date",    date: "2022-06-01" },
+  // Final Action (Chart A)
   "final_action:EB1:all_other":      { kind: "current", date: null },
-  "final_action:EB2:india":          { kind: "date",    date: "2012-09-01" },
-  "final_action:EB2:china_mainland": { kind: "date",    date: "2020-12-01" },
-  "final_action:EB2:all_other":      { kind: "current", date: null },
-  "final_action:EB3:india":          { kind: "date",    date: "2012-06-08" },
-  "final_action:EB3:china_mainland": { kind: "date",    date: "2020-01-01" },
-  "final_action:EB3:all_other":      { kind: "current", date: null },
-  // Dates for Filing
-  "dates_for_filing:EB1:india":          { kind: "date",    date: "2022-08-01" },
-  "dates_for_filing:EB1:china_mainland": { kind: "date",    date: "2023-01-01" },
+  "final_action:EB1:china_mainland": { kind: "date",    date: "2023-03-01" },
+  "final_action:EB1:india":          { kind: "date",    date: "2023-03-01" },
+  "final_action:EB1:mexico":         { kind: "current", date: null },
+  "final_action:EB1:philippines":    { kind: "current", date: null },
+  "final_action:EB2:all_other":      { kind: "date",    date: "2024-10-15" },
+  "final_action:EB2:china_mainland": { kind: "date",    date: "2021-09-01" },
+  "final_action:EB2:india":          { kind: "date",    date: "2013-09-15" },
+  "final_action:EB2:mexico":         { kind: "date",    date: "2024-10-15" },
+  "final_action:EB2:philippines":    { kind: "date",    date: "2024-10-15" },
+  "final_action:EB3:all_other":      { kind: "date",    date: "2023-10-01" },
+  "final_action:EB3:china_mainland": { kind: "date",    date: "2021-05-01" },
+  "final_action:EB3:india":          { kind: "date",    date: "2013-11-15" },
+  "final_action:EB3:mexico":         { kind: "date",    date: "2023-10-01" },
+  "final_action:EB3:philippines":    { kind: "date",    date: "2023-08-01" },
+  "final_action:Other_Workers:all_other":      { kind: "date", date: "2021-11-01" },
+  "final_action:Other_Workers:china_mainland": { kind: "date", date: "2018-12-08" },
+  "final_action:Other_Workers:india":          { kind: "date", date: "2013-11-15" },
+  "final_action:Other_Workers:mexico":         { kind: "date", date: "2021-11-01" },
+  "final_action:Other_Workers:philippines":    { kind: "date", date: "2021-11-01" },
+  // Dates for Filing (Chart B)
   "dates_for_filing:EB1:all_other":      { kind: "current", date: null },
-  "dates_for_filing:EB2:india":          { kind: "date",    date: "2013-06-01" },
-  "dates_for_filing:EB2:china_mainland": { kind: "date",    date: "2021-06-01" },
+  "dates_for_filing:EB1:china_mainland": { kind: "date",    date: "2023-12-01" },
+  "dates_for_filing:EB1:india":          { kind: "date",    date: "2023-12-01" },
+  "dates_for_filing:EB1:mexico":         { kind: "current", date: null },
+  "dates_for_filing:EB1:philippines":    { kind: "current", date: null },
   "dates_for_filing:EB2:all_other":      { kind: "current", date: null },
-  "dates_for_filing:EB3:india":          { kind: "date",    date: "2013-01-01" },
-  "dates_for_filing:EB3:china_mainland": { kind: "date",    date: "2020-09-01" },
-  "dates_for_filing:EB3:all_other":      { kind: "current", date: null },
+  "dates_for_filing:EB2:china_mainland": { kind: "date",    date: "2022-01-01" },
+  "dates_for_filing:EB2:india":          { kind: "date",    date: "2014-11-01" },
+  "dates_for_filing:EB2:mexico":         { kind: "current", date: null },
+  "dates_for_filing:EB2:philippines":    { kind: "current", date: null },
+  "dates_for_filing:EB3:all_other":      { kind: "date",    date: "2024-01-15" },
+  "dates_for_filing:EB3:china_mainland": { kind: "date",    date: "2022-01-01" },
+  "dates_for_filing:EB3:india":          { kind: "date",    date: "2014-08-15" },
+  "dates_for_filing:EB3:mexico":         { kind: "date",    date: "2024-01-15" },
+  "dates_for_filing:EB3:philippines":    { kind: "date",    date: "2024-01-01" },
+  "dates_for_filing:Other_Workers:all_other":      { kind: "date", date: "2022-06-22" },
+  "dates_for_filing:Other_Workers:china_mainland": { kind: "date", date: "2019-10-01" },
+  "dates_for_filing:Other_Workers:india":          { kind: "date", date: "2014-08-15" },
+  "dates_for_filing:Other_Workers:mexico":         { kind: "date", date: "2022-06-22" },
+  "dates_for_filing:Other_Workers:philippines":    { kind: "date", date: "2022-06-22" },
 };
 
 // ---------------------------------------------------------------------------
