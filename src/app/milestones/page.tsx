@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MILESTONE_CARDS, getMilestonesByBand } from "@/lib/content/milestone-content";
 import { MILESTONE_DISCLAIMER } from "@/lib/content/disclaimers";
+import { ConfettiBurst } from "@/components/ui/confetti-burst";
 import { useMilestoneStore } from "@/stores/milestone-store";
 import { useTrackerStore } from "@/stores/tracker-store";
 import { useUserBand } from "@/lib/hooks/use-milestones";
@@ -62,9 +63,17 @@ function displayHost(url: string): string {
 
 export default function MilestonesPage() {
   const [activeBand, setActiveBand] = useState<MilestoneBand | "all">("all");
+  const [confettiId, setConfettiId] = useState<string | null>(null);
 
   // Zustand stores
-  const { checkedItems, toggleItem } = useMilestoneStore();
+  const { checkedItems, toggleItem: storeToggleItem } = useMilestoneStore();
+
+  const toggleItem = (id: string) => {
+    if (!checkedItems[id]) {
+      setConfettiId(id);
+    }
+    storeToggleItem(id);
+  };
   const savedTrackers = useTrackerStore((s) => s.savedTrackers);
   const primaryTracker = savedTrackers.length > 0 ? savedTrackers[0] : null;
 
@@ -198,7 +207,7 @@ export default function MilestonesPage() {
                       <button
                         key={key}
                         onClick={() => toggleItem(key)}
-                        className="flex items-start gap-2.5 rounded-lg p-1 text-left transition-colors hover:bg-muted/50"
+                        className="relative flex items-start gap-2.5 rounded-lg p-1 text-left transition-colors hover:bg-muted/50"
                       >
                         {isChecked ? (
                           <CheckSquare className="mt-0.5 h-4 w-4 shrink-0 text-[#2F6BFF]" />
@@ -214,6 +223,7 @@ export default function MilestonesPage() {
                         >
                           {text}
                         </span>
+                        <ConfettiBurst trigger={confettiId === key} variant="sparkle" />
                       </button>
                     );
                   })}

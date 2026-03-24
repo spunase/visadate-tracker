@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Save, Trash2, Loader2 } from "lucide-react";
+import { Save, Trash2, Loader2, Lock, Pencil } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,9 @@ import { Badge } from "@/components/ui/badge";
 import { ResultCard } from "@/components/track/result-card";
 import { ShareSnapshot } from "@/components/track/share-snapshot";
 import { useTrackerStore, type SavedTracker } from "@/stores/tracker-store";
+import { JourneyProgress } from "@/components/ui/journey-progress";
+import { EmptyState } from "@/components/ui/empty-state";
+import { JourneySnapshot } from "@/components/ui/journey-snapshot";
 import { evaluateScenario } from "@/lib/rules-engine";
 import type {
   EvaluationInput,
@@ -77,6 +80,7 @@ export default function TrackPage() {
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<EvaluationResult | null>(null);
   const [bulletinMonth, setBulletinMonth] = useState<string>("");
+  const [faCutoffDate, setFaCutoffDate] = useState<string | null>(null);
 
   const { savedTrackers, addTracker, removeTracker } = useTrackerStore();
 
@@ -103,6 +107,9 @@ export default function TrackPage() {
 
       const faRow = findRow(rows, "final_action", category, apiCountry);
       const dfRow = findRow(rows, "dates_for_filing", category, apiCountry);
+
+      // Store the FA cutoff date for display in JourneyProgress/Snapshot
+      setFaCutoffDate(faRow?.cutoff_date ?? null);
 
       const finalActionCutoff = rowToCutoffValue(faRow);
       const datesForFilingCutoff = rowToCutoffValue(dfRow);
@@ -161,24 +168,37 @@ export default function TrackPage() {
           <CardContent className="flex flex-col gap-4 p-5">
             {/* Category */}
             <fieldset>
-              <legend className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <legend className="mb-1.5 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Category
+                {result && (
+                  <span className="inline-flex items-center gap-1 text-[10px] normal-case font-medium text-muted-foreground/70">
+                    <Lock className="h-3 w-3" aria-hidden="true" />
+                    <button
+                      onClick={() => { resetResult(); }}
+                      className="underline underline-offset-2 hover:text-foreground transition-colors"
+                    >
+                      Change
+                    </button>
+                  </span>
+                )}
               </legend>
               <div className="flex gap-2" role="radiogroup" aria-label="Category">
                 {categories.map((c) => (
                   <button
                     key={c}
                     onClick={() => {
+                      if (result) return; // locked while results are shown
                       setCategory(c);
                       resetResult();
                     }}
                     role="radio"
                     aria-checked={category === c}
+                    aria-disabled={!!result}
                     className={`flex-1 rounded-xl py-2 text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2F6BFF] focus-visible:ring-offset-2 ${
                       category === c
                         ? "bg-[#2F6BFF] text-white shadow-md"
                         : "bg-muted text-muted-foreground hover:bg-accent"
-                    }`}
+                    } ${result ? "pointer-events-none opacity-60" : ""} ${result && category === c ? "opacity-100" : ""}`}
                   >
                     {c}
                   </button>
@@ -194,11 +214,12 @@ export default function TrackPage() {
               <select
                 id="country-select"
                 value={country}
+                disabled={!!result}
                 onChange={(e) => {
                   setCountry(e.target.value as SavedTracker["country"]);
                   resetResult();
                 }}
-                className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm font-medium text-foreground outline-none transition-colors focus:border-[#2F6BFF] focus:ring-2 focus:ring-[#2F6BFF]/20 focus-visible:ring-2 focus-visible:ring-[#2F6BFF]"
+                className={`w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm font-medium text-foreground outline-none transition-colors focus:border-[#2F6BFF] focus:ring-2 focus:ring-[#2F6BFF]/20 focus-visible:ring-2 focus-visible:ring-[#2F6BFF] ${result ? "opacity-60" : ""}`}
               >
                 {countries.map((c) => (
                   <option key={c} value={c}>
@@ -217,12 +238,13 @@ export default function TrackPage() {
                 id="priority-date-input"
                 type="date"
                 value={priorityDate}
+                disabled={!!result}
                 onChange={(e) => {
                   setPriorityDate(e.target.value);
                   resetResult();
                 }}
                 aria-describedby="priority-date-hint"
-                className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm font-medium text-foreground outline-none transition-colors focus:border-[#2F6BFF] focus:ring-2 focus:ring-[#2F6BFF]/20 focus-visible:ring-2 focus-visible:ring-[#2F6BFF]"
+                className={`w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm font-medium text-foreground outline-none transition-colors focus:border-[#2F6BFF] focus:ring-2 focus:ring-[#2F6BFF]/20 focus-visible:ring-2 focus-visible:ring-[#2F6BFF] ${result ? "opacity-60" : ""}`}
               />
               <p id="priority-date-hint" className="mt-1 text-[11px] text-foreground/60 dark:text-foreground/50">
                 The date from your I-140 approval or labor certification.
@@ -239,16 +261,18 @@ export default function TrackPage() {
                   <button
                     key={p}
                     onClick={() => {
+                      if (result) return;
                       setPath(p);
                       resetResult();
                     }}
                     role="radio"
                     aria-checked={path === p}
+                    aria-disabled={!!result}
                     className={`flex-1 rounded-xl py-2 text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2F6BFF] focus-visible:ring-offset-2 ${
                       path === p
                         ? "bg-[#2F6BFF] text-white shadow-md"
                         : "bg-muted text-muted-foreground hover:bg-accent"
-                    }`}
+                    } ${result ? "pointer-events-none opacity-60" : ""} ${result && path === p ? "opacity-100" : ""}`}
                   >
                     {p === "AOS" ? "Adjustment of Status" : "Consular Processing"}
                   </button>
@@ -256,21 +280,32 @@ export default function TrackPage() {
               </div>
             </fieldset>
 
-            {/* Check Button */}
-            <Button
-              onClick={handleCheck}
-              disabled={!priorityDate || loading}
-              className="mt-1 w-full rounded-xl bg-[#2F6BFF] py-5 text-sm font-semibold text-white shadow-md transition-all duration-200 hover:bg-[#254FCC] disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2F6BFF] focus-visible:ring-offset-2"
-            >
-              {loading ? (
-                <span className="flex items-center gap-2">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Checking...
-                </span>
-              ) : (
-                "Check Status"
-              )}
-            </Button>
+            {/* Check / Reset Button */}
+            {result ? (
+              <Button
+                onClick={resetResult}
+                variant="outline"
+                className="mt-1 w-full rounded-xl py-5 text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2F6BFF] focus-visible:ring-offset-2"
+              >
+                <Pencil className="mr-2 h-4 w-4" />
+                Change Selections
+              </Button>
+            ) : (
+              <Button
+                onClick={handleCheck}
+                disabled={!priorityDate || loading}
+                className="mt-1 w-full rounded-xl bg-[#2F6BFF] py-5 text-sm font-semibold text-white shadow-md transition-all duration-200 hover:bg-[#254FCC] disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2F6BFF] focus-visible:ring-offset-2"
+              >
+                {loading ? (
+                  <span className="flex items-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Checking...
+                  </span>
+                ) : (
+                  "Check Status"
+                )}
+              </Button>
+            )}
           </CardContent>
         </Card>
 
@@ -321,6 +356,17 @@ export default function TrackPage() {
                   bulletinMonth={bulletinMonth}
                 />
 
+                {faCutoffDate && (
+                  <div className="mt-3">
+                    <JourneyProgress
+                      priorityDate={priorityDate}
+                      currentFinalAction={faCutoffDate}
+                      category={category}
+                      country={country}
+                    />
+                  </div>
+                )}
+
                 {/* Save button below the result card */}
                 <div className="mt-3 flex justify-end">
                   <Button
@@ -351,6 +397,30 @@ export default function TrackPage() {
             )}
           </AnimatePresence>
         </div>
+
+        <AnimatePresence>
+          {result && (
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.3, delay: 0.2 }}
+            >
+              <h3 className="mb-2.5 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                Share Your Status
+              </h3>
+              <JourneySnapshot
+                category={category}
+                country={country}
+                priorityDate={new Date(priorityDate + "T00:00:00").toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}
+                currentFinalAction={faCutoffDate ? new Date(faCutoffDate + "T00:00:00").toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }) : "N/A"}
+                movement={result.eligibility.finalAction.state === "current" ? "Current" : "Not current"}
+                direction={result.eligibility.finalAction.state === "current" ? "forward" : "none"}
+                bulletinMonth={bulletinMonth ? new Date(bulletinMonth + "-01T00:00:00").toLocaleDateString("en-US", { year: "numeric", month: "long" }) : ""}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* ── Saved Trackers ── */}
         {savedTrackers.length > 0 && (
@@ -403,6 +473,13 @@ export default function TrackPage() {
               ))}
             </div>
           </div>
+        )}
+        {savedTrackers.length === 0 && (
+          <EmptyState
+            title="No saved trackers yet"
+            description="Check your priority date above, then save it to track your journey over time."
+            action={{ label: "Add your first tracker", onClick: () => window.scrollTo({ top: 0, behavior: "smooth" }) }}
+          />
         )}
       </div>
     </div>

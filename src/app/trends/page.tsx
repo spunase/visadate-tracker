@@ -10,6 +10,9 @@ import { MovementBarChart } from "@/components/charts/movement-bar-chart";
 import { TrendNarrative } from "@/components/charts/trend-narrative";
 import { useHistory } from "@/lib/hooks/use-history";
 import { useState } from "react";
+import { VelocityArc } from "@/components/ui/velocity-arc";
+import { HopeContext } from "@/components/ui/hope-context";
+import { ShimmerReveal } from "@/components/ui/shimmer-reveal";
 
 const categories = ["EB1", "EB2", "EB3"] as const;
 const countries = ["India", "China", "All Other"] as const;
@@ -163,6 +166,7 @@ export default function TrendsPage() {
 
         {/* Movement Narrative */}
         <motion.div variants={item}>
+          <ShimmerReveal delay={0.2}>
           <Card className="rounded-[18px] border border-border/50 shadow-sm">
             <CardHeader className="pb-2">
               <CardTitle className="text-base font-semibold">
@@ -190,6 +194,7 @@ export default function TrendsPage() {
               )}
             </CardContent>
           </Card>
+          </ShimmerReveal>
         </motion.div>
 
         {/* Retrogression History */}
@@ -213,43 +218,55 @@ export default function TrendsPage() {
               </CardContent>
             </Card>
           ) : (
-            <div className="flex flex-col gap-2">
-              {retrogressions.map((event, i) => {
-                const monthDate = new Date(event.bulletinMonth + "-01");
-                const monthLabel = monthDate.toLocaleDateString("en-US", {
-                  month: "short",
-                  year: "numeric",
-                });
+            <>
+              <div className="flex flex-col gap-2">
+                {retrogressions.map((event, i) => {
+                  const monthDate = new Date(event.bulletinMonth + "-01");
+                  const monthLabel = monthDate.toLocaleDateString("en-US", {
+                    month: "short",
+                    year: "numeric",
+                  });
 
-                return (
-                  <Card
-                    key={i}
-                    className="rounded-[18px] border border-border/50 shadow-sm"
-                  >
-                    <CardContent className="p-4">
-                      <div className="flex items-center gap-2">
-                        <Badge
-                          variant="destructive"
-                          className="text-[10px] font-semibold"
-                        >
-                          Retrogression
-                        </Badge>
-                        <Badge variant="secondary" className="text-[10px]">
-                          {category} {country}
-                        </Badge>
-                        <span className="text-[11px] text-muted-foreground">
-                          {monthLabel}
-                        </span>
-                      </div>
-                      <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
-                        Moved backward by {Math.abs(event.movementDays)} day
-                        {Math.abs(event.movementDays) !== 1 ? "s" : ""}.
-                      </p>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
+                  return (
+                    <Card
+                      key={i}
+                      className="rounded-[18px] border border-border/50 shadow-sm"
+                    >
+                      <CardContent className="p-4">
+                        <div className="flex items-center gap-2">
+                          <Badge
+                            variant="destructive"
+                            className="text-[10px] font-semibold"
+                          >
+                            Retrogression
+                          </Badge>
+                          <Badge variant="secondary" className="text-[10px]">
+                            {category} {country}
+                          </Badge>
+                          <span className="text-[11px] text-muted-foreground">
+                            {monthLabel}
+                          </span>
+                        </div>
+                        <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
+                          Moved backward by {Math.abs(event.movementDays)} day
+                          {Math.abs(event.movementDays) !== 1 ? "s" : ""}.
+                        </p>
+                        <div className="mt-2">
+                          <VelocityArc direction="backward" movement="Retrogressed" size="sm" />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+              <div className="mt-3">
+                <HopeContext
+                  direction="backward"
+                  category={`${category} ${country}`}
+                  movement="historical retrogression"
+                />
+              </div>
+            </>
           )}
         </motion.div>
       </motion.div>

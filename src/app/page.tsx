@@ -1,7 +1,12 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ArrowUpRight, ArrowDownRight, Minus, Bell } from "lucide-react";
+import { Bell } from "lucide-react";
+import { VelocityArc } from "@/components/ui/velocity-arc";
+import { BulletinCountdown } from "@/components/ui/bulletin-countdown";
+import { HopeContext } from "@/components/ui/hope-context";
+import { ShimmerReveal } from "@/components/ui/shimmer-reveal";
+import { JourneySnapshot } from "@/components/ui/journey-snapshot";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -23,22 +28,22 @@ const movementData: {
 }[] = [
   {
     category: "EB1 India",
-    finalAction: { kind: "date", value: "Jan 01, 2022" },
-    filingDate: { kind: "date", value: "Aug 01, 2022" },
-    movement: "+2 months",
+    finalAction: { kind: "date", value: "Mar 01, 2023" },
+    filingDate: { kind: "date", value: "Dec 01, 2023" },
+    movement: "+1 month",
     direction: "forward",
   },
   {
     category: "EB2 India",
-    finalAction: { kind: "date", value: "Sep 01, 2012" },
-    filingDate: { kind: "date", value: "Jun 01, 2013" },
-    movement: "+3 weeks",
+    finalAction: { kind: "date", value: "Sep 15, 2013" },
+    filingDate: { kind: "date", value: "Nov 01, 2014" },
+    movement: "+2 months",
     direction: "forward",
   },
   {
     category: "EB3 India",
-    finalAction: { kind: "date", value: "Jan 08, 2012" },
-    filingDate: { kind: "date", value: "Jan 01, 2013" },
+    finalAction: { kind: "date", value: "Nov 15, 2013" },
+    filingDate: { kind: "date", value: "Aug 15, 2014" },
     movement: "No change",
     direction: "none",
   },
@@ -77,12 +82,6 @@ const newsPreview = [
     date: "Mar 5, 2026",
   },
 ];
-
-const directionIcon = {
-  forward: <ArrowUpRight className="h-4 w-4 text-emerald-500" />,
-  backward: <ArrowDownRight className="h-4 w-4 text-red-500" />,
-  none: <Minus className="h-4 w-4 text-muted-foreground" />,
-};
 
 const nextBulletinStateConfig: Record<
   NextBulletinState,
@@ -203,6 +202,14 @@ export default function HomePage() {
           </Card>
         </motion.div>
 
+        <motion.div variants={item}>
+          <BulletinCountdown
+            nextMonth={nextBulletin.month}
+            state={nextBulletin.state}
+            releaseDate="2026-03-12"
+          />
+        </motion.div>
+
         {/* Movement Summary Cards */}
         <motion.div variants={item}>
           <div className="mb-2.5 flex items-center justify-between gap-2">
@@ -250,20 +257,7 @@ export default function HomePage() {
                       </div>
                     </div>
                   </div>
-                  <div className="flex shrink-0 items-center gap-1.5 pt-0.5">
-                    {directionIcon[row.direction]}
-                    <span
-                      className={`text-sm font-medium ${
-                        row.direction === "forward"
-                          ? "text-emerald-600 dark:text-emerald-400"
-                          : row.direction === "backward"
-                            ? "text-red-600 dark:text-red-400"
-                            : "text-muted-foreground"
-                      }`}
-                    >
-                      {row.movement}
-                    </span>
-                  </div>
+                  <VelocityArc direction={row.direction} movement={row.movement} size="sm" />
                 </CardContent>
               </Card>
             ))}
@@ -272,24 +266,37 @@ export default function HomePage() {
 
         {/* What Changed This Month */}
         <motion.div variants={item}>
-          <Card className="rounded-[18px] border border-border/50 shadow-sm">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base font-semibold">
-                What Changed This Month
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2 text-sm text-muted-foreground">
-              <p>
-                EB1 India advanced by two months, reflecting continued demand
-                and available visa numbers. EB2 India saw modest forward
-                movement of three weeks. EB3 India remained unchanged.
-              </p>
-              <p>
-                Filing dates were not advanced for the March bulletin. Consular
-                processing applicants should verify dates with their NVC case.
-              </p>
-            </CardContent>
-          </Card>
+          <ShimmerReveal delay={0.3}>
+            <Card className="rounded-[18px] border border-border/50 shadow-sm">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base font-semibold">
+                  What Changed This Month
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2 text-sm text-muted-foreground">
+                <p>
+                  EB1 India advanced by one month to March 2023. EB2 India saw
+                  forward movement of two months to September 2013. EB3 India
+                  remained unchanged at November 2013.
+                </p>
+                <p>
+                  Filing dates were not advanced for the March bulletin. Consular
+                  processing applicants should verify dates with their NVC case.
+                </p>
+              </CardContent>
+            </Card>
+          </ShimmerReveal>
+        </motion.div>
+
+        <motion.div variants={item} className="flex flex-col gap-3">
+          {movementData.filter(row => row.direction !== "none").slice(0, 2).map((row) => (
+            <HopeContext
+              key={row.category}
+              direction={row.direction}
+              category={row.category}
+              movement={row.movement}
+            />
+          ))}
         </motion.div>
 
         {/* Top News Preview */}
@@ -325,6 +332,21 @@ export default function HomePage() {
               </Card>
             ))}
           </div>
+        </motion.div>
+
+        <motion.div variants={item}>
+          <h3 className="mb-2.5 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+            Share Your Update
+          </h3>
+          <JourneySnapshot
+            category="EB1"
+            country="India"
+            priorityDate="Mar 01, 2023"
+            currentFinalAction="Mar 01, 2023"
+            movement="+1 month"
+            direction="forward"
+            bulletinMonth="March 2026"
+          />
         </motion.div>
 
         {/* Disclaimer */}
