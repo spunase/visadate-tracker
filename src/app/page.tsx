@@ -3,7 +3,6 @@
 import { motion } from "framer-motion";
 import { Bell } from "lucide-react";
 import { VelocityArc } from "@/components/ui/velocity-arc";
-import { BulletinCountdown } from "@/components/ui/bulletin-countdown";
 import { HopeContext } from "@/components/ui/hope-context";
 import { ShimmerReveal } from "@/components/ui/shimmer-reveal";
 import { JourneySnapshot } from "@/components/ui/journey-snapshot";
@@ -16,8 +15,6 @@ type CutoffValue =
   | { kind: "date"; value: string }
   | { kind: "current" }
   | { kind: "unavailable" };
-
-type NextBulletinState = "available" | "expected" | "overdue";
 
 const movementData: {
   category: string;
@@ -49,16 +46,6 @@ const movementData: {
   },
 ];
 
-const nextBulletin: {
-  month: string;
-  state: NextBulletinState;
-  updatedLabel: string;
-} = {
-  month: "April 2026",
-  state: "available",
-  updatedLabel: "Updated Mar 12, 2026",
-};
-
 const newsPreview = [
   {
     id: "1",
@@ -82,34 +69,6 @@ const newsPreview = [
     date: "Mar 5, 2026",
   },
 ];
-
-const nextBulletinStateConfig: Record<
-  NextBulletinState,
-  {
-    pillClasses: string;
-    dotClasses: string;
-    label: string;
-  }
-> = {
-  available: {
-    pillClasses:
-      "bg-emerald-500/18 text-emerald-50 ring-1 ring-emerald-300/45",
-    dotClasses: "bg-emerald-300",
-    label: "Bulletin Available",
-  },
-  expected: {
-    pillClasses:
-      "bg-amber-500/20 text-amber-50 ring-1 ring-amber-300/45",
-    dotClasses: "bg-amber-300",
-    label: "Expected Soon",
-  },
-  overdue: {
-    pillClasses:
-      "bg-rose-500/20 text-rose-50 ring-1 ring-rose-300/45",
-    dotClasses: "bg-rose-300",
-    label: "Delayed",
-  },
-};
 
 function formatCutoffValue(value: CutoffValue): string {
   if (value.kind === "current") return "Current";
@@ -143,8 +102,6 @@ const item = {
 };
 
 export default function HomePage() {
-  const nextState = nextBulletinStateConfig[nextBulletin.state];
-
   return (
     <div className="mx-auto max-w-lg">
       <PageHeader
@@ -180,49 +137,15 @@ export default function HomePage() {
                 Visa Bulletin for employment-based preferences. Data below
                 reflects Final Action and Filing Dates.
               </p>
-              <div
-                className={`mt-3 inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-semibold ${nextState.pillClasses}`}
-                role="status"
-                aria-label={`${nextBulletin.month}: ${nextState.label}`}
-              >
-                <span
-                  className={`h-2 w-2 rounded-full ${nextState.dotClasses} ${
-                    nextBulletin.state === "available" ? "animate-pulse" : ""
-                  }`}
-                  aria-hidden="true"
-                />
-                <span>
-                  {nextBulletin.month}: {nextState.label}
-                </span>
-              </div>
-              <p className="mt-1 text-[11px] text-white/70">
-                {nextBulletin.updatedLabel}
-              </p>
             </CardContent>
           </Card>
         </motion.div>
 
-        <motion.div variants={item}>
-          <BulletinCountdown
-            nextMonth={nextBulletin.month}
-            state={nextBulletin.state}
-            releaseDate="2026-03-12"
-          />
-        </motion.div>
-
         {/* Movement Summary Cards */}
         <motion.div variants={item}>
-          <div className="mb-2.5 flex items-center justify-between gap-2">
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-              Key Movements
-            </h3>
-            {nextBulletin.state === "available" && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-status-current px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-status-current-foreground">
-                <span className="h-1.5 w-1.5 rounded-full bg-status-current-foreground" />
-                New bulletin live
-              </span>
-            )}
-          </div>
+          <h3 className="mb-2.5 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+            Key Movements
+          </h3>
           <div className="flex flex-col gap-3">
             {movementData.map((row) => (
               <Card

@@ -309,6 +309,25 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
+
+  /* Interactive elements always show pointer cursor */
+  button,
+  [role="button"],
+  a[href],
+  select,
+  summary,
+  input[type="checkbox"],
+  input[type="radio"],
+  label[for],
+  [tabindex]:not([tabindex="-1"]) {
+    cursor: pointer;
+  }
+
+  /* Disabled elements revert to default cursor */
+  [disabled],
+  [aria-disabled="true"] {
+    cursor: default;
+  }
 }
 
 /* ============================================================
