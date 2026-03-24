@@ -539,8 +539,17 @@
 .theme-risograph [class*="CardTitle"],
 .theme-risograph [class*="text-xl"],
 .theme-risograph [class*="text-2xl"],
+.theme-risograph [class*="text-3xl"],
+.theme-risograph [class*="text-4xl"],
+.theme-risograph [class*="text-h1"],
+.theme-risograph [class*="text-h2"],
+.theme-risograph [class*="text-h3"],
+.theme-risograph [class*="text-display"],
 .theme-risograph [class*="text-lg"][class*="font-semibold"],
+.theme-risograph [class*="text-lg"][class*="font-bold"],
 .theme-risograph [class*="text-base"][class*="font-semibold"],
+.theme-risograph [class*="text-base"][class*="font-bold"],
+.theme-risograph [class*="text-sm"][class*="font-semibold"]:not([class*="uppercase"]):not([class*="tracking-"]):not(nav *),
 .theme-risograph .font-heading,
 .theme-risograph .font-serif {
   font-family: var(--font-heading);
