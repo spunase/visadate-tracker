@@ -48,12 +48,14 @@ export default function TrendsPage() {
       >
         {/* Category & Country Selectors */}
         <motion.div variants={item} className="flex flex-col gap-3">
-          <div className="flex gap-2">
+          <div className="flex gap-2" role="radiogroup" aria-label="Category">
             {categories.map((c) => (
               <button
                 key={c}
                 onClick={() => setCategory(c)}
-                className={`flex-1 rounded-xl py-2 text-sm font-semibold transition-all duration-200 ${
+                role="radio"
+                aria-checked={category === c}
+                className={`flex-1 rounded-xl py-2 text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2F6BFF] focus-visible:ring-offset-2 ${
                   category === c
                     ? "bg-[#2F6BFF] text-white shadow-md"
                     : "bg-muted text-muted-foreground hover:bg-accent"
@@ -63,12 +65,14 @@ export default function TrendsPage() {
               </button>
             ))}
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2" role="radiogroup" aria-label="Country">
             {countries.map((c) => (
               <button
                 key={c}
                 onClick={() => setCountry(c)}
-                className={`flex-1 rounded-xl py-2 text-xs font-semibold transition-all duration-200 ${
+                role="radio"
+                aria-checked={country === c}
+                className={`flex-1 rounded-xl py-2 text-xs font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2F6BFF] focus-visible:ring-offset-2 ${
                   country === c
                     ? "bg-foreground text-background shadow-md"
                     : "bg-muted text-muted-foreground hover:bg-accent"
@@ -82,12 +86,14 @@ export default function TrendsPage() {
 
         {/* Chart Mode Toggle */}
         <motion.div variants={item}>
-          <div className="flex rounded-xl bg-muted p-1">
+          <div className="flex rounded-xl bg-muted p-1" role="radiogroup" aria-label="Chart mode">
             {chartModes.map((mode) => (
               <button
                 key={mode}
                 onClick={() => setChartMode(mode)}
-                className={`flex-1 rounded-lg py-1.5 text-xs font-semibold transition-all duration-200 ${
+                role="radio"
+                aria-checked={chartMode === mode}
+                className={`flex-1 rounded-lg py-1.5 text-xs font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2F6BFF] focus-visible:ring-offset-2 ${
                   chartMode === mode
                     ? "bg-background text-foreground shadow-sm"
                     : "text-muted-foreground"

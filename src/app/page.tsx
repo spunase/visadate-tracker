@@ -2,7 +2,8 @@
 
 import { useMemo } from "react";
 import { motion } from "framer-motion";
-import { Bell, AlertCircle } from "lucide-react";
+import Link from "next/link";
+import { Bell, AlertCircle, ArrowLeftRight } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -171,7 +172,7 @@ export default function HomePage() {
         subtitle="Your green card priority date companion"
         action={
           <button
-            className="rounded-full p-2 text-muted-foreground transition-colors hover:bg-accent"
+            className="rounded-full p-2 text-muted-foreground transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2F6BFF] focus-visible:ring-offset-2"
             aria-label="Notifications"
           >
             <Bell className="h-5 w-5" />
@@ -205,7 +206,7 @@ export default function HomePage() {
             <Card className="overflow-hidden rounded-[18px] border-0 bg-gradient-to-br from-[#2F6BFF] to-[#1B4FCC] text-white shadow-lg">
               <CardContent className="p-5">
                 <div className="flex items-center justify-between">
-                  <p className="text-sm font-medium text-white/70">
+                  <p className="text-sm font-medium text-white/90">
                     Current Bulletin
                   </p>
                   {bulletin?.source_published_at && (
@@ -213,7 +214,7 @@ export default function HomePage() {
                       updatedAt={new Date(bulletin.source_published_at)}
                       staleAfterDays={35}
                       freshWithinDays={3}
-                      className="text-white/70"
+                      className="text-white/90"
                     />
                   )}
                 </div>
@@ -222,7 +223,7 @@ export default function HomePage() {
                     ? formatBulletinMonth(bulletin.bulletin_month)
                     : "No Data"}
                 </h2>
-                <p className="mt-2 text-sm text-white/80">
+                <p className="mt-2 text-sm text-white/90">
                   Visa Bulletin for employment-based preferences. Data below
                   reflects Final Action Dates.
                 </p>
@@ -277,6 +278,32 @@ export default function HomePage() {
               )}
             </div>
           )}
+        </motion.div>
+
+        {/* Compare EB2 vs EB3 Link */}
+        <motion.div variants={item}>
+          <Link href="/compare" className="block">
+            <Card className="group rounded-[18px] border border-[#2F6BFF]/15 bg-[#2F6BFF]/[0.03] shadow-sm transition-colors hover:bg-[#2F6BFF]/[0.06] dark:border-[#5B8CFF]/15 dark:bg-[#5B8CFF]/[0.03]">
+              <CardContent className="flex items-center justify-between p-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#2F6BFF]/10 dark:bg-[#5B8CFF]/10">
+                    <ArrowLeftRight className="h-4 w-4 text-[#2F6BFF] dark:text-[#5B8CFF]" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">
+                      Compare EB2 vs EB3
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Side-by-side cutoff dates and wait times
+                    </p>
+                  </div>
+                </div>
+                <span className="text-xs font-medium text-[#2F6BFF] transition-colors group-hover:text-[#1B4FCC] dark:text-[#5B8CFF]">
+                  View
+                </span>
+              </CardContent>
+            </Card>
+          </Link>
         </motion.div>
 
         {/* What Changed This Month */}
@@ -356,7 +383,7 @@ export default function HomePage() {
 
         {/* Disclaimer */}
         <motion.div variants={item}>
-          <p className="mt-2 rounded-xl bg-muted/60 px-4 py-3 text-[11px] leading-relaxed text-muted-foreground">
+          <p className="mt-2 rounded-xl bg-muted/60 px-4 py-3 text-[11px] leading-relaxed text-foreground/65 dark:text-foreground/60">
             {GLOBAL_DISCLAIMER.text}
           </p>
         </motion.div>

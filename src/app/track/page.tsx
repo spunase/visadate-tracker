@@ -159,11 +159,11 @@ export default function TrackPage() {
         <Card className="rounded-[18px] border border-border/50 shadow-sm">
           <CardContent className="flex flex-col gap-4 p-5">
             {/* Category */}
-            <div>
-              <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            <fieldset>
+              <legend className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Category
-              </label>
-              <div className="flex gap-2">
+              </legend>
+              <div className="flex gap-2" role="radiogroup" aria-label="Category">
                 {categories.map((c) => (
                   <button
                     key={c}
@@ -171,7 +171,9 @@ export default function TrackPage() {
                       setCategory(c);
                       resetResult();
                     }}
-                    className={`flex-1 rounded-xl py-2 text-sm font-semibold transition-all duration-200 ${
+                    role="radio"
+                    aria-checked={category === c}
+                    className={`flex-1 rounded-xl py-2 text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2F6BFF] focus-visible:ring-offset-2 ${
                       category === c
                         ? "bg-[#2F6BFF] text-white shadow-md"
                         : "bg-muted text-muted-foreground hover:bg-accent"
@@ -181,20 +183,21 @@ export default function TrackPage() {
                   </button>
                 ))}
               </div>
-            </div>
+            </fieldset>
 
             {/* Country */}
             <div>
-              <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <label htmlFor="country-select" className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Country of Chargeability
               </label>
               <select
+                id="country-select"
                 value={country}
                 onChange={(e) => {
                   setCountry(e.target.value as SavedTracker["country"]);
                   resetResult();
                 }}
-                className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm font-medium text-foreground outline-none transition-colors focus:border-[#2F6BFF] focus:ring-2 focus:ring-[#2F6BFF]/20"
+                className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm font-medium text-foreground outline-none transition-colors focus:border-[#2F6BFF] focus:ring-2 focus:ring-[#2F6BFF]/20 focus-visible:ring-2 focus-visible:ring-[#2F6BFF]"
               >
                 {countries.map((c) => (
                   <option key={c} value={c}>
@@ -206,26 +209,31 @@ export default function TrackPage() {
 
             {/* Priority Date */}
             <div>
-              <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <label htmlFor="priority-date-input" className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Priority Date
               </label>
               <input
+                id="priority-date-input"
                 type="date"
                 value={priorityDate}
                 onChange={(e) => {
                   setPriorityDate(e.target.value);
                   resetResult();
                 }}
-                className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm font-medium text-foreground outline-none transition-colors focus:border-[#2F6BFF] focus:ring-2 focus:ring-[#2F6BFF]/20"
+                aria-describedby="priority-date-hint"
+                className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm font-medium text-foreground outline-none transition-colors focus:border-[#2F6BFF] focus:ring-2 focus:ring-[#2F6BFF]/20 focus-visible:ring-2 focus-visible:ring-[#2F6BFF]"
               />
+              <p id="priority-date-hint" className="mt-1 text-[11px] text-foreground/60 dark:text-foreground/50">
+                The date from your I-140 approval or labor certification.
+              </p>
             </div>
 
             {/* Path */}
-            <div>
-              <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            <fieldset>
+              <legend className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Processing Path
-              </label>
-              <div className="flex gap-2">
+              </legend>
+              <div className="flex gap-2" role="radiogroup" aria-label="Processing Path">
                 {paths.map((p) => (
                   <button
                     key={p}
@@ -233,7 +241,9 @@ export default function TrackPage() {
                       setPath(p);
                       resetResult();
                     }}
-                    className={`flex-1 rounded-xl py-2 text-sm font-semibold transition-all duration-200 ${
+                    role="radio"
+                    aria-checked={path === p}
+                    className={`flex-1 rounded-xl py-2 text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2F6BFF] focus-visible:ring-offset-2 ${
                       path === p
                         ? "bg-[#2F6BFF] text-white shadow-md"
                         : "bg-muted text-muted-foreground hover:bg-accent"
@@ -243,13 +253,13 @@ export default function TrackPage() {
                   </button>
                 ))}
               </div>
-            </div>
+            </fieldset>
 
             {/* Check Button */}
             <Button
               onClick={handleCheck}
               disabled={!priorityDate || loading}
-              className="mt-1 w-full rounded-xl bg-[#2F6BFF] py-5 text-sm font-semibold text-white shadow-md transition-all duration-200 hover:bg-[#254FCC] disabled:opacity-50"
+              className="mt-1 w-full rounded-xl bg-[#2F6BFF] py-5 text-sm font-semibold text-white shadow-md transition-all duration-200 hover:bg-[#254FCC] disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2F6BFF] focus-visible:ring-offset-2"
             >
               {loading ? (
                 <span className="flex items-center gap-2">
@@ -264,64 +274,68 @@ export default function TrackPage() {
         </Card>
 
         {/* ── Error State ── */}
-        <AnimatePresence>
-          {error && (
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.22 }}
-            >
-              <Card className="rounded-[18px] border border-rose-200 bg-rose-50/50 shadow-sm dark:border-rose-800 dark:bg-rose-950/20">
-                <CardContent className="p-5">
-                  <p className="text-sm font-medium text-rose-700 dark:text-rose-300">
-                    {error}
-                  </p>
-                  <p className="mt-1 text-xs text-rose-600/70 dark:text-rose-400/70">
-                    Please try again. If the problem persists, the bulletin data may be
-                    temporarily unavailable.
-                  </p>
-                </CardContent>
-              </Card>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <div role="alert">
+          <AnimatePresence>
+            {error && (
+              <motion.div
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.22 }}
+              >
+                <Card className="rounded-[18px] border border-rose-200 bg-rose-50/50 shadow-sm dark:border-rose-800 dark:bg-rose-950/20">
+                  <CardContent className="p-5">
+                    <p className="text-sm font-medium text-rose-700 dark:text-rose-300">
+                      {error}
+                    </p>
+                    <p className="mt-1 text-xs text-rose-600/70 dark:text-rose-400/70">
+                      Please try again. If the problem persists, the bulletin data may be
+                      temporarily unavailable.
+                    </p>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
 
         {/* ── Result Card ── */}
-        <AnimatePresence>
-          {result && (
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.22 }}
-            >
-              <ResultCard
-                evaluation={result}
-                scenario={{
-                  category,
-                  country,
-                  priorityDate,
-                  path,
-                }}
-                bulletinMonth={bulletinMonth}
-              />
+        <div aria-live="polite" aria-atomic="true">
+          <AnimatePresence>
+            {result && (
+              <motion.div
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.22 }}
+              >
+                <ResultCard
+                  evaluation={result}
+                  scenario={{
+                    category,
+                    country,
+                    priorityDate,
+                    path,
+                  }}
+                  bulletinMonth={bulletinMonth}
+                />
 
-              {/* Save button below the result card */}
-              <div className="mt-3 flex justify-end">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleSave}
-                  className="gap-1.5 rounded-lg text-xs"
-                >
-                  <Save className="h-3.5 w-3.5" />
-                  Save Tracker
-                </Button>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+                {/* Save button below the result card */}
+                <div className="mt-3 flex justify-end">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleSave}
+                    className="gap-1.5 rounded-lg text-xs focus-visible:ring-2 focus-visible:ring-[#2F6BFF]"
+                  >
+                    <Save className="h-3.5 w-3.5" aria-hidden="true" />
+                    Save Tracker
+                  </Button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
 
         {/* ── Saved Trackers ── */}
         {savedTrackers.length > 0 && (
@@ -363,7 +377,7 @@ export default function TrackPage() {
                       </div>
                       <button
                         onClick={() => removeTracker(tracker.id)}
-                        className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+                        className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2F6BFF] focus-visible:ring-offset-2"
                         aria-label="Remove tracker"
                       >
                         <Trash2 className="h-4 w-4" />

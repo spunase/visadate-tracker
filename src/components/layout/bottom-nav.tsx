@@ -18,7 +18,11 @@ export function BottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed bottom-0 inset-x-0 z-50 border-t border-border/40 bg-white/80 backdrop-blur-lg dark:bg-[#0B1020]/80 safe-area-bottom">
+    <nav
+      role="navigation"
+      aria-label="Main navigation"
+      className="fixed bottom-0 inset-x-0 z-50 border-t border-border/40 bg-white/80 backdrop-blur-lg dark:bg-[#0B1020]/80 safe-area-bottom"
+    >
       <div className="mx-auto flex max-w-lg items-center justify-around px-2 py-1.5 pb-[calc(0.375rem+env(safe-area-inset-bottom))]">
         {tabs.map((tab) => {
           const isActive =
@@ -31,7 +35,8 @@ export function BottomNav() {
             <Link
               key={tab.href}
               href={tab.href}
-              className="relative flex flex-col items-center gap-0.5 px-3 py-1.5 text-xs transition-colors duration-200"
+              aria-current={isActive ? "page" : undefined}
+              className="relative flex flex-col items-center gap-0.5 px-3 py-1.5 text-xs transition-colors duration-200 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2F6BFF] focus-visible:ring-offset-2"
             >
               <div className="relative">
                 {isActive && (
@@ -48,6 +53,7 @@ export function BottomNav() {
                       : "text-muted-foreground"
                   }`}
                   strokeWidth={isActive ? 2.2 : 1.8}
+                  aria-hidden="true"
                 />
               </div>
               <span

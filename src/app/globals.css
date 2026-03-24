@@ -314,6 +314,20 @@
 /* ============================================================
    Typography utility classes
    ============================================================ */
+/* ============================================================
+   Reduced motion — disable Framer Motion & CSS transitions/animations
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 @layer utilities {
   .text-display {
     font-size: var(--text-display);

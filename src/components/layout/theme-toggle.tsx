@@ -32,7 +32,7 @@ export function ThemeToggle() {
   return (
     <button
       onClick={cycle}
-      className="relative flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+      className="relative flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2F6BFF] focus-visible:ring-offset-2"
       aria-label={themeLabels[theme]}
       title={themeLabels[theme]}
     >
