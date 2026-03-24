@@ -20,7 +20,7 @@ export function ThemeToggle({ className }: { className?: string }) {
       onClick={cycleTheme}
       className={cn(
         "rounded-full p-2 text-muted-foreground transition-colors hover:bg-accent",
-        theme === "risograph" && "text-[#E8B84B] hover:bg-[#E8B84B]/10",
+        theme === "risograph" && "text-[#DEAD45] hover:bg-[#DEAD45]/10",
         className,
       )}
       aria-label={`Current theme: ${theme === "quiet-clarity" ? "Quiet Clarity" : "Risograph"}. Click to switch.`}
