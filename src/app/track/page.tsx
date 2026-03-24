@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Save, Trash2, Loader2, Lock, Pencil } from "lucide-react";
+import { usePreferencesStore } from "@/stores/preferences-store";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -71,10 +72,20 @@ function findRow(
 // ---------------------------------------------------------------------------
 
 export default function TrackPage() {
-  const [category, setCategory] = useState<SavedTracker["category"]>("EB2");
-  const [country, setCountry] = useState<SavedTracker["country"]>("India");
+  const { defaultCountry, defaultCategory, defaultPath } = usePreferencesStore();
+
+  const [category, setCategory] = useState<SavedTracker["category"]>(defaultCategory);
+  const [country, setCountry] = useState<SavedTracker["country"]>(defaultCountry);
   const [priorityDate, setPriorityDate] = useState("");
-  const [path, setPath] = useState<SavedTracker["path"]>("AOS");
+  const [path, setPath] = useState<SavedTracker["path"]>(defaultPath);
+
+  // Sync with preferences on hydration
+  useEffect(() => {
+    const prefs = usePreferencesStore.getState();
+    setCategory(prefs.defaultCategory);
+    setCountry(prefs.defaultCountry);
+    setPath(prefs.defaultPath);
+  }, []);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

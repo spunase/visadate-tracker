@@ -4,6 +4,7 @@ import "./globals.css";
 import { BottomNav } from "@/components/layout/bottom-nav";
 import { Providers } from "@/components/layout/providers";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
+import { SettingsLink } from "@/components/layout/settings-link";
 
 const inter = Inter({
   variable: "--font-sans",
@@ -74,7 +75,8 @@ export default function RootLayout({
           >
             Skip to main content
           </a>
-          <header className="fixed top-0 right-0 z-50 p-3">
+          <header className="fixed top-0 right-0 z-50 flex items-center gap-1 p-3">
+            <SettingsLink />
             <ThemeToggle />
           </header>
           <main id="main-content" className="flex-1 pb-20" tabIndex={-1}>{children}</main>
