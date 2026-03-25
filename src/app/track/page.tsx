@@ -12,6 +12,8 @@ import { ResultCard } from "@/components/track/result-card";
 import { ShareSnapshot } from "@/components/track/share-snapshot";
 import { useTrackerStore, type SavedTracker } from "@/stores/tracker-store";
 import { JourneyProgress } from "@/components/ui/journey-progress";
+import { ConvergenceTimeline } from "@/components/charts/convergence-timeline";
+import { useConvergence } from "@/lib/hooks/use-convergence";
 import { EmptyState } from "@/components/ui/empty-state";
 import { JourneySnapshot } from "@/components/ui/journey-snapshot";
 import { evaluateScenario } from "@/lib/rules-engine";
@@ -95,6 +97,9 @@ export default function TrackPage() {
   const [faCutoffDate, setFaCutoffDate] = useState<string | null>(null);
 
   const { savedTrackers, addTracker, removeTracker } = useTrackerStore();
+
+  // Fetch convergence data (both FA + Filing histories) when result is shown
+  const convergence = useConvergence(category, country);
 
   // ── Check Status handler ──────────────────────────────────────────────
   const handleCheck = useCallback(async () => {
@@ -369,6 +374,33 @@ export default function TrackPage() {
                     />
                   </div>
                 )}
+
+                {/* Convergence Timeline — dual-line countdown visualization */}
+                {priorityDate &&
+                  !convergence.isLoading &&
+                  convergence.finalActionHistory.length >= 2 && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 16 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.28, delay: 0.15 }}
+                      className="mt-3"
+                    >
+                      <Card className="riso-doc-neutral rounded-[18px] border border-border/50 shadow-sm">
+                        <CardContent className="p-5">
+                          <h3 className="font-heading mb-3 text-base font-semibold text-foreground">
+                            Convergence Timeline
+                          </h3>
+                          <ConvergenceTimeline
+                            priorityDate={priorityDate}
+                            finalActionHistory={convergence.finalActionHistory}
+                            filingHistory={convergence.filingHistory}
+                            category={category}
+                            country={country}
+                          />
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  )}
 
                 {/* Save button below the result card */}
                 <div className="mt-3 flex justify-end">
