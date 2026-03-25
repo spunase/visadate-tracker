@@ -17,7 +17,7 @@ export interface ConfettiBurstProps {
 
 // ─── Defaults ──────────────────────────────────────────────────
 
-const DEFAULT_COLORS = ["#34d399", "#2F6BFF", "#f59e0b"]; // emerald, primary blue, amber
+const DEFAULT_COLORS = ["#4AADA3", "#CF7B73", "#DEAD45"]; // teal, coral, gold — risograph inks
 const PARTICLE_COUNT = 20;
 const ANIMATION_DURATION_MS = 1500;
 

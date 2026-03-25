@@ -108,7 +108,7 @@ export function ResultCard({ evaluation, scenario, bulletinMonth }: ResultCardPr
       : `Your ${scenario.category} priority date is not yet current.`;
 
   return (
-    <Card className="rounded-[18px] border border-border/50 shadow-sm overflow-hidden">
+    <Card className="riso-doc-teal rounded-[18px] border border-border/50 shadow-sm overflow-hidden">
       <CardContent className="p-0">
         {/* ── Primary Status Header ── */}
         <div className="flex flex-col gap-3 border-b border-border/30 bg-muted/20 p-5">

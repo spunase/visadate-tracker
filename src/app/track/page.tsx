@@ -21,6 +21,7 @@ import type {
   CutoffValue,
 } from "@/lib/rules-engine";
 import type { VisaCutoffRow } from "@/types/database";
+import { CountryFlagSelector } from "@/components/ui/country-flag-selector";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -175,7 +176,7 @@ export default function TrackPage() {
 
       <div className="flex flex-col gap-4 px-4 pb-8">
         {/* ── Input Form ── */}
-        <Card className="rounded-[18px] border border-border/50 shadow-sm">
+        <Card className="riso-doc-gold rounded-[18px] border border-border/50 shadow-sm">
           <CardContent className="flex flex-col gap-4 p-5">
             {/* Category */}
             <fieldset>
@@ -219,25 +220,16 @@ export default function TrackPage() {
 
             {/* Country */}
             <div>
-              <label htmlFor="country-select" className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Country of Chargeability
-              </label>
-              <select
-                id="country-select"
+              <CountryFlagSelector
                 value={country}
-                disabled={!!result}
-                onChange={(e) => {
-                  setCountry(e.target.value as SavedTracker["country"]);
+                onChange={(c) => {
+                  setCountry(c);
                   resetResult();
                 }}
-                className={`w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm font-medium text-foreground outline-none transition-colors focus:border-[#2F6BFF] focus:ring-2 focus:ring-[#2F6BFF]/20 focus-visible:ring-2 focus-visible:ring-[#2F6BFF] ${result ? "opacity-60" : ""}`}
-              >
-                {countries.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
-                  </option>
-                ))}
-              </select>
+                label="Country of Chargeability"
+                disabled={!!result}
+                ariaLabel="Country of chargeability"
+              />
             </div>
 
             {/* Priority Date */}
@@ -255,7 +247,7 @@ export default function TrackPage() {
                   resetResult();
                 }}
                 aria-describedby="priority-date-hint"
-                className={`w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm font-medium text-foreground outline-none transition-colors focus:border-[#2F6BFF] focus:ring-2 focus:ring-[#2F6BFF]/20 focus-visible:ring-2 focus-visible:ring-[#2F6BFF] ${result ? "opacity-60" : ""}`}
+                className={`riso-input-ruled w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm font-medium text-foreground outline-none transition-colors focus:border-[#2F6BFF] focus:ring-2 focus:ring-[#2F6BFF]/20 focus-visible:ring-2 focus-visible:ring-[#2F6BFF] ${result ? "opacity-60" : ""}`}
               />
               <p id="priority-date-hint" className="mt-1 text-[11px] text-foreground/60 dark:text-foreground/50">
                 The date from your I-140 approval or labor certification.
@@ -330,7 +322,7 @@ export default function TrackPage() {
                 exit={{ opacity: 0, y: -8 }}
                 transition={{ duration: 0.22 }}
               >
-                <Card className="rounded-[18px] border border-rose-200 bg-rose-50/50 shadow-sm dark:border-rose-800 dark:bg-rose-950/20">
+                <Card className="riso-doc-coral rounded-[18px] border border-rose-200 bg-rose-50/50 shadow-sm dark:border-rose-800 dark:bg-rose-950/20">
                   <CardContent className="p-5">
                     <p className="text-sm font-medium text-rose-700 dark:text-rose-300">
                       {error}
@@ -449,7 +441,7 @@ export default function TrackPage() {
                   exit={{ opacity: 0, scale: 0.95 }}
                   transition={{ duration: 0.18 }}
                 >
-                  <Card className="rounded-[18px] border border-border/50 shadow-sm">
+                  <Card className="riso-doc-neutral rounded-[18px] border border-border/50 shadow-sm">
                     <CardContent className="flex items-center justify-between p-4">
                       <div>
                         <div className="flex items-center gap-2">

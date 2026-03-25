@@ -3,8 +3,8 @@ import { supabase } from "@/lib/supabase";
 import type { Category, CountryBucket, ChartType } from "@/types/database";
 
 // ---------------------------------------------------------------------------
-// 12-month mock history for EB2 India Final Action (fallback)
-// Realistic pattern: mostly forward, some flat, one retrogression
+// Mock history generator (fallback when Supabase has no data)
+// Generates realistic 12-month movement patterns per category/country.
 // ---------------------------------------------------------------------------
 
 interface HistoryRow {
@@ -15,20 +15,116 @@ interface HistoryRow {
   movement_direction: "forward" | "backward" | "unchanged";
 }
 
-const EB2_INDIA_FINAL_ACTION_HISTORY: HistoryRow[] = [
-  { bulletin_month: "2025-04", cutoff_date: "2012-01-08", original_value: "08JAN12", movement_days: 0,    movement_direction: "unchanged" },
-  { bulletin_month: "2025-05", cutoff_date: "2012-01-22", original_value: "22JAN12", movement_days: 14,   movement_direction: "forward" },
-  { bulletin_month: "2025-06", cutoff_date: "2012-02-15", original_value: "15FEB12", movement_days: 24,   movement_direction: "forward" },
-  { bulletin_month: "2025-07", cutoff_date: "2012-03-01", original_value: "01MAR12", movement_days: 14,   movement_direction: "forward" },
-  { bulletin_month: "2025-08", cutoff_date: "2012-03-01", original_value: "01MAR12", movement_days: 0,    movement_direction: "unchanged" },
-  { bulletin_month: "2025-09", cutoff_date: "2012-04-08", original_value: "08APR12", movement_days: 38,   movement_direction: "forward" },
-  { bulletin_month: "2025-10", cutoff_date: "2012-05-01", original_value: "01MAY12", movement_days: 23,   movement_direction: "forward" },
-  { bulletin_month: "2025-11", cutoff_date: "2012-04-15", original_value: "15APR12", movement_days: -16,  movement_direction: "backward" },
-  { bulletin_month: "2025-12", cutoff_date: "2012-05-22", original_value: "22MAY12", movement_days: 37,   movement_direction: "forward" },
-  { bulletin_month: "2026-01", cutoff_date: "2012-07-01", original_value: "01JUL12", movement_days: 40,   movement_direction: "forward" },
-  { bulletin_month: "2026-02", cutoff_date: "2012-08-01", original_value: "01AUG12", movement_days: 31,   movement_direction: "forward" },
-  { bulletin_month: "2026-03", cutoff_date: "2013-09-15", original_value: "15SEP13", movement_days: 411,  movement_direction: "forward" },
-];
+/**
+ * Approximate starting cutoff dates by category+country for March 2026.
+ * Used to seed backwards from the current month to generate 12 months of
+ * realistic-looking history. These are approximate and for mock purposes only.
+ */
+const BASE_DATES: Record<string, string> = {
+  // Employment-Based
+  "EB1_india": "2023-03-01", "EB2_india": "2013-09-15", "EB3_india": "2013-11-15",
+  "EB1_china": "2023-02-22", "EB2_china": "2021-04-08", "EB3_china": "2020-09-01",
+  "EB1_philippines": "2026-03-01", "EB2_philippines": "2026-03-01", "EB3_philippines": "2021-11-22",
+  "EB1_mexico": "2026-03-01", "EB2_mexico": "2026-03-01", "EB3_mexico": "2021-12-01",
+  "EB1_all_other": "2026-03-01", "EB2_all_other": "2024-10-15", "EB3_all_other": "2023-01-08",
+  // Family-Based
+  "F1_india": "2016-01-01", "F2A_india": "2021-09-01", "F2B_india": "2012-01-01",
+  "F3_india": "2008-10-01", "F4_india": "2006-04-15",
+  "F1_china": "2016-01-01", "F2A_china": "2021-09-01", "F2B_china": "2017-06-08",
+  "F3_china": "2008-06-01", "F4_china": "2007-01-01",
+  "F1_philippines": "2013-04-01", "F2A_philippines": "2021-09-01", "F2B_philippines": "2012-10-22",
+  "F3_philippines": "2002-11-22", "F4_philippines": "2004-03-22",
+  "F1_mexico": "2002-04-01", "F2A_mexico": "2021-06-01", "F2B_mexico": "2006-07-01",
+  "F3_mexico": "2000-11-15", "F4_mexico": "2001-03-01",
+  "F1_all_other": "2016-01-01", "F2A_all_other": "2021-09-01", "F2B_all_other": "2017-09-22",
+  "F3_all_other": "2008-11-08", "F4_all_other": "2007-03-22",
+};
+
+/** Seeded pseudo-random for deterministic mock data per category/country. */
+function seededRandom(seed: number): () => number {
+  let s = seed;
+  return () => {
+    s = (s * 16807 + 0) % 2147483647;
+    return (s - 1) / 2147483646;
+  };
+}
+
+function hashString(str: string): number {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = ((hash << 5) - hash + str.charCodeAt(i)) | 0;
+  }
+  return Math.abs(hash);
+}
+
+function generateMockHistory(category: string, country: string, chartType: string): HistoryRow[] {
+  const key = `${category}_${country}`;
+  const baseDate = BASE_DATES[key];
+
+  // For "current" categories (no backlog), return flat history
+  if (!baseDate || baseDate === "2026-03-01") {
+    return Array.from({ length: 12 }, (_, i) => {
+      const month = new Date(2025, 3 + i); // April 2025 through March 2026
+      return {
+        bulletin_month: `${month.getFullYear()}-${String(month.getMonth() + 1).padStart(2, "0")}`,
+        cutoff_date: "current",
+        original_value: "C",
+        movement_days: 0,
+        movement_direction: "unchanged" as const,
+      };
+    });
+  }
+
+  const rand = seededRandom(hashString(key + chartType));
+  const endDate = new Date(baseDate + "T00:00:00");
+  const rows: HistoryRow[] = [];
+
+  // Work backwards from the end date to generate 12 months of history
+  let currentDate = new Date(endDate);
+  const monthEntries: { month: Date; cutoff: Date }[] = [];
+
+  for (let i = 11; i >= 0; i--) {
+    const bulletinMonth = new Date(2025, 3 + i); // April 2025 → March 2026
+    monthEntries.unshift({ month: bulletinMonth, cutoff: new Date(currentDate) });
+
+    // Move cutoff date backwards for earlier months
+    const r = rand();
+    if (r < 0.1) {
+      // 10% chance: retrogression (move cutoff forward = earlier month had a later date)
+      currentDate.setDate(currentDate.getDate() + Math.floor(rand() * 20 + 5));
+    } else if (r < 0.25) {
+      // 15% chance: no change
+    } else {
+      // 75% chance: forward movement (move cutoff backward = earlier month had an earlier date)
+      currentDate.setDate(currentDate.getDate() - Math.floor(rand() * 45 + 7));
+    }
+  }
+
+  for (let i = 0; i < monthEntries.length; i++) {
+    const { month, cutoff } = monthEntries[i];
+    const prevCutoff = i > 0 ? monthEntries[i - 1].cutoff : cutoff;
+    const diffMs = cutoff.getTime() - prevCutoff.getTime();
+    const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+
+    const direction: HistoryRow["movement_direction"] =
+      diffDays > 0 ? "forward" : diffDays < 0 ? "backward" : "unchanged";
+
+    const dateStr = cutoff.toISOString().split("T")[0];
+    const d = cutoff;
+    const monthNames = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
+    const originalValue = `${String(d.getDate()).padStart(2, "0")}${monthNames[d.getMonth()]}${String(d.getFullYear()).slice(2)}`;
+
+    rows.push({
+      bulletin_month: `${month.getFullYear()}-${String(month.getMonth() + 1).padStart(2, "0")}`,
+      cutoff_date: dateStr,
+      original_value: originalValue,
+      movement_days: i === 0 ? 0 : diffDays,
+      movement_direction: i === 0 ? "unchanged" : direction,
+    });
+  }
+
+  return rows;
+}
 
 // ---------------------------------------------------------------------------
 // GET /api/bulletin/history?category=EB2&country=india&chart_type=final_action
@@ -127,9 +223,9 @@ export async function GET(request: NextRequest) {
   }
 
   // --- Fallback to mock data ---
-  // Mock only has EB2 / india / final_action history.
-  // Return it regardless of params but tag the response with the requested filters.
-  const rows = EB2_INDIA_FINAL_ACTION_HISTORY.map((row) => ({
+  // Generate realistic history based on the requested filters.
+  const mockHistory = generateMockHistory(category, country, chartType);
+  const rows = mockHistory.map((row) => ({
     ...row,
     category,
     country_bucket: country,

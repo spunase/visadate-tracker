@@ -16,6 +16,7 @@ import {
   type PreferredCategory,
   type PreferredPath,
 } from "@/stores/preferences-store";
+import { CountryFlagSelector } from "@/components/ui/country-flag-selector";
 import { useTheme, type Theme } from "@/components/theme-provider";
 
 // ---------------------------------------------------------------------------
@@ -182,7 +183,7 @@ export default function SettingsPage() {
       >
         {/* ── Priority Configuration ── */}
         <motion.div variants={cardVariants}>
-          <Card className="rounded-[18px] border border-border/50 shadow-sm">
+          <Card className="riso-doc-gold rounded-[18px] border border-border/50 shadow-sm">
             <CardHeader className="pb-0">
               <CardTitle className="flex items-center gap-2 text-base font-semibold">
                 <Globe className="h-4 w-4 text-calm-blue" aria-hidden="true" />
@@ -198,10 +199,10 @@ export default function SettingsPage() {
                 label="Default Country"
                 description="Your country of chargeability. India and China have the longest queues."
               >
-                <ChipSelector
-                  options={COUNTRIES_BY_QUEUE}
+                <CountryFlagSelector
                   value={defaultCountry}
                   onChange={setDefaultCountry}
+                  label={null}
                   ariaLabel="Default country"
                 />
               </SettingRow>
@@ -244,7 +245,7 @@ export default function SettingsPage() {
 
         {/* ── Appearance ── */}
         <motion.div variants={cardVariants}>
-          <Card className="rounded-[18px] border border-border/50 shadow-sm">
+          <Card className="riso-doc-neutral rounded-[18px] border border-border/50 shadow-sm">
             <CardHeader className="pb-0">
               <CardTitle className="flex items-center gap-2 text-base font-semibold">
                 <Palette className="h-4 w-4 text-calm-blue" aria-hidden="true" />
@@ -307,7 +308,7 @@ export default function SettingsPage() {
 
         {/* Disclaimer */}
         <motion.div variants={cardVariants}>
-          <p className="rounded-xl bg-muted/60 px-4 py-3 text-[11px] leading-relaxed text-muted-foreground">
+          <p className="riso-doc-gold-accent rounded-xl bg-muted/60 px-4 py-3 text-[11px] leading-relaxed text-muted-foreground">
             All preferences are stored locally on your device. No account is
             required and no data is sent to any server.
           </p>

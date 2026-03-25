@@ -78,9 +78,9 @@ export function VelocityArc({
 
   // Gradient stops per direction
   const gradientStops = {
-    forward: { from: "#34d399", to: "#059669" },   // emerald-400 → emerald-600
-    backward: { from: "#fb7185", to: "#e11d48" },  // rose-400 → rose-600
-    none: { from: "#cbd5e1", to: "#94a3b8" },      // slate-300 → slate-400
+    forward: { from: "#4AADA3", to: "#2D7A72" },   // teal — risograph positive
+    backward: { from: "#CF7B73", to: "#A85A52" },  // coral — risograph warning
+    none: { from: "#D1CABD", to: "#B8B2A8" },      // warm neutral
   }[direction];
 
   // Arc path data

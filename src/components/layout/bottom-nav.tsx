@@ -21,7 +21,7 @@ export function BottomNav() {
     <nav
       role="navigation"
       aria-label="Main navigation"
-      className="fixed bottom-0 inset-x-0 z-50 border-t border-border/40 bg-white/80 backdrop-blur-lg dark:bg-[#0B1020]/80 safe-area-bottom"
+      className="fixed bottom-0 inset-x-0 z-50 border-t-2 border-border/40 bg-white/80 backdrop-blur-lg dark:bg-[#0B1020]/80 safe-area-bottom"
     >
       <div className="mx-auto flex max-w-lg items-center justify-around px-2 py-1.5 pb-[calc(0.375rem+env(safe-area-inset-bottom))]">
         {tabs.map((tab) => {

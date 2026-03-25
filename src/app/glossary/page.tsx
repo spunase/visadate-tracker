@@ -73,7 +73,7 @@ export default function GlossaryPage() {
             placeholder="Search terms..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full rounded-[18px] border border-border/50 bg-card py-2.5 pl-9 pr-9 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/40"
+            className="riso-input-ruled w-full rounded-[18px] border border-border/50 bg-card py-2.5 pl-9 pr-9 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/40"
           />
           {search && (
             <button
@@ -110,7 +110,7 @@ export default function GlossaryPage() {
               id={`glossary-${entry.id}`}
               variants={item}
             >
-              <Card className="rounded-[18px] border border-border/50 shadow-sm">
+              <Card className="riso-doc-neutral rounded-[18px] border border-border/50 shadow-sm">
                 <CardContent className="p-0">
                   <button
                     onClick={() => toggle(entry.id)}

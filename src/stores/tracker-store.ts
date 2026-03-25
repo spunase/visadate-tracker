@@ -3,7 +3,7 @@ import { persist } from "zustand/middleware";
 
 export interface SavedTracker {
   id: string;
-  category: "EB1" | "EB2" | "EB3";
+  category: "EB1" | "EB2" | "EB3" | "F1" | "F2A" | "F2B" | "F3" | "F4";
   country: "India" | "China" | "Mexico" | "Philippines" | "All Other";
   priorityDate: string; // ISO date string
   path: "AOS" | "CP";

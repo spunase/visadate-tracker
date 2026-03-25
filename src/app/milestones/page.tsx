@@ -164,7 +164,7 @@ export default function MilestonesPage() {
         {/* Milestone Cards */}
         {filtered.map((card) => (
           <motion.div key={card.id} variants={item}>
-            <Card className="rounded-[18px] border border-border/50 shadow-sm">
+            <Card className="riso-doc-neutral rounded-[18px] border border-border/50 shadow-sm">
               <CardHeader className="pb-2">
                 <div className="flex items-center gap-2">
                   <span
@@ -210,7 +210,7 @@ export default function MilestonesPage() {
                         className="relative flex items-start gap-2.5 rounded-lg p-1 text-left transition-colors hover:bg-muted/50"
                       >
                         {isChecked ? (
-                          <CheckSquare className="mt-0.5 h-4 w-4 shrink-0 text-[#2F6BFF]" />
+                          <CheckSquare className="riso-stamp mt-0.5 h-4 w-4 shrink-0 text-[#2F6BFF]" />
                         ) : (
                           <Square className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
                         )}
@@ -246,7 +246,7 @@ export default function MilestonesPage() {
 
         {/* Disclaimer */}
         <motion.div variants={item}>
-          <div className="flex items-start gap-2 rounded-xl bg-muted/60 px-4 py-3">
+          <div className="riso-doc-gold-accent flex items-start gap-2 rounded-xl bg-muted/60 px-4 py-3">
             <Info className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
             <p className="text-[11px] leading-relaxed text-muted-foreground">
               {MILESTONE_DISCLAIMER.text}

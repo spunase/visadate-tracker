@@ -499,7 +499,7 @@
   inset: 0;
   z-index: 9999;
   pointer-events: none;
-  opacity: 0.035;
+  opacity: 0.045;
   mix-blend-mode: multiply;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
   background-repeat: repeat;
@@ -512,7 +512,7 @@
   inset: 0;
   z-index: 9999;
   pointer-events: none;
-  opacity: 0.02;
+  opacity: 0.025;
   mix-blend-mode: screen;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Cfilter id='d'%3E%3CfeTurbulence type='turbulence' baseFrequency='0.9' numOctaves='1' seed='2'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='discrete' tableValues='0 0 0 0 0 0 0 1'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23d)' fill='white'/%3E%3C/svg%3E");
   background-repeat: repeat;
@@ -582,10 +582,11 @@
   -webkit-font-smoothing: auto; /* Less crisp = more printed feel */
 }
 
-/* Hero card gradient overrides to use image palette */
+/* Hero card gradient overrides — FLAT teal wash, no gradient */
 .theme-risograph [class*="from-[#2F6BFF]"] {
-  --tw-gradient-from: #6CC5BB !important;
-  --tw-gradient-to: #4A9E94 !important;
+  --tw-gradient-from: transparent !important;
+  --tw-gradient-to: transparent !important;
+  background-image: none !important;
 }
 
 /* Primary button/active state color overrides */
@@ -593,11 +594,11 @@
   background-color: #2D2B2A !important;
 }
 .theme-risograph [class*="text-[#2F6BFF]"] {
-  color: #6CC5BB !important;
+  color: var(--calm-blue) !important;
 }
 .theme-risograph [class*="border-[#2F6BFF]"],
 .theme-risograph [class*="focus:border-[#2F6BFF]"] {
-  border-color: #DEAD45 !important;
+  border-color: var(--ring) !important;
 }
 .theme-risograph [class*="ring-[#2F6BFF]"],
 .theme-risograph [class*="focus:ring-[#2F6BFF]"] {
@@ -607,6 +608,116 @@
 /* Bottom nav active indicator — teal instead of blue */
 .theme-risograph [class*="bg-[#2F6BFF]/10"] {
   background-color: rgba(108, 197, 187, 0.12) !important;
+}
+
+/* ============================================================
+   Risograph Document Surface Utilities
+   These classes apply document-like surfaces ONLY within
+   .theme-risograph. Outside that theme, they are no-ops.
+   ============================================================ */
+
+/* Teal document — visa stamps, primary status, positive results */
+.theme-risograph .riso-doc-teal {
+  background-color: rgba(74, 173, 163, 0.12) !important;
+  border: 2px solid var(--calm-blue) !important;
+}
+.theme-risograph.dark .riso-doc-teal,
+.dark .theme-risograph .riso-doc-teal {
+  background-color: rgba(108, 197, 187, 0.10) !important;
+}
+
+/* Teal document strong — hero card, primary focal point */
+.theme-risograph .riso-doc-teal-strong {
+  background-color: rgba(74, 173, 163, 0.22) !important;
+  border: 3px solid var(--calm-blue) !important;
+  color: var(--foreground) !important;
+}
+.theme-risograph .riso-doc-teal-strong * {
+  color: inherit !important;
+}
+.theme-risograph .riso-doc-teal-strong .text-white\/70,
+.theme-risograph .riso-doc-teal-strong .text-white\/80,
+.theme-risograph .riso-doc-teal-strong [class*="text-white"] {
+  color: var(--muted-foreground) !important;
+}
+.theme-risograph .riso-doc-teal-strong h2,
+.theme-risograph .riso-doc-teal-strong .font-bold {
+  color: var(--foreground) !important;
+}
+.theme-risograph.dark .riso-doc-teal-strong,
+.dark .theme-risograph .riso-doc-teal-strong {
+  background-color: rgba(108, 197, 187, 0.18) !important;
+}
+
+/* Coral document — secondary cards, warmth, near status */
+.theme-risograph .riso-doc-coral {
+  background-color: rgba(207, 123, 115, 0.12) !important;
+  border: 2px solid #CF7B73 !important;
+}
+.theme-risograph.dark .riso-doc-coral,
+.dark .theme-risograph .riso-doc-coral {
+  background-color: rgba(217, 144, 138, 0.10) !important;
+  border-color: #D9908A !important;
+}
+
+/* Gold document — forms, settings, highlighted sections */
+.theme-risograph .riso-doc-gold {
+  border: 2px solid var(--ring) !important;
+}
+
+/* Neutral document — default card with visible border */
+.theme-risograph .riso-doc-neutral {
+  border: 2px solid var(--border) !important;
+}
+
+/* Gold left-accent — informational cards, hope context */
+.theme-risograph .riso-doc-gold-accent {
+  border: 1.5px solid var(--border) !important;
+  border-left: 3px solid var(--ring) !important;
+}
+
+/* Coral left-accent — news clippings */
+.theme-risograph .riso-doc-coral-accent {
+  border: 1.5px solid var(--border) !important;
+  border-left: 3px solid #CF7B73 !important;
+}
+.theme-risograph.dark .riso-doc-coral-accent,
+.dark .theme-risograph .riso-doc-coral-accent {
+  border-left-color: #D9908A !important;
+}
+
+/* Stamp badge — slight rotation for organic feel */
+.theme-risograph .riso-stamp {
+  transform: rotate(-2deg);
+}
+
+/* Chevron divider — decorative section separator */
+.theme-risograph .riso-divider {
+  height: 8px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='8' viewBox='0 0 16 8'%3E%3Cpath d='M0 0l4 4 4-4' fill='none' stroke='%23DEAD45' stroke-width='1' opacity='0.4'/%3E%3C/svg%3E");
+  background-repeat: repeat-x;
+  background-position: center;
+}
+
+/* Ruled-line input — government form style */
+.theme-risograph .riso-input-ruled {
+  border: none !important;
+  border-bottom: 2px solid var(--border) !important;
+  border-radius: 0 !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  background: transparent !important;
+}
+.theme-risograph .riso-input-ruled:focus {
+  border-bottom-color: var(--ring) !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+/* All risograph cards get visible borders by default */
+.theme-risograph .border-border\/50 {
+  border-color: var(--border) !important;
+  border-width: 2px !important;
 }
 
 /* ============================================================

@@ -115,13 +115,26 @@ interface CustomTooltipProps {
 function CustomTooltip({ active, payload }: CustomTooltipProps) {
   if (!active || !payload?.length) return null;
   const d = payload[0].payload;
+  const isRetrogression = d.direction === "backward";
   return (
-    <div className="rounded-lg border border-border/50 bg-background px-3 py-2 shadow-md">
+    <div
+      className={`max-w-[220px] rounded-lg border px-3 py-2 shadow-md ${
+        isRetrogression
+          ? "border-rose-200/60 bg-gradient-to-br from-rose-50 to-rose-100/60 dark:border-rose-800/40 dark:from-rose-950/80 dark:to-rose-900/40"
+          : "border-border/50 bg-background"
+      }`}
+    >
       <p className="text-xs font-semibold text-foreground">{d.monthLabel}</p>
       <p className="text-xs text-muted-foreground">{d.cutoffLabel}</p>
       <p className="mt-0.5 text-xs font-medium text-muted-foreground">
         {movementLabel(d.movementDays, d.direction)}
       </p>
+      {isRetrogression && (
+        <p className="mt-1.5 border-t border-rose-200/40 pt-1.5 text-[10px] leading-relaxed text-muted-foreground dark:border-rose-800/30">
+          A temporary setback — retrogressions are typically followed by recovery
+          within 2-4 months.
+        </p>
+      )}
     </div>
   );
 }
@@ -139,6 +152,24 @@ export function TrendLineChart({
       <p className="py-8 text-center text-xs text-muted-foreground">
         No data available for the selected filters.
       </p>
+    );
+  }
+
+  // Detect "current" categories — no backlog, no dates to chart
+  const allCurrent = data.every(
+    (d) => d.cutoffDate === "current" || d.movementDays === 0,
+  );
+  if (allCurrent && data[0]?.cutoffDate === "current") {
+    return (
+      <div className="flex flex-col items-center justify-center gap-2 py-10 text-center">
+        <p className="text-sm font-medium text-foreground">
+          {category} {country} is current
+        </p>
+        <p className="max-w-[260px] text-xs leading-relaxed text-muted-foreground">
+          No backlog exists for this category — all eligible applicants can
+          proceed immediately. There are no priority date movements to chart.
+        </p>
+      </div>
     );
   }
 

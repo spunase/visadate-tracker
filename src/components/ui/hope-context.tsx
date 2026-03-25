@@ -101,7 +101,7 @@ export function HopeContext({
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-[18px] p-4 ring-1 ring-foreground/5",
+        "relative overflow-hidden rounded-[18px] p-4 ring-1 ring-foreground/5 riso-doc-gold-accent",
         config.gradient,
         className,
       )}

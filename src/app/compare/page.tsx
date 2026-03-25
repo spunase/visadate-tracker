@@ -1,8 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, Info, Scale } from "lucide-react";
+import { ArrowLeft, Globe, Info, Scale } from "lucide-react";
 import Link from "next/link";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card, CardContent } from "@/components/ui/card";
@@ -10,6 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { MovementChip } from "@/components/ui/movement-chip";
 import { GLOBAL_DISCLAIMER } from "@/lib/content/disclaimers";
 import { useBulletin, type CutoffRow } from "@/lib/hooks/use-bulletin";
+import { usePreferencesStore } from "@/stores/preferences-store";
 import {
   formatBulletinMonth,
   formatCutoffDate,
@@ -20,10 +21,10 @@ import {
 type CountryBucket = "india" | "china" | "all_other";
 type ChartType = "final_action" | "dates_for_filing";
 
-const COUNTRY_OPTIONS: { value: CountryBucket; label: string }[] = [
-  { value: "india", label: "India" },
-  { value: "china", label: "China" },
-  { value: "all_other", label: "All Other" },
+const COUNTRY_OPTIONS: { value: CountryBucket; label: string; flag: string }[] = [
+  { value: "india", label: "India", flag: "\u{1F1EE}\u{1F1F3}" },
+  { value: "china", label: "China", flag: "\u{1F1E8}\u{1F1F3}" },
+  { value: "all_other", label: "All Other", flag: "" },
 ];
 
 const CHART_OPTIONS: { value: ChartType; label: string }[] = [
@@ -90,7 +91,7 @@ function ComparisonSkeleton() {
       {[1, 2].map((i) => (
         <Card
           key={i}
-          className="rounded-[18px] border border-border/50 shadow-sm"
+          className="riso-doc-neutral rounded-[18px] border border-border/50 shadow-sm"
         >
           <CardContent className="p-4">
             <Skeleton className="h-4 w-16" />
@@ -109,9 +110,11 @@ function ComparisonSkeleton() {
 function CategoryColumn({
   label,
   row,
+  className,
 }: {
   label: string;
   row: CutoffRow | undefined;
+  className?: string;
 }) {
   const cutoffDate = row?.cutoff_date ?? null;
   const isCurrent = row?.cutoff_kind === "current" || !cutoffDate;
@@ -119,7 +122,7 @@ function CategoryColumn({
   const distance = formatDistance(days);
 
   return (
-    <Card className="rounded-[18px] border border-border/50 shadow-sm">
+    <Card className={`rounded-[18px] border border-border/50 shadow-sm ${className ?? ""}`}>
       <CardContent className="flex flex-col items-center p-4 text-center">
         <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           {label}
@@ -150,9 +153,26 @@ function CategoryColumn({
 
 // ─── Page Component ──────────────────────────────────────────
 
+const countryToBucket: Record<string, CountryBucket> = {
+  India: "india",
+  China: "china",
+  Mexico: "all_other",
+  Philippines: "all_other",
+  "All Other": "all_other",
+};
+
 export default function ComparePage() {
-  const [country, setCountry] = useState<CountryBucket>("india");
+  const { defaultCountry } = usePreferencesStore();
+  const initBucket = countryToBucket[defaultCountry] ?? "india";
+
+  const [country, setCountry] = useState<CountryBucket>(initBucket);
   const [chartType, setChartType] = useState<ChartType>("final_action");
+
+  // Re-sync when store changes
+  useEffect(() => {
+    const bucket = countryToBucket[defaultCountry] ?? "india";
+    setCountry(bucket);
+  }, [defaultCountry]);
 
   const {
     bulletin,
@@ -217,12 +237,15 @@ export default function ComparePage() {
               <button
                 key={opt.value}
                 onClick={() => setCountry(opt.value)}
-                className={`rounded-full px-3.5 py-1.5 text-xs font-medium transition-all ${
+                className={`flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-medium transition-all ${
                   country === opt.value
                     ? "bg-[#2F6BFF] text-white shadow-sm"
                     : "bg-muted text-muted-foreground hover:bg-muted/80"
                 }`}
               >
+                <span className="text-sm leading-none select-none" aria-hidden="true">
+                  {opt.flag || <Globe className="h-3.5 w-3.5" />}
+                </span>
                 {opt.label}
               </button>
             ))}
@@ -253,7 +276,7 @@ export default function ComparePage() {
         {/* Error */}
         {error && (
           <motion.div variants={item}>
-            <Card className="rounded-[18px] border border-red-200 bg-red-50 shadow-sm dark:border-red-900 dark:bg-red-950">
+            <Card className="riso-doc-coral rounded-[18px] border border-red-200 bg-red-50 shadow-sm dark:border-red-900 dark:bg-red-950">
               <CardContent className="p-4 text-center">
                 <p className="text-sm text-red-600 dark:text-red-400">
                   {error}
@@ -269,8 +292,8 @@ export default function ComparePage() {
             <ComparisonSkeleton />
           ) : (
             <div className="grid grid-cols-2 gap-3">
-              <CategoryColumn label="EB2" row={eb2Row} />
-              <CategoryColumn label="EB3" row={eb3Row} />
+              <CategoryColumn label="EB2" row={eb2Row} className="riso-doc-teal" />
+              <CategoryColumn label="EB3" row={eb3Row} className="riso-doc-coral" />
             </div>
           )}
         </motion.div>
@@ -286,7 +309,7 @@ export default function ComparePage() {
 
         {/* Recommendation Note */}
         <motion.div variants={item}>
-          <Card className="rounded-[18px] border border-[#2F6BFF]/15 bg-[#2F6BFF]/[0.03] shadow-sm dark:border-[#5B8CFF]/15 dark:bg-[#5B8CFF]/[0.03]">
+          <Card className="riso-doc-gold-accent rounded-[18px] border border-[#2F6BFF]/15 bg-[#2F6BFF]/[0.03] shadow-sm dark:border-[#5B8CFF]/15 dark:bg-[#5B8CFF]/[0.03]">
             <CardContent className="p-4">
               <div className="flex items-start gap-2.5">
                 <Scale className="mt-0.5 h-4 w-4 shrink-0 text-[#2F6BFF] dark:text-[#5B8CFF]" />
@@ -320,7 +343,7 @@ export default function ComparePage() {
 
         {/* Info Note */}
         <motion.div variants={item}>
-          <div className="flex items-start gap-2 rounded-xl bg-muted/60 px-4 py-3">
+          <div className="riso-doc-gold-accent flex items-start gap-2 rounded-xl bg-muted/60 px-4 py-3">
             <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" />
             <p className="text-[11px] leading-relaxed text-muted-foreground">
               &quot;Final Action Dates&quot; determine when USCIS can make a
@@ -333,7 +356,7 @@ export default function ComparePage() {
 
         {/* Disclaimer */}
         <motion.div variants={item}>
-          <p className="mt-2 rounded-xl bg-muted/60 px-4 py-3 text-[11px] leading-relaxed text-muted-foreground">
+          <p className="riso-doc-gold-accent mt-2 rounded-xl bg-muted/60 px-4 py-3 text-[11px] leading-relaxed text-muted-foreground">
             {GLOBAL_DISCLAIMER.text}
           </p>
         </motion.div>

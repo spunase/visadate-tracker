@@ -58,7 +58,8 @@ function CompassIllustration() {
         cx="40"
         cy="40"
         r="36"
-        stroke="#2F6BFF"
+        stroke="currentColor"
+        className="text-calm-blue"
         strokeWidth="1.5"
         strokeDasharray="6 4"
         opacity="0.25"
@@ -77,19 +78,20 @@ function CompassIllustration() {
         cx="40"
         cy="40"
         r="28"
-        stroke="#2F6BFF"
+        stroke="currentColor"
+        className="text-calm-blue"
         strokeWidth="2"
         opacity="0.4"
       />
 
       {/* Cardinal markers */}
-      <line x1="40" y1="14" x2="40" y2="20" stroke="#2F6BFF" strokeWidth="2" strokeLinecap="round" opacity="0.6" />
+      <line x1="40" y1="14" x2="40" y2="20" stroke="currentColor" className="text-calm-blue" strokeWidth="2" strokeLinecap="round" opacity="0.6" />
       <line x1="40" y1="60" x2="40" y2="66" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round" opacity="0.4" />
       <line x1="14" y1="40" x2="20" y2="40" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round" opacity="0.4" />
       <line x1="60" y1="40" x2="66" y2="40" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round" opacity="0.4" />
 
       {/* Compass needle — North (blue) */}
-      <polygon points="40,18 36,40 44,40" fill="#2F6BFF" opacity="0.85" />
+      <polygon points="40,18 36,40 44,40" fill="currentColor" className="text-calm-blue" opacity="0.85" />
       {/* Compass needle — South (muted) */}
       <polygon points="40,62 36,40 44,40" fill="#cbd5e1" className="dark:fill-slate-600" opacity="0.6" />
 
@@ -98,7 +100,8 @@ function CompassIllustration() {
         cx="40"
         cy="40"
         r="3"
-        fill="#2F6BFF"
+        fill="currentColor"
+        className="text-calm-blue"
         style={{ animation: "empty-beacon 2.5s ease-in-out infinite" }}
       />
     </svg>
@@ -147,8 +150,7 @@ export function EmptyState({
         <button
           type="button"
           onClick={action.onClick}
-          className="mt-1 inline-flex items-center gap-1.5 rounded-xl px-5 py-2.5 text-sm font-medium text-white transition-all hover:brightness-110 focus-visible:ring-3 focus-visible:ring-[#2F6BFF]/40 focus-visible:outline-none active:translate-y-px"
-          style={{ backgroundColor: "#2F6BFF" }}
+          className="mt-1 inline-flex items-center gap-1.5 rounded-xl bg-calm-blue px-5 py-2.5 text-sm font-medium text-white transition-all hover:brightness-110 focus-visible:ring-3 focus-visible:ring-calm-blue/40 focus-visible:outline-none active:translate-y-px"
         >
           {action.label}
         </button>

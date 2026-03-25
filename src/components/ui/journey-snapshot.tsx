@@ -13,11 +13,12 @@ import {
   MapPin,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useThemeStore } from "@/stores/theme-store";
 
 // ─── Types ─────────────────────────────────────────────────────
 
 export interface JourneySnapshotProps {
-  category: "EB1" | "EB2" | "EB3";
+  category: string;
   country: string;
   priorityDate: string;
   currentFinalAction: string;
@@ -67,6 +68,45 @@ const directionConfig = {
   },
 } as const;
 
+const risoCategoryGradients: Record<string, string> = {
+  EB1: "from-[#4AADA3]/20 via-[#F4EDE1] to-[#F4EDE1]",
+  EB2: "from-[#CF7B73]/20 via-[#F4EDE1] to-[#F4EDE1]",
+  EB3: "from-[#DEAD45]/20 via-[#F4EDE1] to-[#F4EDE1]",
+};
+
+const risoDirectionConfig = {
+  forward: {
+    headline: "Moving Forward!",
+    subtext: "Progress This Month",
+    color: "text-[#2D7A72]",
+    glowColor: "",
+    bgAccent: "bg-[#4AADA3]/15",
+    borderAccent: "border-[#4AADA3]/40",
+    icon: TrendingUp,
+    dotPulse: "bg-[#4AADA3]",
+  },
+  backward: {
+    headline: "Retrogression Alert",
+    subtext: "Dates Moved Back",
+    color: "text-[#C43C3C]",
+    glowColor: "",
+    bgAccent: "bg-[#C43C3C]/15",
+    borderAccent: "border-[#C43C3C]/40",
+    icon: TrendingDown,
+    dotPulse: "bg-[#C43C3C]",
+  },
+  none: {
+    headline: "Holding Steady",
+    subtext: "No Movement This Month",
+    color: "text-[#8A847E]",
+    glowColor: "",
+    bgAccent: "bg-[#D1CABD]/30",
+    borderAccent: "border-[#D1CABD]/50",
+    icon: Minus,
+    dotPulse: "bg-[#B8B2A8]",
+  },
+} as const;
+
 // ─── Background Pattern ────────────────────────────────────────
 
 function GridPattern() {
@@ -104,6 +144,8 @@ interface ShareButtonProps {
   movement: string;
   direction: "forward" | "backward" | "none";
   bulletinMonth: string;
+  isRiso: boolean;
+  btnBg: string;
 }
 
 function ShareButton({
@@ -113,12 +155,15 @@ function ShareButton({
   movement,
   direction,
   bulletinMonth,
+  isRiso,
+  btnBg,
 }: ShareButtonProps) {
   const [shareState, setShareState] = useState<"idle" | "copied" | "shared">(
     "idle",
   );
 
-  const shareText = `${directionConfig[direction].headline} ${category} ${country}: ${movement} (${bulletinMonth} Visa Bulletin) - tracked on VisaDateTracker`;
+  const headlineConfig = isRiso ? risoDirectionConfig[direction] : directionConfig[direction];
+  const shareText = `${headlineConfig.headline} ${category} ${country}: ${movement} (${bulletinMonth} Visa Bulletin) - tracked on VisaDateTracker`;
 
   const handleShare = useCallback(async () => {
     // Try Web Share API first
@@ -179,8 +224,9 @@ function ShareButton({
       onClick={handleShare}
       className={cn(
         "mt-4 flex w-full items-center justify-center gap-2 rounded-xl px-5 py-3",
-        "bg-white/10 font-semibold text-white backdrop-blur-sm",
-        "border border-white/10 transition-colors hover:bg-white/15",
+        btnBg,
+        "font-semibold backdrop-blur-sm",
+        "border transition-colors",
         "cursor-pointer select-none",
       )}
       whileHover={{ scale: 1.02 }}
@@ -203,7 +249,7 @@ function ShareButton({
         {shareState === "copied" && (
           <motion.span
             key="copied"
-            className="flex items-center gap-2 text-[#34D399]"
+            className={cn("flex items-center gap-2", isRiso ? "text-[#4AADA3]" : "text-[#34D399]")}
             initial={{ opacity: 0, y: 4 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
@@ -215,7 +261,7 @@ function ShareButton({
         {shareState === "shared" && (
           <motion.span
             key="shared"
-            className="flex items-center gap-2 text-[#34D399]"
+            className={cn("flex items-center gap-2", isRiso ? "text-[#4AADA3]" : "text-[#34D399]")}
             initial={{ opacity: 0, y: 4 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
@@ -241,8 +287,19 @@ export function JourneySnapshot({
   bulletinMonth,
 }: JourneySnapshotProps) {
   const cardRef = useRef<HTMLDivElement>(null);
-  const config = directionConfig[direction];
+  const isRiso = useThemeStore((s) => s.theme) === "risograph";
+  const config = isRiso ? risoDirectionConfig[direction] : directionConfig[direction];
+  const gradients = isRiso ? risoCategoryGradients : categoryGradients;
   const DirectionIcon = config.icon;
+
+  const textPrimary = isRiso ? "text-[#2D2B2A]" : "text-white";
+  const textSecondary = isRiso ? "text-[#8A847E]" : "text-white/50";
+  const textTertiary = isRiso ? "text-[#B8B2A8]" : "text-white/40";
+  const textMuted = isRiso ? "text-[#6B6560]" : "text-white/60";
+  const textSubtle = isRiso ? "text-[#8A847E]" : "text-white/70";
+  const bgOverlay = isRiso ? "bg-[#D1CABD]/20 border-[#D1CABD]/30" : "bg-white/[0.05] border-white/[0.06]";
+  const btnBg = isRiso ? "bg-[#2D2B2A]/10 border-[#D1CABD]/30 text-[#2D2B2A]" : "bg-white/10 border-white/10 text-white";
+  const watermarkColor = isRiso ? "text-[#D1CABD]" : "text-white/20";
 
   return (
     <div className="flex flex-col items-center">
@@ -252,8 +309,8 @@ export function JourneySnapshot({
         className={cn(
           "relative w-[360px] overflow-hidden rounded-2xl",
           "bg-gradient-to-br",
-          categoryGradients[category] ?? categoryGradients.EB2,
-          "border border-white/[0.08]",
+          gradients[category] ?? gradients.EB2,
+          isRiso ? "border-2 border-[#D1CABD]" : "border border-white/[0.08]",
           config.glowColor,
         )}
         style={{ aspectRatio: "4 / 5" }}
@@ -262,11 +319,11 @@ export function JourneySnapshot({
         transition={{ duration: 0.5, ease: "easeOut" }}
       >
         {/* Background texture */}
-        <GridPattern />
+        {!isRiso && <GridPattern />}
 
         {/* Radial glow accent */}
         <div
-          className="pointer-events-none absolute -top-24 right-[-60px] h-64 w-64 rounded-full opacity-20 blur-3xl"
+          className={cn("pointer-events-none absolute -top-24 right-[-60px] h-64 w-64 rounded-full opacity-20 blur-3xl", isRiso && "hidden")}
           style={{
             background:
               direction === "forward"
@@ -282,7 +339,7 @@ export function JourneySnapshot({
         <div className="relative flex h-full flex-col justify-between p-7">
           {/* Top section: Bulletin month */}
           <div className="flex items-center justify-between">
-            <span className="flex items-center gap-1.5 text-xs font-medium tracking-wider text-white/50 uppercase">
+            <span className={cn("flex items-center gap-1.5 text-xs font-medium tracking-wider uppercase", textSecondary)}>
               <Calendar className="size-3" />
               {bulletinMonth} Bulletin
             </span>
@@ -325,7 +382,7 @@ export function JourneySnapshot({
               >
                 {config.headline}
               </h2>
-              <p className="mt-0.5 text-xs text-white/40">{config.subtext}</p>
+              <p className={cn("mt-0.5 text-xs", textTertiary)}>{config.subtext}</p>
             </motion.div>
 
             {/* Category + Country */}
@@ -335,10 +392,10 @@ export function JourneySnapshot({
               transition={{ delay: 0.3 }}
               className="space-y-1"
             >
-              <h3 className="text-4xl font-extrabold tracking-tight text-white">
+              <h3 className={cn("text-4xl font-extrabold tracking-tight", textPrimary)}>
                 {category}
               </h3>
-              <p className="flex items-center justify-center gap-1 text-sm font-medium text-white/60">
+              <p className={cn("flex items-center justify-center gap-1 text-sm font-medium", textMuted)}>
                 <MapPin className="size-3" />
                 {country}
               </p>
@@ -349,12 +406,12 @@ export function JourneySnapshot({
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
-              className="rounded-xl border border-white/[0.06] bg-white/[0.05] px-6 py-3 backdrop-blur-sm"
+              className={cn("rounded-xl border px-6 py-3 backdrop-blur-sm", bgOverlay)}
             >
-              <p className="text-[10px] font-semibold tracking-widest text-white/40 uppercase">
+              <p className={cn("text-[10px] font-semibold tracking-widest uppercase", textTertiary)}>
                 Priority Date
               </p>
-              <p className="mt-1 text-2xl font-bold tabular-nums text-white">
+              <p className={cn("mt-1 text-2xl font-bold tabular-nums", textPrimary)}>
                 {priorityDate}
               </p>
             </motion.div>
@@ -382,10 +439,10 @@ export function JourneySnapshot({
               animate={{ opacity: 1 }}
               transition={{ delay: 0.6 }}
             >
-              <p className="text-[10px] tracking-wider text-white/35 uppercase">
+              <p className={cn("text-[10px] tracking-wider uppercase", textTertiary)}>
                 Current Final Action Date
               </p>
-              <p className="mt-0.5 text-sm font-semibold text-white/70">
+              <p className={cn("mt-0.5 text-sm font-semibold", textSubtle)}>
                 {currentFinalAction}
               </p>
             </motion.div>
@@ -393,7 +450,7 @@ export function JourneySnapshot({
 
           {/* Bottom: Watermark */}
           <div className="flex items-center justify-center">
-            <span className="text-[11px] font-medium tracking-[0.2em] text-white/20 uppercase">
+            <span className={cn("text-[11px] font-medium tracking-[0.2em] uppercase", watermarkColor)}>
               VisaDateTracker
             </span>
           </div>
@@ -408,6 +465,8 @@ export function JourneySnapshot({
         movement={movement}
         direction={direction}
         bulletinMonth={bulletinMonth}
+        isRiso={isRiso}
+        btnBg={btnBg}
       />
     </div>
   );
