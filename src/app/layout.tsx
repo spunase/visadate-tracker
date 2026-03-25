@@ -6,6 +6,7 @@ import { Providers } from "@/components/layout/providers";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { ThemeToggle as DesignThemeToggle } from "@/components/ui/theme-toggle";
 import { SettingsLink } from "@/components/layout/settings-link";
+import { ErrorBoundary } from "@/components/error-boundary";
 
 const inter = Inter({
   variable: "--font-sans",
@@ -88,7 +89,9 @@ export default function RootLayout({
             <SettingsLink />
             <ThemeToggle />
           </header>
-          <main id="main-content" className="flex-1 pb-20" tabIndex={-1}>{children}</main>
+          <ErrorBoundary>
+            <main id="main-content" className="flex-1 pb-20" tabIndex={-1}>{children}</main>
+          </ErrorBoundary>
           <BottomNav />
         </Providers>
       </body>

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
+import { requireAdminAuth } from "@/lib/admin-auth";
 import type { VisaBulletin, VisaCutoffRow } from "@/types/database";
 
 // ---------------------------------------------------------------------------
@@ -40,7 +41,10 @@ const mockBulletins: (VisaBulletin & { cutoff_count: number })[] = [
 // GET /api/admin/bulletins
 // ---------------------------------------------------------------------------
 
-export async function GET() {
+export async function GET(request: Request) {
+  const authError = requireAdminAuth(request);
+  if (authError) return authError;
+
   if (supabase) {
     try {
       // Fetch all bulletins ordered by month descending
@@ -50,10 +54,7 @@ export async function GET() {
         .order("bulletin_month", { ascending: false });
 
       if (bulletinError || !bulletins) {
-        console.warn(
-          "Supabase bulletin query failed, using mock fallback:",
-          bulletinError?.message
-        );
+        // Fall through to mock data
       } else {
         // For each bulletin, count cutoff rows
         const bulletinIds = bulletins.map((b: VisaBulletin) => b.id);
@@ -63,10 +64,7 @@ export async function GET() {
           .in("bulletin_id", bulletinIds);
 
         if (cutoffError) {
-          console.warn(
-            "Supabase cutoff count query failed:",
-            cutoffError.message
-          );
+          // Non-fatal: proceed without cutoff counts
         }
 
         // Count cutoff rows per bulletin
@@ -90,8 +88,8 @@ export async function GET() {
           },
         });
       }
-    } catch (err) {
-      console.error("Supabase error in /api/admin/bulletins:", err);
+    } catch {
+      // Fall through to mock data
     }
   }
 

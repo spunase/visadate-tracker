@@ -19,6 +19,7 @@ import {
   fetchBulletinForMonth,
 } from "@/lib/parser/fetch-bulletin";
 import { saveParsedBulletin } from "@/lib/parser/save-bulletin";
+import { requireAdminAuth } from "@/lib/admin-auth";
 
 // --- Request schemas (discriminated union) ---
 
@@ -53,6 +54,9 @@ const IngestRequestSchema = z.union([
 ]);
 
 export async function POST(request: Request) {
+  const authError = requireAdminAuth(request);
+  if (authError) return authError;
+
   try {
     const body = await request.json();
     const validated = IngestRequestSchema.parse(body);
@@ -140,7 +144,6 @@ export async function POST(request: Request) {
     }
 
     if (error instanceof Error) {
-      // Distinguish parse errors from DB errors
       const isDbError =
         error.message.includes("Supabase") ||
         error.message.includes("Failed to insert") ||
@@ -150,7 +153,7 @@ export async function POST(request: Request) {
         {
           success: false,
           error: isDbError ? "Database error" : "Parse failed",
-          message: error.message,
+          ...(process.env.NODE_ENV === "development" && { message: error.message }),
         },
         { status: isDbError ? 503 : 422 }
       );

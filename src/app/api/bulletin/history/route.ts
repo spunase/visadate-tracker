@@ -203,22 +203,26 @@ export async function GET(request: NextRequest) {
           };
         });
 
-        return NextResponse.json({
-          filters: { category, country, chart_type: chartType },
-          months: history.length,
-          history,
-          _meta: {
-            source: "supabase",
-            generatedAt: new Date().toISOString(),
+        return NextResponse.json(
+          {
+            filters: { category, country, chart_type: chartType },
+            months: history.length,
+            history,
+            _meta: {
+              source: "supabase",
+              generatedAt: new Date().toISOString(),
+            },
           },
-        });
+          {
+            headers: {
+              "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
+            },
+          },
+        );
       }
 
-      if (error) {
-        console.warn("Supabase history query failed, using mock fallback:", error.message);
-      }
-    } catch (err) {
-      console.error("Supabase error in /api/bulletin/history:", err);
+    } catch {
+      // Fall through to mock data
     }
   }
 
@@ -232,13 +236,20 @@ export async function GET(request: NextRequest) {
     chart_type: chartType,
   }));
 
-  return NextResponse.json({
-    filters: { category, country, chart_type: chartType },
-    months: rows.length,
-    history: rows,
-    _meta: {
-      source: "mock",
-      generatedAt: new Date().toISOString(),
+  return NextResponse.json(
+    {
+      filters: { category, country, chart_type: chartType },
+      months: rows.length,
+      history: rows,
+      _meta: {
+        source: "mock",
+        generatedAt: new Date().toISOString(),
+      },
     },
-  });
+    {
+      headers: {
+        "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
+      },
+    },
+  );
 }

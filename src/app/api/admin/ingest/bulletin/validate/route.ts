@@ -12,6 +12,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { supabaseAdmin } from "@/lib/supabase-admin";
+import { requireAdminAuth } from "@/lib/admin-auth";
 import type { ValidationStatus } from "@/types/database";
 
 const ValidateRequestSchema = z.object({
@@ -28,6 +29,9 @@ const VALID_TRANSITIONS: Record<ValidationStatus, ValidationStatus[]> = {
 };
 
 export async function POST(request: Request) {
+  const authError = requireAdminAuth(request);
+  if (authError) return authError;
+
   try {
     if (!supabaseAdmin) {
       return NextResponse.json(
@@ -55,7 +59,7 @@ export async function POST(request: Request) {
         {
           success: false,
           error: "Database error",
-          message: lookupError.message,
+          ...(process.env.NODE_ENV === "development" && { message: lookupError.message }),
         },
         { status: 503 }
       );
@@ -109,7 +113,7 @@ export async function POST(request: Request) {
         {
           success: false,
           error: "Database error",
-          message: updateError.message,
+          ...(process.env.NODE_ENV === "development" && { message: updateError.message }),
         },
         { status: 503 }
       );

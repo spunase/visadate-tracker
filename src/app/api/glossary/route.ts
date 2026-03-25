@@ -116,12 +116,19 @@ const GLOSSARY: GlossaryTerm[] = [
 // ---------------------------------------------------------------------------
 
 export async function GET() {
-  return NextResponse.json({
-    terms: GLOSSARY,
-    count: GLOSSARY.length,
-    _meta: {
-      source: "static",
-      generatedAt: new Date().toISOString(),
+  return NextResponse.json(
+    {
+      terms: GLOSSARY,
+      count: GLOSSARY.length,
+      _meta: {
+        source: "static",
+        generatedAt: new Date().toISOString(),
+      },
     },
-  });
+    {
+      headers: {
+        "Cache-Control": "public, s-maxage=86400, stale-while-revalidate=86400",
+      },
+    },
+  );
 }

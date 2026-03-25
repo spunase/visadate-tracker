@@ -80,6 +80,10 @@ const mockCutoffRows: VisaCutoffRow[] = [
 // ---------------------------------------------------------------------------
 
 export async function GET() {
+  const cacheHeaders = {
+    "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
+  };
+
   // --- Try Supabase first ---
   if (supabase) {
     try {
@@ -94,7 +98,6 @@ export async function GET() {
 
       if (bulletinError || !bulletin) {
         // No published bulletin in DB — fall through to mock
-        console.warn("Supabase bulletin query returned no data, using mock fallback:", bulletinError?.message);
       } else {
         // Fetch cutoff rows for this bulletin
         const { data: cutoffRows, error: cutoffError } = await supabase
@@ -102,31 +105,35 @@ export async function GET() {
           .select("*")
           .eq("bulletin_id", bulletin.id);
 
-        if (cutoffError) {
-          console.warn("Supabase cutoff rows query failed, using mock fallback:", cutoffError.message);
-        } else {
-          return NextResponse.json({
-            bulletin: bulletin as VisaBulletin,
-            cutoffRows: (cutoffRows ?? []) as VisaCutoffRow[],
-            _meta: {
-              source: "supabase",
-              generatedAt: new Date().toISOString(),
+        if (!cutoffError) {
+          return NextResponse.json(
+            {
+              bulletin: bulletin as VisaBulletin,
+              cutoffRows: (cutoffRows ?? []) as VisaCutoffRow[],
+              _meta: {
+                source: "supabase",
+                generatedAt: new Date().toISOString(),
+              },
             },
-          });
+            { headers: cacheHeaders },
+          );
         }
       }
-    } catch (err) {
-      console.error("Supabase error in /api/bulletin/current:", err);
+    } catch {
+      // Fall through to mock data
     }
   }
 
   // --- Fallback to mock data ---
-  return NextResponse.json({
-    bulletin: mockBulletin,
-    cutoffRows: mockCutoffRows,
-    _meta: {
-      source: "mock",
-      generatedAt: new Date().toISOString(),
+  return NextResponse.json(
+    {
+      bulletin: mockBulletin,
+      cutoffRows: mockCutoffRows,
+      _meta: {
+        source: "mock",
+        generatedAt: new Date().toISOString(),
+      },
     },
-  });
+    { headers: cacheHeaders },
+  );
 }
