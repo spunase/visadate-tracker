@@ -1,12 +1,22 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Inter, DM_Serif_Text } from "next/font/google";
 import "./globals.css";
 import { BottomNav } from "@/components/layout/bottom-nav";
 import { Providers } from "@/components/layout/providers";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
+import { ThemeToggle as DesignThemeToggle } from "@/components/ui/theme-toggle";
+import { SettingsLink } from "@/components/layout/settings-link";
+import { ErrorBoundary } from "@/components/error-boundary";
 
 const inter = Inter({
   variable: "--font-sans",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+const dmSerif = DM_Serif_Text({
+  variable: "--font-dm-serif",
+  weight: "400",
   subsets: ["latin"],
   display: "swap",
 });
@@ -64,8 +74,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} h-full antialiased`} suppressHydrationWarning>
-      <body className="min-h-full flex flex-col bg-[#F7F8FA] text-foreground dark:bg-[#0B1020]">
+    <html lang="en" className={`${inter.variable} ${dmSerif.variable} h-full antialiased`} suppressHydrationWarning>
+      <body className="min-h-full flex flex-col bg-background text-foreground">
         <Providers>
           {/* Skip to content link — visible on focus for keyboard users */}
           <a
@@ -74,10 +84,14 @@ export default function RootLayout({
           >
             Skip to main content
           </a>
-          <header className="fixed top-0 right-0 z-50 p-3">
+          <header className="fixed top-0 right-0 z-50 flex items-center gap-1 p-3">
+            <DesignThemeToggle />
+            <SettingsLink />
             <ThemeToggle />
           </header>
-          <main id="main-content" className="flex-1 pb-20" tabIndex={-1}>{children}</main>
+          <ErrorBoundary>
+            <main id="main-content" className="flex-1 pb-20" tabIndex={-1}>{children}</main>
+          </ErrorBoundary>
           <BottomNav />
         </Providers>
       </body>

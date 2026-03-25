@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
+import { requireAdminAuth } from "@/lib/admin-auth";
 import type { PolicyUpdate } from "@/types/database";
 
 // ---------------------------------------------------------------------------
@@ -58,7 +59,10 @@ const mockPolicyUpdates: PolicyUpdate[] = [
 // GET /api/admin/freshness
 // ---------------------------------------------------------------------------
 
-export async function GET() {
+export async function GET(request: Request) {
+  const authError = requireAdminAuth(request);
+  if (authError) return authError;
+
   if (supabase) {
     try {
       const { data: updates, error } = await supabase
@@ -67,10 +71,7 @@ export async function GET() {
         .order("freshness_expires_at", { ascending: true });
 
       if (error || !updates) {
-        console.warn(
-          "Supabase policy_updates query failed, using mock fallback:",
-          error?.message
-        );
+        // Fall through to mock data
       } else {
         return NextResponse.json({
           updates: updates as PolicyUpdate[],
@@ -80,8 +81,8 @@ export async function GET() {
           },
         });
       }
-    } catch (err) {
-      console.error("Supabase error in /api/admin/freshness:", err);
+    } catch {
+      // Fall through to mock data
     }
   }
 

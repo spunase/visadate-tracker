@@ -58,11 +58,23 @@ function BarTooltip({ active, payload }: CustomTooltipProps) {
     d.direction === "unchanged"
       ? "No movement"
       : `${sign}${Math.abs(d.days)} day${Math.abs(d.days) !== 1 ? "s" : ""}`;
+  const isRetrogression = d.direction === "backward";
 
   return (
-    <div className="rounded-lg border border-border/50 bg-background px-3 py-1.5 shadow-md">
+    <div
+      className={`max-w-[200px] rounded-lg border px-3 py-1.5 shadow-md ${
+        isRetrogression
+          ? "border-rose-200/60 bg-gradient-to-br from-rose-50 to-rose-100/60 dark:border-rose-800/40 dark:from-rose-950/80 dark:to-rose-900/40"
+          : "border-border/50 bg-background"
+      }`}
+    >
       <p className="text-[11px] font-semibold text-foreground">{d.month}</p>
       <p className="text-[11px] text-muted-foreground">{label}</p>
+      {isRetrogression && (
+        <p className="mt-1 border-t border-rose-200/40 pt-1 text-[10px] leading-relaxed text-muted-foreground dark:border-rose-800/30">
+          Temporary setback — recovery typically follows within 2-4 months.
+        </p>
+      )}
     </div>
   );
 }
@@ -71,6 +83,17 @@ function BarTooltip({ active, payload }: CustomTooltipProps) {
 
 export function MovementBarChart({ data }: MovementBarChartProps) {
   if (!data.length) return null;
+
+  // Detect "current" categories — all zero movement
+  const allZero = data.every((d) => d.movementDays === 0);
+  if (allZero) {
+    return (
+      <p className="py-6 text-center text-xs text-muted-foreground">
+        No monthly movement to display — this category has been current
+        or unchanged throughout the period.
+      </p>
+    );
+  }
 
   const chartData = data.map((d) => ({
     month: formatMonthAbbr(d.bulletinMonth),

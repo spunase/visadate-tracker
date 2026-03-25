@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { ChevronDown, ChevronUp, Calendar, TrendingUp } from "lucide-react";
+import { ChevronDown, ChevronUp, Calendar, TrendingUp, Info } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -86,6 +86,7 @@ function formatBulletinMonth(ym: string): string {
 // ---------------------------------------------------------------------------
 
 export function ResultCard({ evaluation, scenario, bulletinMonth }: ResultCardProps) {
+  const [showDetails, setShowDetails] = useState(false);
   const [showAudit, setShowAudit] = useState(false);
 
   const { eligibility, movement, band, explanation } = evaluation;
@@ -99,10 +100,17 @@ export function ResultCard({ evaluation, scenario, bulletinMonth }: ResultCardPr
   const faMovement = movementToChipProps(movement.finalAction);
   const dfMovement = movementToChipProps(movement.datesForFiling);
 
+  // Build a user-friendly primary verdict
+  const primaryVerdict = primaryStatus === "current"
+    ? `Your ${scenario.category} priority date is current.`
+    : primaryStatus === "unavailable"
+      ? `${scenario.category} is currently unavailable for ${scenario.country}.`
+      : `Your ${scenario.category} priority date is not yet current.`;
+
   return (
-    <Card className="rounded-[18px] border border-border/50 shadow-sm overflow-hidden">
+    <Card className="riso-doc-teal rounded-[18px] border border-border/50 shadow-sm overflow-hidden">
       <CardContent className="p-0">
-        {/* ── Header ── */}
+        {/* ── Primary Status Header ── */}
         <div className="flex flex-col gap-3 border-b border-border/30 bg-muted/20 p-5">
           <div className="flex items-center justify-between">
             <StatusBadge status={primaryStatus} />
@@ -123,6 +131,9 @@ export function ResultCard({ evaluation, scenario, bulletinMonth }: ResultCardPr
               {scenario.path === "AOS" ? "Adjustment of Status" : "Consular Processing"}
             </Badge>
           </div>
+          <p className="text-sm font-medium text-foreground">
+            {primaryVerdict}
+          </p>
           <p className="text-xs text-muted-foreground">
             Priority Date:{" "}
             {new Date(scenario.priorityDate + "T00:00:00").toLocaleDateString("en-US", {
@@ -130,67 +141,90 @@ export function ResultCard({ evaluation, scenario, bulletinMonth }: ResultCardPr
               month: "long",
               day: "numeric",
             })}
+            {" · "}Final Action Cutoff: {explanation.compared.finalActionCutoff}
           </p>
         </div>
 
-        {/* ── Final Action Section ── */}
+        {/* ── Final Action Summary (always visible) ── */}
         <div className="border-b border-border/30 p-5">
-          <div className="mb-3 flex items-center gap-2">
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-            <h4 className="text-sm font-semibold text-foreground">Final Action</h4>
-          </div>
-          <div className="flex items-center justify-between mb-2">
-            <StatusBadge status={faElig.state as VisaStatus} compact />
-            <span className="text-xs font-medium text-muted-foreground">
-              Cutoff: {explanation.compared.finalActionCutoff}
-            </span>
-          </div>
           <p className="text-xs text-muted-foreground leading-relaxed mb-3">
             {faElig.explanation}
           </p>
           <DistanceBar state={faElig.state} distanceDays={faElig.distanceDays} />
-        </div>
-
-        {/* ── Dates for Filing Section ── */}
-        <div className="border-b border-border/30 p-5">
-          <div className="mb-3 flex items-center gap-2">
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-            <h4 className="text-sm font-semibold text-foreground">Dates for Filing</h4>
-          </div>
-          <div className="flex items-center justify-between mb-2">
-            <StatusBadge status={dfElig.state as VisaStatus} compact />
-            <span className="text-xs font-medium text-muted-foreground">
-              Cutoff: {explanation.compared.datesForFilingCutoff}
-            </span>
-          </div>
-          <p className="text-xs text-muted-foreground leading-relaxed mb-3">
-            {dfElig.explanation}
-          </p>
-          <DistanceBar state={dfElig.state} distanceDays={dfElig.distanceDays} />
-        </div>
-
-        {/* ── Movement Section ── */}
-        <div className="border-b border-border/30 p-5">
-          <div className="mb-3 flex items-center gap-2">
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            <h4 className="text-sm font-semibold text-foreground">Month-over-Month Movement</h4>
-          </div>
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-muted-foreground">Final Action</span>
+          {movement.finalAction && (
+            <div className="flex items-center justify-between mt-3">
+              <span className="text-xs text-muted-foreground">Movement this month</span>
               <MovementChip label={faMovement.label} direction={faMovement.direction} />
             </div>
-            {movement.finalAction && (
-              <p className="text-[11px] text-muted-foreground">{movement.finalAction.summary}</p>
+          )}
+        </div>
+
+        {/* ── Detailed Breakdown (collapsed by default) ── */}
+        <div className="border-b border-border/30">
+          <button
+            onClick={() => setShowDetails(!showDetails)}
+            className="flex w-full items-center justify-between p-5 text-left transition-colors hover:bg-muted/30"
+          >
+            <span className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
+              <Info className="h-3.5 w-3.5" />
+              Dates for Filing &amp; Full Details
+            </span>
+            {showDetails ? (
+              <ChevronUp className="h-4 w-4 text-muted-foreground" />
+            ) : (
+              <ChevronDown className="h-4 w-4 text-muted-foreground" />
             )}
-            <div className="flex items-center justify-between mt-1">
-              <span className="text-xs text-muted-foreground">Dates for Filing</span>
-              <MovementChip label={dfMovement.label} direction={dfMovement.direction} />
-            </div>
-            {movement.datesForFiling && (
-              <p className="text-[11px] text-muted-foreground">{movement.datesForFiling.summary}</p>
-            )}
-          </div>
+          </button>
+          {showDetails && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              {/* Dates for Filing */}
+              <div className="border-t border-border/20 p-5">
+                <div className="mb-3 flex items-center gap-2">
+                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                  <h4 className="text-sm font-semibold text-foreground">Dates for Filing</h4>
+                </div>
+                <div className="flex items-center justify-between mb-2">
+                  <StatusBadge status={dfElig.state as VisaStatus} compact />
+                  <span className="text-xs font-medium text-muted-foreground">
+                    Cutoff: {explanation.compared.datesForFilingCutoff}
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground leading-relaxed mb-3">
+                  {dfElig.explanation}
+                </p>
+                <DistanceBar state={dfElig.state} distanceDays={dfElig.distanceDays} />
+              </div>
+
+              {/* Movement */}
+              <div className="border-t border-border/20 p-5">
+                <div className="mb-3 flex items-center gap-2">
+                  <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                  <h4 className="text-sm font-semibold text-foreground">Month-over-Month Movement</h4>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">Final Action</span>
+                    <MovementChip label={faMovement.label} direction={faMovement.direction} />
+                  </div>
+                  {movement.finalAction && (
+                    <p className="text-[11px] text-muted-foreground">{movement.finalAction.summary}</p>
+                  )}
+                  <div className="flex items-center justify-between mt-1">
+                    <span className="text-xs text-muted-foreground">Dates for Filing</span>
+                    <MovementChip label={dfMovement.label} direction={dfMovement.direction} />
+                  </div>
+                  {movement.datesForFiling && (
+                    <p className="text-[11px] text-muted-foreground">{movement.datesForFiling.summary}</p>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          )}
         </div>
 
         {/* ── Explainability Section (collapsible) ── */}

@@ -1,25 +1,38 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { supabaseAdmin } from "@/lib/supabase-admin";
+import { requireAdminAuth } from "@/lib/admin-auth";
 
 // ---------------------------------------------------------------------------
 // POST /api/admin/toggle-content
 // Body: { id: string, is_active: boolean }
 // ---------------------------------------------------------------------------
 
+const ToggleContentSchema = z.object({
+  id: z.string().uuid("id must be a valid UUID"),
+  is_active: z.boolean(),
+});
+
 export async function POST(request: Request) {
+  const authError = requireAdminAuth(request);
+  if (authError) return authError;
+
   try {
     const body = await request.json();
-    const { id, is_active } = body;
+    const parsed = ToggleContentSchema.safeParse(body);
 
-    if (!id || typeof is_active !== "boolean") {
+    if (!parsed.success) {
       return NextResponse.json(
         {
           success: false,
-          error: "Missing required fields: id (string), is_active (boolean)",
+          error: "Validation failed",
+          details: parsed.error.issues,
         },
         { status: 400 }
       );
     }
+
+    const { id, is_active } = parsed.data;
 
     if (!supabaseAdmin) {
       // In mock mode, just acknowledge the toggle
@@ -43,12 +56,11 @@ export async function POST(request: Request) {
       .single();
 
     if (error) {
-      console.error("Supabase toggle error:", error.message);
       return NextResponse.json(
         {
           success: false,
           error: "Failed to update policy_updates",
-          message: error.message,
+          ...(process.env.NODE_ENV === "development" && { message: error.message }),
         },
         { status: 500 }
       );
@@ -62,8 +74,7 @@ export async function POST(request: Request) {
         generatedAt: new Date().toISOString(),
       },
     });
-  } catch (err) {
-    console.error("Error in /api/admin/toggle-content:", err);
+  } catch {
     return NextResponse.json(
       { success: false, error: "Internal server error" },
       { status: 500 }

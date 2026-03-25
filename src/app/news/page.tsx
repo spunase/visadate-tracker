@@ -106,7 +106,7 @@ const item = {
 
 function NewsCardSkeleton() {
   return (
-    <Card className="rounded-[18px] border border-border/50 shadow-sm">
+    <Card className="riso-doc-neutral rounded-[18px] border border-border/50 shadow-sm">
       <CardContent className="p-4">
         <div className="flex items-center gap-2">
           <Skeleton className="h-4 w-16 rounded-md" />
@@ -132,6 +132,10 @@ export default function NewsPage() {
   const { news, isLoading, error } = useNews();
 
   const filtered = filterByTab(news, activeTab);
+
+  // Split into top news (3 most recent) and rest
+  const topNews = filtered.slice(0, 3);
+  const recentNews = filtered.slice(3);
 
   return (
     <div className="mx-auto max-w-lg">
@@ -172,87 +176,175 @@ export default function NewsPage() {
           </div>
         )}
 
-        {/* News Cards */}
-        {!isLoading && !error && filtered.length > 0 && (
-          <motion.div
-            key={activeTab}
-            variants={container}
-            initial="hidden"
-            animate="show"
-            className="flex flex-col gap-3"
-          >
-            {filtered.map((article) => (
-              <motion.div key={article.id} variants={item}>
-                <Card className="rounded-[18px] border border-border/50 shadow-sm">
-                  <CardContent className="p-4">
-                    {/* Badges row */}
-                    <div className="flex flex-wrap items-center gap-1.5">
-                      <span
-                        className={`inline-flex rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase ${getTopicColor(article.topic)}`}
-                      >
-                        {topicLabel(article.topic)}
-                      </span>
-                      <SourceBadge
-                        source={article.source_type === "official" ? "official" : "derived"}
-                        label={article.publisher}
-                      />
-                      <FreshnessIndicator
-                        updatedAt={new Date(article.published_at)}
-                        staleAfterDays={14}
-                        freshWithinDays={2}
-                      />
-                    </div>
-
-                    {/* Title */}
-                    <p className="mt-2 text-sm font-semibold leading-snug text-foreground">
-                      {article.title}
-                    </p>
-
-                    {/* Summary */}
-                    {article.summary && (
-                      <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                        {article.summary}
-                      </p>
-                    )}
-
-                    {/* Why it matters */}
-                    {article.why_it_matters && (
-                      <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
-                        <span className="font-medium text-foreground/70">
-                          Why it matters:
-                        </span>{" "}
-                        {article.why_it_matters}
-                      </p>
-                    )}
-
-                    {/* Source link */}
-                    {article.source_url && (
-                      <a
-                        href={article.source_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="mt-2.5 inline-flex items-center gap-1 text-[11px] text-muted-foreground transition-colors hover:text-foreground"
-                      >
-                        <ExternalLink className="h-3 w-3" />
-                        <span>
-                          {(() => {
-                            try {
-                              return new URL(article.source_url).hostname.replace(
-                                /^www\./,
-                                ""
-                              );
-                            } catch {
-                              return article.source_url;
-                            }
-                          })()}
+        {/* Top News */}
+        {!isLoading && !error && topNews.length > 0 && (
+          <div>
+            <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+              Top News
+            </h3>
+            <motion.div
+              key={`top-${activeTab}`}
+              variants={container}
+              initial="hidden"
+              animate="show"
+              className="flex flex-col gap-3"
+            >
+              {topNews.map((article) => (
+                <motion.div key={article.id} variants={item}>
+                  <Card className="riso-doc-teal rounded-[18px] border border-border/50 shadow-sm">
+                    <CardContent className="p-4">
+                      {/* Badges row */}
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <span
+                          className={`inline-flex rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase ${getTopicColor(article.topic)}`}
+                        >
+                          {topicLabel(article.topic)}
                         </span>
-                      </a>
-                    )}
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </motion.div>
+                        <SourceBadge
+                          source={article.source_type === "official" ? "official" : "derived"}
+                          label={article.publisher}
+                        />
+                        <FreshnessIndicator
+                          updatedAt={new Date(article.published_at)}
+                          staleAfterDays={14}
+                          freshWithinDays={2}
+                        />
+                      </div>
+
+                      {/* Title */}
+                      <p className="mt-2 text-sm font-semibold leading-snug text-foreground">
+                        {article.title}
+                      </p>
+
+                      {/* Summary */}
+                      {article.summary && (
+                        <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                          {article.summary}
+                        </p>
+                      )}
+
+                      {/* Why it matters */}
+                      {article.why_it_matters && (
+                        <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
+                          <span className="font-medium text-foreground/70">
+                            Why it matters:
+                          </span>{" "}
+                          {article.why_it_matters}
+                        </p>
+                      )}
+
+                      {/* Source link */}
+                      {article.source_url && (
+                        <a
+                          href={article.source_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="mt-2.5 inline-flex items-center gap-1 text-[11px] text-muted-foreground transition-colors hover:text-foreground"
+                        >
+                          <ExternalLink className="h-3 w-3" />
+                          <span>
+                            {(() => {
+                              try {
+                                return new URL(article.source_url).hostname.replace(
+                                  /^www\./,
+                                  ""
+                                );
+                              } catch {
+                                return article.source_url;
+                              }
+                            })()}
+                          </span>
+                        </a>
+                      )}
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
+            </motion.div>
+          </div>
+        )}
+
+        {/* Divider between top and recent */}
+        {!isLoading && !error && recentNews.length > 0 && (
+          <div className="riso-divider my-2" aria-hidden="true" />
+        )}
+
+        {/* Recent News */}
+        {!isLoading && !error && recentNews.length > 0 && (
+          <div>
+            <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+              Recent News
+            </h3>
+            <motion.div
+              key={`recent-${activeTab}`}
+              variants={container}
+              initial="hidden"
+              animate="show"
+              className="flex flex-col gap-3"
+            >
+              {recentNews.map((article) => (
+                <motion.div key={article.id} variants={item}>
+                  <Card className="riso-doc-coral-accent rounded-[18px] border border-border/50 shadow-sm">
+                    <CardContent className="p-4">
+                      {/* Badges row */}
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <span
+                          className={`inline-flex rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase ${getTopicColor(article.topic)}`}
+                        >
+                          {topicLabel(article.topic)}
+                        </span>
+                        <SourceBadge
+                          source={article.source_type === "official" ? "official" : "derived"}
+                          label={article.publisher}
+                        />
+                        <FreshnessIndicator
+                          updatedAt={new Date(article.published_at)}
+                          staleAfterDays={14}
+                          freshWithinDays={2}
+                        />
+                      </div>
+
+                      {/* Title */}
+                      <p className="mt-2 text-sm font-semibold leading-snug text-foreground">
+                        {article.title}
+                      </p>
+
+                      {/* Summary */}
+                      {article.summary && (
+                        <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                          {article.summary}
+                        </p>
+                      )}
+
+                      {/* Source link */}
+                      {article.source_url && (
+                        <a
+                          href={article.source_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="mt-2.5 inline-flex items-center gap-1 text-[11px] text-muted-foreground transition-colors hover:text-foreground"
+                        >
+                          <ExternalLink className="h-3 w-3" />
+                          <span>
+                            {(() => {
+                              try {
+                                return new URL(article.source_url).hostname.replace(
+                                  /^www\./,
+                                  ""
+                                );
+                              } catch {
+                                return article.source_url;
+                              }
+                            })()}
+                          </span>
+                        </a>
+                      )}
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
+            </motion.div>
+          </div>
         )}
 
         {/* Empty state */}
@@ -267,7 +359,7 @@ export default function NewsPage() {
         )}
 
         {/* Disclaimer */}
-        <div className="flex items-start gap-2 rounded-xl bg-muted/60 px-4 py-3">
+        <div className="riso-doc-gold-accent flex items-start gap-2 rounded-xl bg-muted/60 px-4 py-3">
           <Info className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
           <p className="text-[11px] leading-relaxed text-muted-foreground">
             {NEWS_DISCLAIMER.text}

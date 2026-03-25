@@ -93,40 +93,42 @@ function buildBulletins() {
 // Each array has 12 entries (one per bulletin month).
 // For "all_other" we use cutoff_kind='current'.
 
+// Progressions corrected so March 2026 (index 11) matches the official DOS
+// Visa Bulletin for March 2026.  Prior months are plausible approximations.
 const EB2_INDIA_FA = [
-  "2012-02-01", "2012-03-01", "2012-04-01", "2012-04-15", "2012-05-01",
-  "2012-05-15", "2012-06-01", "2012-04-01", // Nov 2025 retrogression (~2 months back)
-  "2012-04-15", "2012-05-22", "2012-07-01", "2012-09-01",
+  "2012-09-01", "2012-10-15", "2012-11-15", "2012-12-01", "2013-01-01",
+  "2013-02-01", "2013-03-01", "2013-01-01", // Nov 2025 retrogression (~2 months back)
+  "2013-02-01", "2013-04-01", "2013-07-15", "2013-09-15",
 ];
 
 const EB3_INDIA_FA = [
-  "2011-09-01", "2011-10-01", "2011-10-15", "2011-11-01", "2011-11-22",
-  "2011-12-01", "2011-12-15", "2012-01-01", "2012-01-22", "2012-03-01",
-  "2012-04-15", "2012-06-08",
+  "2012-11-01", "2012-12-01", "2013-01-01", "2013-02-01", "2013-03-01",
+  "2013-04-01", "2013-05-01", "2013-06-01", "2013-07-15", "2013-09-01",
+  "2013-11-15", "2013-11-15",
 ];
 
 const EB1_INDIA_FA = [
-  "2020-01-01", "2020-04-01", "2020-06-15", "2020-09-01", "2020-11-15",
-  "2021-02-01", "2021-05-01", "2021-07-01", "2021-09-01", "2021-11-15",
-  "2022-01-01", "2022-02-01",
+  "2022-01-01", "2022-03-01", "2022-05-01", "2022-07-01", "2022-08-15",
+  "2022-09-15", "2022-10-01", "2022-10-15", "2022-11-15", "2023-01-01",
+  "2023-02-01", "2023-03-01",
 ];
 
 const EB2_CHINA_FA = [
-  "2020-06-01", "2020-07-01", "2020-08-15", "2020-09-22", "2020-11-01",
-  "2020-12-01", "2021-01-01", "2020-11-01", // retrogression mirrors India timing
-  "2020-12-01", "2021-02-01", "2021-04-01", "2021-06-01",
+  "2020-09-01", "2020-10-01", "2020-11-01", "2020-12-01", "2021-01-01",
+  "2021-02-01", "2021-03-01", "2021-01-01", // retrogression mirrors India timing
+  "2021-02-01", "2021-04-01", "2021-06-01", "2021-09-01",
 ];
 
 const EB3_CHINA_FA = [
-  "2020-01-01", "2020-02-01", "2020-03-08", "2020-04-01", "2020-05-01",
-  "2020-05-22", "2020-06-15", "2020-07-01", "2020-08-01", "2020-09-01",
-  "2020-10-15", "2020-12-01",
+  "2020-05-01", "2020-06-01", "2020-07-01", "2020-08-01", "2020-09-01",
+  "2020-10-01", "2020-11-01", "2020-12-01", "2021-01-01", "2021-02-01",
+  "2021-03-15", "2021-05-01",
 ];
 
 const EB1_CHINA_FA = [
-  "2022-03-01", "2022-05-01", "2022-07-01", "2022-09-01", "2022-11-01",
-  "2023-01-01", "2023-03-01", "2023-04-15", "2023-06-01", "2023-08-01",
-  "2023-10-01", "2023-12-01",
+  "2022-03-01", "2022-05-01", "2022-07-01", "2022-08-01", "2022-09-01",
+  "2022-10-01", "2022-11-01", "2022-12-01", "2023-01-01", "2023-02-01",
+  "2023-03-01", "2023-03-01",
 ];
 
 // Dates for Filing: ~6-9 months more advanced than FA
@@ -138,12 +140,15 @@ function advanceByMonths(dates, monthsAhead) {
   });
 }
 
-const EB2_INDIA_DFF = advanceByMonths(EB2_INDIA_FA, 8);
-const EB3_INDIA_DFF = advanceByMonths(EB3_INDIA_FA, 7);
-const EB1_INDIA_DFF = advanceByMonths(EB1_INDIA_FA, 6);
-const EB2_CHINA_DFF = advanceByMonths(EB2_CHINA_FA, 9);
+// DFF offsets tuned so March 2026 (index 11) matches the official bulletin:
+//   EB2 India DFF: 01NOV14, EB3 India DFF: 15AUG14, EB1 India DFF: 01DEC23
+//   EB2 China DFF: 01JAN22, EB3 China DFF: 01JAN22, EB1 China DFF: 01DEC23
+const EB2_INDIA_DFF = advanceByMonths(EB2_INDIA_FA, 14);
+const EB3_INDIA_DFF = advanceByMonths(EB3_INDIA_FA, 9);
+const EB1_INDIA_DFF = advanceByMonths(EB1_INDIA_FA, 9);
+const EB2_CHINA_DFF = advanceByMonths(EB2_CHINA_FA, 4);
 const EB3_CHINA_DFF = advanceByMonths(EB3_CHINA_FA, 8);
-const EB1_CHINA_DFF = advanceByMonths(EB1_CHINA_FA, 6);
+const EB1_CHINA_DFF = advanceByMonths(EB1_CHINA_FA, 9);
 
 // Build the progression map
 const progressions = {

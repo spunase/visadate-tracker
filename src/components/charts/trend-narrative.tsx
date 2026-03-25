@@ -28,6 +28,24 @@ export function TrendNarrative({
     );
   }
 
+  // Detect "current" categories — no meaningful movement to narrate
+  const allZero = data.every((d) => d.movementDays === 0);
+  if (allZero) {
+    return (
+      <div className="space-y-2">
+        <p className="text-sm leading-relaxed text-foreground/80">
+          {category} {country} {chartMode.toLowerCase()} dates have remained
+          current throughout the last {data.length} months with no backlog movement
+          to report.
+        </p>
+        <p className="text-[11px] leading-relaxed text-muted-foreground/70 italic">
+          Categories that are &quot;current&quot; have no waiting queue — all
+          eligible applicants can proceed immediately.
+        </p>
+      </div>
+    );
+  }
+
   const totalMonths = data.length;
   const forwardMonths = data.filter((d) => d.movementDirection === "forward");
   const backwardMonths = data.filter((d) => d.movementDirection === "backward");

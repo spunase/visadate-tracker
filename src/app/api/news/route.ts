@@ -98,31 +98,41 @@ export async function GET() {
         .limit(20);
 
       if (!error && updates && updates.length > 0) {
-        return NextResponse.json({
-          updates: updates as PolicyUpdate[],
-          count: updates.length,
-          _meta: {
-            source: "supabase",
-            generatedAt: new Date().toISOString(),
+        return NextResponse.json(
+          {
+            news: updates as PolicyUpdate[],
+            count: updates.length,
+            _meta: {
+              source: "supabase",
+              generatedAt: new Date().toISOString(),
+            },
           },
-        });
+          {
+            headers: {
+              "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
+            },
+          },
+        );
       }
-
-      if (error) {
-        console.warn("Supabase news query failed, using mock fallback:", error.message);
-      }
-    } catch (err) {
-      console.error("Supabase error in /api/news:", err);
+    } catch {
+      // Fall through to mock data
     }
   }
 
   // --- Fallback to mock data ---
-  return NextResponse.json({
-    updates: mockUpdates,
-    count: mockUpdates.length,
-    _meta: {
-      source: "mock",
-      generatedAt: new Date().toISOString(),
+  return NextResponse.json(
+    {
+      news: mockUpdates,
+      count: mockUpdates.length,
+      _meta: {
+        source: "mock",
+        generatedAt: new Date().toISOString(),
+      },
     },
-  });
+    {
+      headers: {
+        "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
+      },
+    },
+  );
 }

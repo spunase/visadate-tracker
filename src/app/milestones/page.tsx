@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MILESTONE_CARDS, getMilestonesByBand } from "@/lib/content/milestone-content";
 import { MILESTONE_DISCLAIMER } from "@/lib/content/disclaimers";
+import { ConfettiBurst } from "@/components/ui/confetti-burst";
 import { useMilestoneStore } from "@/stores/milestone-store";
 import { useTrackerStore } from "@/stores/tracker-store";
 import { useUserBand } from "@/lib/hooks/use-milestones";
@@ -62,9 +63,17 @@ function displayHost(url: string): string {
 
 export default function MilestonesPage() {
   const [activeBand, setActiveBand] = useState<MilestoneBand | "all">("all");
+  const [confettiId, setConfettiId] = useState<string | null>(null);
 
   // Zustand stores
-  const { checkedItems, toggleItem } = useMilestoneStore();
+  const { checkedItems, toggleItem: storeToggleItem } = useMilestoneStore();
+
+  const toggleItem = (id: string) => {
+    if (!checkedItems[id]) {
+      setConfettiId(id);
+    }
+    storeToggleItem(id);
+  };
   const savedTrackers = useTrackerStore((s) => s.savedTrackers);
   const primaryTracker = savedTrackers.length > 0 ? savedTrackers[0] : null;
 
@@ -155,7 +164,7 @@ export default function MilestonesPage() {
         {/* Milestone Cards */}
         {filtered.map((card) => (
           <motion.div key={card.id} variants={item}>
-            <Card className="rounded-[18px] border border-border/50 shadow-sm">
+            <Card className="riso-doc-neutral rounded-[18px] border border-border/50 shadow-sm">
               <CardHeader className="pb-2">
                 <div className="flex items-center gap-2">
                   <span
@@ -198,10 +207,10 @@ export default function MilestonesPage() {
                       <button
                         key={key}
                         onClick={() => toggleItem(key)}
-                        className="flex items-start gap-2.5 rounded-lg p-1 text-left transition-colors hover:bg-muted/50"
+                        className="relative flex items-start gap-2.5 rounded-lg p-1 text-left transition-colors hover:bg-muted/50"
                       >
                         {isChecked ? (
-                          <CheckSquare className="mt-0.5 h-4 w-4 shrink-0 text-[#2F6BFF]" />
+                          <CheckSquare className="riso-stamp mt-0.5 h-4 w-4 shrink-0 text-[#2F6BFF]" />
                         ) : (
                           <Square className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
                         )}
@@ -214,6 +223,7 @@ export default function MilestonesPage() {
                         >
                           {text}
                         </span>
+                        <ConfettiBurst trigger={confettiId === key} variant="sparkle" />
                       </button>
                     );
                   })}
@@ -236,7 +246,7 @@ export default function MilestonesPage() {
 
         {/* Disclaimer */}
         <motion.div variants={item}>
-          <div className="flex items-start gap-2 rounded-xl bg-muted/60 px-4 py-3">
+          <div className="riso-doc-gold-accent flex items-start gap-2 rounded-xl bg-muted/60 px-4 py-3">
             <Info className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
             <p className="text-[11px] leading-relaxed text-muted-foreground">
               {MILESTONE_DISCLAIMER.text}

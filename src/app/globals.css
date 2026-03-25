@@ -13,6 +13,7 @@
   --font-sans: "SF Pro", "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-mono: var(--font-geist-mono);
   --font-heading: "SF Pro", "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-serif: "DM Serif Text", Georgia, "Times New Roman", serif;
 
   /* --- Typography scale (custom utilities via --text-*) ---- */
   --text-display: 2rem;        /* 32px */
@@ -293,6 +294,433 @@
 }
 
 /* ============================================================
+   Risograph Passport Theme — Light
+   Inspired by vintage government documents, passport stamps,
+   and risograph printing with paper textures and ink grain.
+   Activated via .theme-risograph on <html>.
+   ============================================================ */
+.theme-risograph {
+  /* Canvas & surfaces — warm cream paper stock from image */
+  --background: #F4EDE1;
+  --foreground: #2D2B2A;
+  --card: #FAF5ED;
+  --card-foreground: #2D2B2A;
+  --popover: #FAF5ED;
+  --popover-foreground: #2D2B2A;
+
+  /* Brand — charcoal primary (stamps/text from image) */
+  --primary: #2D2B2A;
+  --primary-foreground: #F4EDE1;
+  --secondary: #E9E1D4;
+  --secondary-foreground: #2D2B2A;
+  --muted: #E9E1D4;
+  --muted-foreground: #6B6560;
+  --accent: #E9E1D4;
+  --accent-foreground: #2D2B2A;
+  --destructive: #C43C3C;
+
+  /* Chrome — image border/frame tones */
+  --border: #D1CABD;
+  --input: #D1CABD;
+  --ring: #DEAD45;
+  --radius: 0.375rem;
+
+  /* Risograph ink palette — exact image colors */
+  --calm-blue: #6CC5BB;       /* seafoam teal from document bg */
+  --insight-teal: #5AAFA5;    /* slightly muted teal */
+  --caution-amber: #DEAD45;   /* marigold gold from borders */
+  --alert-rose: #C43C3C;      /* stamp red from X marks */
+  --success-emerald: #6CC5BB; /* teal = success in this palette */
+
+  /* Status semantics — image-derived */
+  --status-current: rgba(108, 197, 187, 0.15);
+  --status-current-fg: #4A9E94;
+  --status-filing: rgba(222, 173, 69, 0.15);
+  --status-filing-fg: #B8922A;
+  --status-near: rgba(207, 123, 115, 0.15);
+  --status-near-fg: #B85A52;
+  --status-retrogressed: rgba(196, 60, 60, 0.12);
+  --status-retrogressed-fg: #C43C3C;
+  --status-flat: rgba(45, 43, 42, 0.06);
+  --status-flat-fg: #8A847E;
+
+  /* Charts — 4-color risograph ink from image */
+  --chart-1: #6CC5BB;  /* teal/seafoam */
+  --chart-2: #CF7B73;  /* coral/salmon */
+  --chart-3: #DEAD45;  /* marigold/gold */
+  --chart-4: #E89F45;  /* warm amber accent */
+  --chart-5: #C43C3C;  /* stamp red */
+
+  /* Sidebar */
+  --sidebar: #FAF5ED;
+  --sidebar-foreground: #2D2B2A;
+  --sidebar-primary: #2D2B2A;
+  --sidebar-primary-foreground: #F4EDE1;
+  --sidebar-accent: #E9E1D4;
+  --sidebar-accent-foreground: #2D2B2A;
+  --sidebar-border: #D1CABD;
+  --sidebar-ring: #DEAD45;
+
+  /* Typography — DM Serif Text for vintage authority */
+  --font-heading: var(--font-dm-serif, "DM Serif Text"), Georgia, "Times New Roman", serif;
+}
+
+/* ============================================================
+   Risograph Passport Theme — Dark ("Night Print")
+   ============================================================ */
+.theme-risograph.dark,
+.dark .theme-risograph {
+  /* Night print — warm charcoal base inspired by book spine */
+  --background: #1C1917;
+  --foreground: #E9E1D4;
+  --card: #272220;
+  --card-foreground: #E9E1D4;
+  --popover: #272220;
+  --popover-foreground: #E9E1D4;
+
+  --primary: #E9E1D4;
+  --primary-foreground: #1C1917;
+  --secondary: #332D28;
+  --secondary-foreground: #E9E1D4;
+  --muted: #332D28;
+  --muted-foreground: #A09891;
+  --accent: #332D28;
+  --accent-foreground: #E9E1D4;
+  --destructive: #D96060;
+
+  --border: #40382F;
+  --input: #40382F;
+  --ring: #E8BE5A;
+
+  /* Image inks — brighter for dark bg legibility */
+  --calm-blue: #80D1C8;       /* lighter seafoam */
+  --insight-teal: #6BBFB5;
+  --caution-amber: #E8BE5A;   /* brighter gold */
+  --alert-rose: #D96060;      /* lighter red */
+  --success-emerald: #80D1C8;
+
+  --status-current: rgba(108, 197, 187, 0.14);
+  --status-current-fg: #80D1C8;
+  --status-filing: rgba(222, 173, 69, 0.14);
+  --status-filing-fg: #E8BE5A;
+  --status-near: rgba(207, 123, 115, 0.14);
+  --status-near-fg: #E0A49E;
+  --status-retrogressed: rgba(196, 60, 60, 0.14);
+  --status-retrogressed-fg: #D96060;
+  --status-flat: rgba(233, 225, 212, 0.08);
+  --status-flat-fg: #A09891;
+
+  --chart-1: #80D1C8;  /* seafoam */
+  --chart-2: #E0A49E;  /* coral */
+  --chart-3: #E8BE5A;  /* gold */
+  --chart-4: #E8B570;  /* amber */
+  --chart-5: #D96060;  /* red */
+
+  --sidebar: #272220;
+  --sidebar-foreground: #E9E1D4;
+  --sidebar-primary: #E8BE5A;
+  --sidebar-primary-foreground: #1C1917;
+  --sidebar-accent: #332D28;
+  --sidebar-accent-foreground: #E9E1D4;
+  --sidebar-border: #40382F;
+  --sidebar-ring: #E8BE5A;
+
+  --font-heading: var(--font-dm-serif, "DM Serif Text"), Georgia, "Times New Roman", serif;
+}
+
+/* Also handle system dark preference for risograph */
+@media (prefers-color-scheme: dark) {
+  .theme-risograph:not(.light) {
+    --background: #1C1917;
+    --foreground: #E9E1D4;
+    --card: #272220;
+    --card-foreground: #E9E1D4;
+    --popover: #272220;
+    --popover-foreground: #E9E1D4;
+
+    --primary: #E9E1D4;
+    --primary-foreground: #1C1917;
+    --secondary: #332D28;
+    --secondary-foreground: #E9E1D4;
+    --muted: #332D28;
+    --muted-foreground: #A09891;
+    --accent: #332D28;
+    --accent-foreground: #E9E1D4;
+    --destructive: #D96060;
+
+    --border: #40382F;
+    --input: #40382F;
+    --ring: #E8BE5A;
+
+    --calm-blue: #80D1C8;
+    --insight-teal: #6BBFB5;
+    --caution-amber: #E8BE5A;
+    --alert-rose: #D96060;
+    --success-emerald: #80D1C8;
+
+    --status-current: rgba(108, 197, 187, 0.14);
+    --status-current-fg: #80D1C8;
+    --status-filing: rgba(222, 173, 69, 0.14);
+    --status-filing-fg: #E8BE5A;
+    --status-near: rgba(207, 123, 115, 0.14);
+    --status-near-fg: #E0A49E;
+    --status-retrogressed: rgba(196, 60, 60, 0.14);
+    --status-retrogressed-fg: #D96060;
+    --status-flat: rgba(233, 225, 212, 0.08);
+    --status-flat-fg: #A09891;
+
+    --chart-1: #80D1C8;
+    --chart-2: #E0A49E;
+    --chart-3: #E8BE5A;
+    --chart-4: #E8B570;
+    --chart-5: #D96060;
+
+    --sidebar: #272220;
+    --sidebar-foreground: #E9E1D4;
+    --sidebar-primary: #E8BE5A;
+    --sidebar-primary-foreground: #1C1917;
+    --sidebar-accent: #332D28;
+    --sidebar-accent-foreground: #E9E1D4;
+    --sidebar-border: #40382F;
+    --sidebar-ring: #E8BE5A;
+
+    --font-heading: var(--font-dm-serif, "DM Serif Text"), Georgia, "Times New Roman", serif;
+  }
+}
+
+/* ============================================================
+   Risograph Paper Texture Overlay
+   Subtle grain + noise applied to body when theme is active.
+   Uses an SVG data URI for zero network requests.
+   ============================================================ */
+.theme-risograph body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0.045;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+}
+
+/* White dot noise — characteristic risograph speckle */
+.theme-risograph body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0.025;
+  mix-blend-mode: screen;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Cfilter id='d'%3E%3CfeTurbulence type='turbulence' baseFrequency='0.9' numOctaves='1' seed='2'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='discrete' tableValues='0 0 0 0 0 0 0 1'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23d)' fill='white'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+}
+
+/* Reduce grain animation overhead for reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .theme-risograph body::before,
+  .theme-risograph body::after {
+    animation: none !important;
+  }
+}
+
+/* Risograph heading typography — DM Serif Text for ALL headings
+   Covers: HTML heading tags, CardTitle, PageHeader title, section
+   headers, font-bold/font-semibold text in heading contexts, and
+   any element with explicit font-heading or font-serif class. */
+.theme-risograph h1,
+.theme-risograph h2,
+.theme-risograph h3,
+.theme-risograph h4,
+.theme-risograph h5,
+.theme-risograph h6,
+.theme-risograph [class*="CardTitle"],
+.theme-risograph [class*="text-xl"],
+.theme-risograph [class*="text-2xl"],
+.theme-risograph [class*="text-3xl"],
+.theme-risograph [class*="text-4xl"],
+.theme-risograph [class*="text-h1"],
+.theme-risograph [class*="text-h2"],
+.theme-risograph [class*="text-h3"],
+.theme-risograph [class*="text-display"],
+.theme-risograph [class*="text-lg"][class*="font-semibold"],
+.theme-risograph [class*="text-lg"][class*="font-bold"],
+.theme-risograph [class*="text-base"][class*="font-semibold"],
+.theme-risograph [class*="text-base"][class*="font-bold"],
+.theme-risograph [class*="text-sm"][class*="font-semibold"]:not([class*="uppercase"]):not([class*="tracking-"]):not(nav *),
+.theme-risograph .font-heading,
+.theme-risograph .font-serif {
+  font-family: var(--font-heading);
+  font-weight: 400; /* DM Serif Text looks best at regular weight */
+}
+
+/* Keep small uppercase labels, badges, and tiny text in sans-serif.
+   These are navigational/metadata elements, not headings. */
+.theme-risograph [class*="uppercase"][class*="tracking-wider"],
+.theme-risograph [class*="uppercase"][class*="tracking-wide"],
+.theme-risograph [class*="text-xs"],
+.theme-risograph [class*="text-tiny"],
+.theme-risograph [class*="text-caption"],
+.theme-risograph [class*="text-\\[10px\\]"],
+.theme-risograph [class*="text-\\[11px\\]"],
+.theme-risograph nav,
+.theme-risograph nav * {
+  font-family: var(--font-sans) !important;
+  font-weight: revert !important;
+}
+
+/* Risograph card styling — less rounded, more "document" feel */
+.theme-risograph [class*="rounded-[18px]"] {
+  border-radius: 0.5rem !important;
+}
+
+/* Risograph body — paper base with slightly rougher type rendering */
+.theme-risograph body {
+  background-color: var(--background) !important;
+  -webkit-font-smoothing: auto; /* Less crisp = more printed feel */
+}
+
+/* Hero card gradient overrides — FLAT teal wash, no gradient */
+.theme-risograph [class*="from-[#2F6BFF]"] {
+  --tw-gradient-from: transparent !important;
+  --tw-gradient-to: transparent !important;
+  background-image: none !important;
+}
+
+/* Primary button/active state color overrides */
+.theme-risograph [class*="bg-[#2F6BFF]"] {
+  background-color: #2D2B2A !important;
+}
+.theme-risograph [class*="text-[#2F6BFF]"] {
+  color: var(--calm-blue) !important;
+}
+.theme-risograph [class*="border-[#2F6BFF]"],
+.theme-risograph [class*="focus:border-[#2F6BFF]"] {
+  border-color: var(--ring) !important;
+}
+.theme-risograph [class*="ring-[#2F6BFF]"],
+.theme-risograph [class*="focus:ring-[#2F6BFF]"] {
+  --tw-ring-color: rgba(222, 173, 69, 0.3) !important;
+}
+
+/* Bottom nav active indicator — teal instead of blue */
+.theme-risograph [class*="bg-[#2F6BFF]/10"] {
+  background-color: rgba(108, 197, 187, 0.12) !important;
+}
+
+/* ============================================================
+   Risograph Document Surface Utilities
+   These classes apply document-like surfaces ONLY within
+   .theme-risograph. Outside that theme, they are no-ops.
+   ============================================================ */
+
+/* Teal document — visa stamps, primary status, positive results */
+.theme-risograph .riso-doc-teal {
+  background-color: rgba(74, 173, 163, 0.12) !important;
+  border: 2px solid var(--calm-blue) !important;
+}
+.theme-risograph.dark .riso-doc-teal,
+.dark .theme-risograph .riso-doc-teal {
+  background-color: rgba(108, 197, 187, 0.10) !important;
+}
+
+/* Teal document strong — hero card, primary focal point */
+.theme-risograph .riso-doc-teal-strong {
+  background-color: rgba(74, 173, 163, 0.22) !important;
+  border: 3px solid var(--calm-blue) !important;
+  color: var(--foreground) !important;
+}
+.theme-risograph .riso-doc-teal-strong * {
+  color: inherit !important;
+}
+.theme-risograph .riso-doc-teal-strong .text-white\/70,
+.theme-risograph .riso-doc-teal-strong .text-white\/80,
+.theme-risograph .riso-doc-teal-strong [class*="text-white"] {
+  color: var(--muted-foreground) !important;
+}
+.theme-risograph .riso-doc-teal-strong h2,
+.theme-risograph .riso-doc-teal-strong .font-bold {
+  color: var(--foreground) !important;
+}
+.theme-risograph.dark .riso-doc-teal-strong,
+.dark .theme-risograph .riso-doc-teal-strong {
+  background-color: rgba(108, 197, 187, 0.18) !important;
+}
+
+/* Coral document — secondary cards, warmth, near status */
+.theme-risograph .riso-doc-coral {
+  background-color: rgba(207, 123, 115, 0.12) !important;
+  border: 2px solid #CF7B73 !important;
+}
+.theme-risograph.dark .riso-doc-coral,
+.dark .theme-risograph .riso-doc-coral {
+  background-color: rgba(217, 144, 138, 0.10) !important;
+  border-color: #D9908A !important;
+}
+
+/* Gold document — forms, settings, highlighted sections */
+.theme-risograph .riso-doc-gold {
+  border: 2px solid var(--ring) !important;
+}
+
+/* Neutral document — default card with visible border */
+.theme-risograph .riso-doc-neutral {
+  border: 2px solid var(--border) !important;
+}
+
+/* Gold left-accent — informational cards, hope context */
+.theme-risograph .riso-doc-gold-accent {
+  border: 1.5px solid var(--border) !important;
+  border-left: 3px solid var(--ring) !important;
+}
+
+/* Coral left-accent — news clippings */
+.theme-risograph .riso-doc-coral-accent {
+  border: 1.5px solid var(--border) !important;
+  border-left: 3px solid #CF7B73 !important;
+}
+.theme-risograph.dark .riso-doc-coral-accent,
+.dark .theme-risograph .riso-doc-coral-accent {
+  border-left-color: #D9908A !important;
+}
+
+/* Stamp badge — slight rotation for organic feel */
+.theme-risograph .riso-stamp {
+  transform: rotate(-2deg);
+}
+
+/* Chevron divider — decorative section separator */
+.theme-risograph .riso-divider {
+  height: 8px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='8' viewBox='0 0 16 8'%3E%3Cpath d='M0 0l4 4 4-4' fill='none' stroke='%23DEAD45' stroke-width='1' opacity='0.4'/%3E%3C/svg%3E");
+  background-repeat: repeat-x;
+  background-position: center;
+}
+
+/* Ruled-line input — government form style */
+.theme-risograph .riso-input-ruled {
+  border: none !important;
+  border-bottom: 2px solid var(--border) !important;
+  border-radius: 0 !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  background: transparent !important;
+}
+.theme-risograph .riso-input-ruled:focus {
+  border-bottom-color: var(--ring) !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+/* All risograph cards get visible borders by default */
+.theme-risograph .border-border\/50 {
+  border-color: var(--border) !important;
+  border-width: 2px !important;
+}
+
+/* ============================================================
    Base layer
    ============================================================ */
 @layer base {
@@ -308,6 +736,25 @@
     @apply font-sans;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Interactive elements always show pointer cursor */
+  button,
+  [role="button"],
+  a[href],
+  select,
+  summary,
+  input[type="checkbox"],
+  input[type="radio"],
+  label[for],
+  [tabindex]:not([tabindex="-1"]) {
+    cursor: pointer;
+  }
+
+  /* Disabled elements revert to default cursor */
+  [disabled],
+  [aria-disabled="true"] {
+    cursor: default;
   }
 }
 
