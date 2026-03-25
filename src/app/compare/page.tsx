@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, Globe, Info, Scale } from "lucide-react";
+import { ArrowLeft, Info, Scale } from "lucide-react";
 import Link from "next/link";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card, CardContent } from "@/components/ui/card";
@@ -10,7 +10,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { MovementChip } from "@/components/ui/movement-chip";
 import { GLOBAL_DISCLAIMER } from "@/lib/content/disclaimers";
 import { useBulletin, type CutoffRow } from "@/lib/hooks/use-bulletin";
-import { usePreferencesStore } from "@/stores/preferences-store";
+import { usePreferencesStore, type PreferredCountry } from "@/stores/preferences-store";
+import { CountryFlagSelector } from "@/components/ui/country-flag-selector";
 import {
   formatBulletinMonth,
   formatCutoffDate,
@@ -21,10 +22,10 @@ import {
 type CountryBucket = "india" | "china" | "all_other";
 type ChartType = "final_action" | "dates_for_filing";
 
-const COUNTRY_OPTIONS: { value: CountryBucket; label: string; flag: string }[] = [
-  { value: "india", label: "India", flag: "\u{1F1EE}\u{1F1F3}" },
-  { value: "china", label: "China", flag: "\u{1F1E8}\u{1F1F3}" },
-  { value: "all_other", label: "All Other", flag: "" },
+const COUNTRY_OPTIONS: { value: CountryBucket; label: string; displayCountry: PreferredCountry }[] = [
+  { value: "india", label: "India", displayCountry: "India" },
+  { value: "china", label: "China", displayCountry: "China" },
+  { value: "all_other", label: "All Other", displayCountry: "All Other" },
 ];
 
 const CHART_OPTIONS: { value: ChartType; label: string }[] = [
@@ -166,12 +167,14 @@ export default function ComparePage() {
   const initBucket = countryToBucket[defaultCountry] ?? "india";
 
   const [country, setCountry] = useState<CountryBucket>(initBucket);
+  const [compareDisplayCountry, setCompareDisplayCountry] = useState<PreferredCountry>(defaultCountry);
   const [chartType, setChartType] = useState<ChartType>("final_action");
 
   // Re-sync when store changes
   useEffect(() => {
     const bucket = countryToBucket[defaultCountry] ?? "india";
     setCountry(bucket);
+    setCompareDisplayCountry(defaultCountry);
   }, [defaultCountry]);
 
   const {
@@ -191,8 +194,7 @@ export default function ComparePage() {
     [cutoffRows, country, chartType],
   );
 
-  const countryLabel =
-    COUNTRY_OPTIONS.find((c) => c.value === country)?.label ?? "India";
+  const countryLabel = compareDisplayCountry;
   const chartLabel =
     CHART_OPTIONS.find((c) => c.value === chartType)?.label ?? "Final Action";
 
@@ -232,23 +234,16 @@ export default function ComparePage() {
 
         {/* Country Selector */}
         <motion.div variants={item}>
-          <div className="flex items-center justify-center gap-2">
-            {COUNTRY_OPTIONS.map((opt) => (
-              <button
-                key={opt.value}
-                onClick={() => setCountry(opt.value)}
-                className={`flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-medium transition-all ${
-                  country === opt.value
-                    ? "bg-[#2F6BFF] text-white shadow-sm"
-                    : "bg-muted text-muted-foreground hover:bg-muted/80"
-                }`}
-              >
-                <span className="text-sm leading-none select-none" aria-hidden="true">
-                  {opt.flag || <Globe className="h-3.5 w-3.5" />}
-                </span>
-                {opt.label}
-              </button>
-            ))}
+          <div className="flex items-center justify-center">
+            <CountryFlagSelector
+              value={compareDisplayCountry}
+              onChange={(c) => {
+                setCompareDisplayCountry(c);
+                setCountry(countryToBucket[c] ?? "all_other");
+              }}
+              label={null}
+              ariaLabel="Select country for comparison"
+            />
           </div>
         </motion.div>
 

@@ -32,6 +32,138 @@ function glow(meta: (typeof COUNTRY_META)[PreferredCountry], dark: boolean) {
 }
 
 // ---------------------------------------------------------------------------
+// Inline SVG flags — lightweight, resolution-independent, cross-platform
+// Each renders a recognizable flag at any size via viewBox scaling
+// ---------------------------------------------------------------------------
+
+function IndiaFlag({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 900 600" preserveAspectRatio="xMidYMid slice" className={className} aria-hidden="true">
+      <rect width="900" height="200" fill="#FF9933" />
+      <rect y="200" width="900" height="200" fill="#FFFFFF" />
+      <rect y="400" width="900" height="200" fill="#138808" />
+      <circle cx="450" cy="300" r="60" fill="#000080" fillOpacity="0" stroke="#000080" strokeWidth="6" />
+      {/* Ashoka Chakra — simplified 24-spoke wheel */}
+      <circle cx="450" cy="300" r="60" fill="none" stroke="#000080" strokeWidth="4" />
+      <circle cx="450" cy="300" r="10" fill="#000080" />
+      {[...Array(24)].map((_, i) => {
+        const angle = (i * 15 * Math.PI) / 180;
+        const x2 = 450 + 55 * Math.cos(angle);
+        const y2 = 300 + 55 * Math.sin(angle);
+        return <line key={i} x1="450" y1="300" x2={x2} y2={y2} stroke="#000080" strokeWidth="2" />;
+      })}
+    </svg>
+  );
+}
+
+function ChinaFlag({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 900 600" preserveAspectRatio="xMidYMid slice" className={className} aria-hidden="true">
+      <rect width="900" height="600" fill="#DE2910" />
+      {/* Large star */}
+      <polygon points="150,75 172,137 240,137 184,175 202,240 150,200 98,240 116,175 60,137 128,137" fill="#FFDE00" />
+      {/* Small stars */}
+      <polygon points="270,60 278,84 303,84 283,97 290,120 270,108 250,120 257,97 237,84 262,84" fill="#FFDE00" />
+      <polygon points="312,120 320,144 345,144 325,157 332,180 312,168 292,180 299,157 279,144 304,144" fill="#FFDE00" />
+      <polygon points="312,195 320,219 345,219 325,232 332,255 312,243 292,255 299,232 279,219 304,219" fill="#FFDE00" />
+      <polygon points="270,240 278,264 303,264 283,277 290,300 270,288 250,300 257,277 237,264 262,264" fill="#FFDE00" />
+    </svg>
+  );
+}
+
+function PhilippinesFlag({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 900 600" preserveAspectRatio="xMidYMid slice" className={className} aria-hidden="true">
+      <rect width="900" height="300" fill="#0038A8" />
+      <rect y="300" width="900" height="300" fill="#CE1126" />
+      {/* White triangle */}
+      <polygon points="0,0 450,300 0,600" fill="#FFFFFF" />
+      {/* Sun */}
+      <circle cx="165" cy="300" r="42" fill="#FCD116" />
+      {/* Sun rays — 8 major rays */}
+      {[...Array(8)].map((_, i) => {
+        const angle = (i * 45 * Math.PI) / 180;
+        const x1 = 165 + 50 * Math.cos(angle);
+        const y1 = 300 + 50 * Math.sin(angle);
+        const x2 = 165 + 80 * Math.cos(angle);
+        const y2 = 300 + 80 * Math.sin(angle);
+        return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="#FCD116" strokeWidth="8" />;
+      })}
+      {/* Three stars */}
+      <polygon points="80,95 87,115 108,115 91,127 97,147 80,136 63,147 69,127 52,115 73,115" fill="#FCD116" />
+      <polygon points="80,505 87,485 108,485 91,473 97,453 80,464 63,453 69,473 52,485 73,485" fill="#FCD116" />
+      <polygon points="340,300 333,280 312,280 329,268 323,248 340,259 357,248 351,268 368,280 347,280" fill="#FCD116" />
+    </svg>
+  );
+}
+
+function MexicoFlag({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 900 600" preserveAspectRatio="xMidYMid slice" className={className} aria-hidden="true">
+      <rect width="300" height="600" fill="#006847" />
+      <rect x="300" width="300" height="600" fill="#FFFFFF" />
+      <rect x="600" width="300" height="600" fill="#CE1126" />
+      {/* Simplified coat of arms — eagle silhouette */}
+      <circle cx="450" cy="300" r="55" fill="#006847" fillOpacity="0.15" />
+      <ellipse cx="450" cy="290" rx="30" ry="22" fill="#6B3A2A" />
+      {/* Wings */}
+      <path d="M420,290 Q405,260 390,275 Q400,280 420,290Z" fill="#6B3A2A" />
+      <path d="M480,290 Q495,260 510,275 Q500,280 480,290Z" fill="#6B3A2A" />
+      {/* Snake */}
+      <path d="M440,280 Q450,270 460,280" fill="none" stroke="#006847" strokeWidth="3" />
+    </svg>
+  );
+}
+
+/** Renders the correct SVG flag for a country, or Globe for "All Other" */
+function CountryFlagImage({
+  country,
+  size,
+  shape,
+  isActive,
+  accentColor,
+}: {
+  country: PreferredCountry;
+  size: "sm" | "lg";
+  shape: "circle" | "rounded";
+  isActive: boolean;
+  accentColor: string;
+}) {
+  const sizeClass = size === "sm" ? "h-5 w-5" : "h-10 w-10";
+  const shapeClass = shape === "circle" ? "rounded-full" : "rounded-lg";
+
+  if (country === "All Other") {
+    return (
+      <span
+        className={`inline-flex items-center justify-center ${sizeClass} ${shapeClass} bg-muted/80 transition-all duration-200`}
+      >
+        <Globe
+          className={`${size === "sm" ? "h-3 w-3" : "h-5 w-5"} transition-colors duration-200 ${
+            isActive ? "text-foreground" : "text-muted-foreground"
+          }`}
+          strokeWidth={1.6}
+        />
+      </span>
+    );
+  }
+
+  const FlagComponent = {
+    India: IndiaFlag,
+    China: ChinaFlag,
+    Philippines: PhilippinesFlag,
+    Mexico: MexicoFlag,
+  }[country];
+
+  return (
+    <span
+      className={`inline-block overflow-hidden ${sizeClass} ${shapeClass} transition-all duration-200`}
+    >
+      <FlagComponent className="h-full w-full" />
+    </span>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Animation variants
 // ---------------------------------------------------------------------------
 
@@ -186,14 +318,14 @@ function ChipOption({
           : undefined
       }
     >
-      {/* Flag or Globe */}
-      <span className="text-sm leading-none select-none" aria-hidden="true">
-        {country === "All Other" ? (
-          <Globe className="h-3.5 w-3.5" />
-        ) : (
-          meta.flag
-        )}
-      </span>
+      {/* Flag in circular container */}
+      <CountryFlagImage
+        country={country}
+        size="sm"
+        shape="circle"
+        isActive={isActive}
+        accentColor={accent(meta, dark)}
+      />
 
       {/* Country name */}
       <span>{country}</span>
@@ -281,20 +413,15 @@ function CardOption({
         )}
       </AnimatePresence>
 
-      {/* Flag / Globe icon */}
-      <span className="relative z-10 select-none" aria-hidden="true">
-        {country === "All Other" ? (
-          <Globe
-            className={`h-8 w-8 transition-colors duration-200 ${
-              isActive ? "text-foreground" : "text-muted-foreground"
-            }`}
-            strokeWidth={1.4}
-          />
-        ) : (
-          <span className="text-3xl leading-none drop-shadow-sm">
-            {meta.flag}
-          </span>
-        )}
+      {/* Flag in rounded container */}
+      <span className="relative z-10">
+        <CountryFlagImage
+          country={country}
+          size="lg"
+          shape="rounded"
+          isActive={isActive}
+          accentColor={accentColor}
+        />
       </span>
 
       {/* Country name */}

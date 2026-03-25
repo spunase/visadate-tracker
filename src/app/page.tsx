@@ -200,6 +200,7 @@ export default function HomePage() {
   const [selectedCountry, setSelectedCountry] = useState<PreferredCountry>(defaultCountry);
   const [selectedCategory, setSelectedCategory] = useState<PreferredCategory>(defaultCategory);
   const [activeGroup, setActiveGroup] = useState<"Employment" | "Family">(groupForCategory(defaultCategory));
+  const [showCountryCategories, setShowCountryCategories] = useState(false);
   const [showOtherData, setShowOtherData] = useState(false);
   const [mounted, setMounted] = useState(false);
 
@@ -426,16 +427,44 @@ export default function HomePage() {
 
         {/* ── Other categories for selected country ── */}
         <motion.div variants={item}>
-          <h3 className="mb-2.5 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-            All {selectedCountry} Categories
-          </h3>
-          <div className="flex flex-col gap-3">
-            {countryRows
-              .filter((r) => r.category !== selectedCategory)
-              .map((row) => (
-                <MovementCard key={`${row.country}-${row.category}`} row={row} />
-              ))}
-          </div>
+          <button
+            onClick={() => setShowCountryCategories((prev) => !prev)}
+            className="flex w-full items-center justify-between rounded-[18px] bg-muted/60 px-5 py-4 text-left transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-calm-blue focus-visible:ring-offset-2"
+            aria-expanded={showCountryCategories}
+            aria-controls="country-categories-data"
+          >
+            <span className="text-sm font-semibold text-foreground">
+              All {selectedCountry} Categories
+            </span>
+            <motion.span
+              animate={{ rotate: showCountryCategories ? 180 : 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              <ChevronDown className="h-5 w-5 text-muted-foreground" />
+            </motion.span>
+          </button>
+
+          <AnimatePresence>
+            {showCountryCategories && (
+              <motion.div
+                id="country-categories-data"
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ type: "spring", stiffness: 120, damping: 20 }}
+                className="overflow-hidden"
+                aria-live="polite"
+              >
+                <div className="flex flex-col gap-3 pt-3">
+                  {countryRows
+                    .filter((r) => r.category !== selectedCategory)
+                    .map((row) => (
+                      <MovementCard key={`${row.country}-${row.category}`} row={row} />
+                    ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </motion.div>
 
         {/* ── What Changed This Month ── */}
