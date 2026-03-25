@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, Globe, TrendingUp, Route, Palette, RotateCcw } from "lucide-react";
+import { ArrowLeft, Globe, TrendingUp, Route, Palette, RotateCcw, Bell, BellOff } from "lucide-react";
 import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,7 @@ import {
 } from "@/stores/preferences-store";
 import { CountryFlagSelector } from "@/components/ui/country-flag-selector";
 import { useTheme, type Theme } from "@/components/theme-provider";
+import { useNotificationStore } from "@/stores/notification-store";
 
 // ---------------------------------------------------------------------------
 // Animation variants
@@ -133,10 +134,21 @@ export default function SettingsPage() {
   } = usePreferencesStore();
 
   const { theme, setTheme } = useTheme();
+  const {
+    enabled: notificationsEnabled,
+    reminderDay,
+    enableNotifications,
+    disableNotifications,
+    setReminderDay,
+    syncPermission,
+  } = useNotificationStore();
 
   // Hydration guard
   const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+  useEffect(() => {
+    setMounted(true);
+    syncPermission();
+  }, [syncPermission]);
 
   // Mark onboarded when user visits settings
   useEffect(() => {
@@ -270,6 +282,56 @@ export default function SettingsPage() {
                     v === "light" ? "Light" : v === "dark" ? "Dark" : "System"
                   }
                 />
+              </SettingRow>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* ── Notifications ── */}
+        <motion.div variants={cardVariants}>
+          <Card className="riso-doc-coral rounded-[18px] border border-border/50 shadow-sm">
+            <CardHeader className="pb-0">
+              <CardTitle className="flex items-center gap-2 text-base font-semibold">
+                <Bell className="h-4 w-4 text-calm-blue" aria-hidden="true" />
+                Bulletin Reminders
+              </CardTitle>
+              <CardDescription className="text-xs">
+                Get reminded when new visa bulletins are released.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="px-5 pb-5">
+              <SettingRow
+                icon={<Bell className="h-4 w-4" />}
+                label={notificationsEnabled ? "Reminders Active" : "Reminders Off"}
+                description={
+                  notificationsEnabled
+                    ? "You\u2019ll be reminded around bulletin release day each month."
+                    : "Enable browser notifications to never miss a bulletin."
+                }
+              >
+                {notificationsEnabled ? (
+                  <div className="flex items-center gap-2">
+                    <select
+                      value={reminderDay}
+                      onChange={(e) => setReminderDay(Number(e.target.value))}
+                      aria-label="Reminder day of month"
+                      className="h-8 rounded-md border border-border bg-background px-2 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-[#2F6BFF]/50"
+                    >
+                      {Array.from({ length: 28 }, (_, i) => i + 1).map((d) => (
+                        <option key={d} value={d}>Day {d}</option>
+                      ))}
+                    </select>
+                    <Button size="sm" variant="ghost" onClick={disableNotifications}>
+                      <BellOff className="mr-1 h-3 w-3" />
+                      Disable
+                    </Button>
+                  </div>
+                ) : (
+                  <Button size="sm" onClick={enableNotifications}>
+                    <Bell className="mr-1 h-3 w-3" />
+                    Enable
+                  </Button>
+                )}
               </SettingRow>
             </CardContent>
           </Card>

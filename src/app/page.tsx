@@ -2,9 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Bell, ChevronDown, Settings } from "lucide-react";
+import { ChevronDown, Settings } from "lucide-react";
 import Link from "next/link";
-import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { VelocityArc } from "@/components/ui/velocity-arc";
 import { HopeContext } from "@/components/ui/hope-context";
 import { ShimmerReveal } from "@/components/ui/shimmer-reveal";
@@ -21,6 +20,7 @@ import {
   type PreferredCategory,
 } from "@/stores/preferences-store";
 import { CountryFlagSelector } from "@/components/ui/country-flag-selector";
+import { NotificationBell } from "@/components/notifications/notification-bell";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -259,17 +259,7 @@ export default function HomePage() {
       <PageHeader
         title="VisaDateTracker"
         subtitle="Your green card priority date companion"
-        action={
-          <div className="flex items-center gap-1">
-            <ThemeToggle />
-            <button
-              className="rounded-full p-2 text-muted-foreground transition-colors hover:bg-accent"
-              aria-label="Notifications"
-            >
-              <Bell className="h-5 w-5" />
-            </button>
-          </div>
-        }
+        action={<NotificationBell />}
       />
 
       <motion.div

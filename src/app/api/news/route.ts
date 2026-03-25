@@ -99,7 +99,7 @@ export async function GET() {
 
       if (!error && updates && updates.length > 0) {
         return NextResponse.json({
-          updates: updates as PolicyUpdate[],
+          news: updates as PolicyUpdate[],
           count: updates.length,
           _meta: {
             source: "supabase",
@@ -118,7 +118,7 @@ export async function GET() {
 
   // --- Fallback to mock data ---
   return NextResponse.json({
-    updates: mockUpdates,
+    news: mockUpdates,
     count: mockUpdates.length,
     _meta: {
       source: "mock",

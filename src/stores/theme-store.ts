@@ -19,6 +19,6 @@ export const useThemeStore = create<ThemeState>()(
           theme: state.theme === "quiet-clarity" ? "risograph" : "quiet-clarity",
         })),
     }),
-    { name: "visadate-theme" }
+    { name: "visadate-design-theme" }
   )
 );
