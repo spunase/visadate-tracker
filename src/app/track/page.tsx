@@ -95,6 +95,7 @@ export default function TrackPage() {
   const [result, setResult] = useState<EvaluationResult | null>(null);
   const [bulletinMonth, setBulletinMonth] = useState<string>("");
   const [faCutoffDate, setFaCutoffDate] = useState<string | null>(null);
+  const [filingCutoffDate, setFilingCutoffDate] = useState<string | null>(null);
 
   const { savedTrackers, addTracker, removeTracker } = useTrackerStore();
 
@@ -125,8 +126,9 @@ export default function TrackPage() {
       const faRow = findRow(rows, "final_action", category, apiCountry);
       const dfRow = findRow(rows, "dates_for_filing", category, apiCountry);
 
-      // Store the FA cutoff date for display in JourneyProgress/Snapshot
+      // Store cutoff dates for display in JourneyProgress/Snapshot
       setFaCutoffDate(faRow?.cutoff_date ?? null);
+      setFilingCutoffDate(dfRow?.cutoff_date ?? null);
 
       const finalActionCutoff = rowToCutoffValue(faRow);
       const datesForFilingCutoff = rowToCutoffValue(dfRow);
@@ -369,6 +371,7 @@ export default function TrackPage() {
                     <JourneyProgress
                       priorityDate={priorityDate}
                       currentFinalAction={faCutoffDate}
+                      currentFiling={filingCutoffDate ?? undefined}
                       category={category}
                       country={country}
                     />

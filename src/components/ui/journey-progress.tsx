@@ -16,6 +16,8 @@ export interface JourneyProgressProps {
   priorityDate: string;
   /** Current Final Action Date as ISO string (YYYY-MM-DD) */
   currentFinalAction: string;
+  /** Current Dates-for-Filing cutoff as ISO string (YYYY-MM-DD), optional */
+  currentFiling?: string;
   /** Visa category, e.g. "EB-2", "EB-3" */
   category: string;
   /** Country of chargeability, e.g. "India", "China" */
@@ -26,7 +28,7 @@ export interface JourneyProgressProps {
 // ─── Helpers ───────────────────────────────────────────────────
 
 function parseDate(iso: string): Date {
-  return new Date(iso);
+  return new Date(iso + (iso.includes("T") ? "" : "T00:00:00"));
 }
 
 function formatDate(iso: string): string {
@@ -37,55 +39,82 @@ function formatDate(iso: string): string {
   });
 }
 
-function monthsBetween(a: Date, b: Date): number {
-  return (
-    (b.getFullYear() - a.getFullYear()) * 12 +
-    (b.getMonth() - a.getMonth()) +
-    (b.getDate() - a.getDate()) / 30
-  );
+function daysBetween(a: Date, b: Date): number {
+  return (b.getTime() - a.getTime()) / 86_400_000;
 }
 
 /**
- * Calculate how far the Final Action Date has progressed
- * from a baseline toward (or past) the priority date.
- *
- * Baseline: We use a fixed reference point 10 years before
- * the priority date as 0%. When the final action date reaches
- * or passes the priority date it's 100% (current).
+ * Roll a date back to the start of its calendar quarter.
+ * Q1: Jan 1, Q2: Apr 1, Q3: Jul 1, Q4: Oct 1
  */
-function computeProgress(priorityDate: string, finalAction: string): number {
+function quarterStart(d: Date): Date {
+  const q = Math.floor(d.getMonth() / 3) * 3; // 0, 3, 6, 9
+  return new Date(d.getFullYear(), q, 1);
+}
+
+/**
+ * Smart baseline: quarter-start before the earlier of FA/Filing dates.
+ * This keeps the bar focused on the meaningful range rather than an
+ * arbitrary 10-year lookback.
+ */
+function computeBaseline(finalAction: string, filing?: string): Date {
+  const fa = parseDate(finalAction);
+  const fl = filing ? parseDate(filing) : fa;
+  const earlier = fa < fl ? fa : fl;
+  return quarterStart(earlier);
+}
+
+/**
+ * Compute the fill percentage of the progress bar.
+ * 0 % = baseline (quarter-start before earlier cutoff)
+ * 100 % = priority date (the finish line on the right)
+ *
+ * We position the Final Action date along this range.
+ */
+function computeProgress(
+  baseline: Date,
+  priorityDate: string,
+  finalAction: string,
+): number {
   const pd = parseDate(priorityDate);
   const fa = parseDate(finalAction);
 
-  // If final action is at or past priority date => current
   if (fa >= pd) return 100;
 
-  // Use a 10-year lookback as the baseline (0%)
-  const baseline = new Date(pd);
-  baseline.setFullYear(baseline.getFullYear() - 10);
+  const totalDays = daysBetween(baseline, pd);
+  if (totalDays <= 0) return 100;
 
-  const totalSpan = monthsBetween(baseline, pd);
-  const elapsed = monthsBetween(baseline, fa);
-
-  if (totalSpan <= 0) return 100;
-  return Math.min(100, Math.max(0, (elapsed / totalSpan) * 100));
+  const elapsedDays = daysBetween(baseline, fa);
+  return Math.min(100, Math.max(0, (elapsedDays / totalDays) * 100));
 }
 
 /**
- * Generate milestone markers along the journey.
- * Placed at 25%, 50%, 75% of the total span.
+ * Position a date on the bar as a percentage.
+ */
+function dateToPosition(baseline: Date, pdDate: Date, target: Date): number {
+  const totalDays = daysBetween(baseline, pdDate);
+  if (totalDays <= 0) return 100;
+  const elapsed = daysBetween(baseline, target);
+  return Math.min(100, Math.max(0, (elapsed / totalDays) * 100));
+}
+
+/**
+ * Dynamic milestones — evenly-spaced date labels along the bar.
+ * Count adapts to the span: 2 markers for short spans, 3 for longer.
  */
 function computeMilestones(
-  priorityDate: string,
+  baseline: Date,
+  pdDate: Date,
 ): { position: number; label: string }[] {
-  const pd = parseDate(priorityDate);
-  const baseline = new Date(pd);
-  baseline.setFullYear(baseline.getFullYear() - 10);
+  const totalDays = daysBetween(baseline, pdDate);
+  // For short spans (< 2 years) use 2 markers; otherwise 3
+  const count = totalDays < 730 ? 2 : 3;
+  const step = 100 / (count + 1); // evenly spaced excluding 0 and 100
 
-  return [25, 50, 75].map((pct) => {
-    const months = monthsBetween(baseline, pd) * (pct / 100);
-    const d = new Date(baseline);
-    d.setMonth(d.getMonth() + Math.round(months));
+  return Array.from({ length: count }, (_, i) => {
+    const pct = step * (i + 1);
+    const daysIn = totalDays * (pct / 100);
+    const d = new Date(baseline.getTime() + daysIn * 86_400_000);
     const label = d.toLocaleDateString("en-US", {
       year: "2-digit",
       month: "short",
@@ -127,23 +156,53 @@ const celebrationVariants: Variants = {
 export function JourneyProgress({
   priorityDate,
   currentFinalAction,
+  currentFiling,
   category,
   country,
   className,
 }: JourneyProgressProps) {
   const prefersReduced = useReducedMotion();
 
-  const progress = useMemo(
-    () => computeProgress(priorityDate, currentFinalAction),
-    [priorityDate, currentFinalAction],
-  );
+  const {
+    progress,
+    milestones,
+    isCurrent,
+    baseline,
+    pdDate,
+    faPosition,
+    filingPosition,
+    filingLabel,
+  } = useMemo(() => {
+    const bl = computeBaseline(currentFinalAction, currentFiling);
+    const pd = parseDate(priorityDate);
+    const prog = computeProgress(bl, priorityDate, currentFinalAction);
+    const ms = computeMilestones(bl, pd);
+    const faPct = dateToPosition(bl, pd, parseDate(currentFinalAction));
 
-  const milestones = useMemo(
-    () => computeMilestones(priorityDate),
-    [priorityDate],
-  );
+    let flPct: number | null = null;
+    let flLabel: string | null = null;
+    if (currentFiling) {
+      flPct = dateToPosition(bl, pd, parseDate(currentFiling));
+      flLabel = formatDate(currentFiling);
+    }
 
-  const isCurrent = progress >= 100;
+    return {
+      progress: prog,
+      milestones: ms,
+      isCurrent: prog >= 100,
+      baseline: bl,
+      pdDate: pd,
+      faPosition: faPct,
+      filingPosition: flPct,
+      filingLabel: flLabel,
+    };
+  }, [priorityDate, currentFinalAction, currentFiling]);
+
+  // The "effective" cutoff shown in the fill is whichever is further along (closer to PD)
+  const effectiveFill = Math.max(
+    progress,
+    filingPosition != null ? filingPosition : 0,
+  );
 
   return (
     <motion.div
@@ -191,19 +250,40 @@ export function JourneyProgress({
       {/* Progress bar */}
       <div className="mt-3">
         <div className="relative h-2.5 w-full overflow-hidden rounded-full bg-muted">
-          {/* Gradient fill */}
+          {/* Gradient fill — extends to whichever cutoff is further along */}
           <motion.div
             className="h-full origin-left rounded-full bg-gradient-to-r from-calm-blue to-success-emerald"
             variants={prefersReduced ? undefined : barVariants}
             initial="hidden"
             animate="visible"
-            custom={progress}
+            custom={effectiveFill}
             style={
               prefersReduced
-                ? { transform: `scaleX(${progress / 100})` }
+                ? { transform: `scaleX(${effectiveFill / 100})` }
                 : undefined
             }
           />
+
+          {/* Final Action Date — vertical marker */}
+          <div
+            className="absolute top-0 z-10 flex h-full flex-col items-center"
+            style={{ left: `${faPosition}%` }}
+            aria-hidden="true"
+          >
+            <div className="h-full w-[3px] rounded-full bg-calm-blue shadow-sm" />
+          </div>
+
+          {/* Filing Date — vertical marker (if available and different from FA) */}
+          {filingPosition != null &&
+            Math.abs(filingPosition - faPosition) > 1.5 && (
+              <div
+                className="absolute top-0 z-10 flex h-full flex-col items-center"
+                style={{ left: `${filingPosition}%` }}
+                aria-hidden="true"
+              >
+                <div className="h-full w-[2px] rounded-full bg-insight-teal opacity-70" />
+              </div>
+            )}
 
           {/* Milestone markers */}
           {milestones.map((m) => (
@@ -216,8 +296,34 @@ export function JourneyProgress({
           ))}
         </div>
 
+        {/* FA / Filing indicator labels — positioned above the bar */}
+        <div className="relative mt-0.5 h-4">
+          {/* FA label */}
+          <span
+            className="absolute -translate-x-1/2 text-[10px] font-semibold text-calm-blue"
+            style={{
+              left: `${Math.min(92, Math.max(8, faPosition))}%`,
+            }}
+          >
+            FA
+          </span>
+
+          {/* Filing label */}
+          {filingPosition != null &&
+            Math.abs(filingPosition - faPosition) > 8 && (
+              <span
+                className="absolute -translate-x-1/2 text-[10px] font-semibold text-insight-teal"
+                style={{
+                  left: `${Math.min(92, Math.max(8, filingPosition))}%`,
+                }}
+              >
+                DF
+              </span>
+            )}
+        </div>
+
         {/* Milestone labels */}
-        <div className="relative mt-1 h-4">
+        <div className="relative h-4">
           {milestones.map((m) => (
             <span
               key={m.position}
@@ -231,15 +337,52 @@ export function JourneyProgress({
         </div>
       </div>
 
-      {/* Date labels */}
+      {/* Date labels — Filing (or baseline) on LEFT, PD on RIGHT */}
       <div className="mt-2 flex items-center justify-between text-tiny text-muted-foreground">
         <span>
-          PD: <span className="font-medium text-card-foreground">{formatDate(priorityDate)}</span>
+          {currentFiling ? (
+            <>
+              Filing:{" "}
+              <span className="font-medium text-card-foreground">
+                {formatDate(currentFiling)}
+              </span>
+            </>
+          ) : (
+            <>
+              FAD:{" "}
+              <span className="font-medium text-card-foreground">
+                {formatDate(currentFinalAction)}
+              </span>
+            </>
+          )}
         </span>
         <span>
-          FAD: <span className="font-medium text-card-foreground">{formatDate(currentFinalAction)}</span>
+          PD:{" "}
+          <span className="font-medium text-card-foreground">
+            {formatDate(priorityDate)}
+          </span>
         </span>
       </div>
+
+      {/* Secondary date row when filing is shown — show FA below */}
+      {currentFiling && (
+        <div className="mt-0.5 flex items-center justify-between text-tiny text-muted-foreground">
+          <span>
+            FAD:{" "}
+            <span className="font-medium text-card-foreground">
+              {formatDate(currentFinalAction)}
+            </span>
+          </span>
+          <span className="text-[10px] text-muted-foreground/60">
+            Bar start:{" "}
+            {baseline.toLocaleDateString("en-US", {
+              year: "numeric",
+              month: "short",
+              day: "numeric",
+            })}
+          </span>
+        </div>
+      )}
 
       {/* Current celebration overlay */}
       {isCurrent && (
