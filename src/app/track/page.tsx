@@ -11,6 +11,8 @@ import { Badge } from "@/components/ui/badge";
 import { ResultCard } from "@/components/track/result-card";
 import { ShareSnapshot } from "@/components/track/share-snapshot";
 import { useTrackerStore, type SavedTracker } from "@/stores/tracker-store";
+import { useAuthStore } from "@/stores/auth-store";
+import { SignInDialog } from "@/components/auth/sign-in-dialog";
 import { JourneyProgress } from "@/components/ui/journey-progress";
 import { ConvergenceTimeline } from "@/components/charts/convergence-timeline";
 import { useConvergence } from "@/lib/hooks/use-convergence";
@@ -98,6 +100,8 @@ export default function TrackPage() {
   const [filingCutoffDate, setFilingCutoffDate] = useState<string | null>(null);
 
   const { savedTrackers, addTracker, removeTracker } = useTrackerStore();
+  const { user } = useAuthStore();
+  const [showSignIn, setShowSignIn] = useState(false);
 
   // Fetch convergence data (both FA + Filing histories) when result is shown
   const convergence = useConvergence(category, country);
@@ -165,6 +169,10 @@ export default function TrackPage() {
   // ── Save handler ──────────────────────────────────────────────────────
   const handleSave = () => {
     if (!priorityDate) return;
+    if (!user) {
+      setShowSignIn(true);
+      return;
+    }
     addTracker({
       category,
       country,
@@ -520,6 +528,8 @@ export default function TrackPage() {
           />
         )}
       </div>
+
+      <SignInDialog open={showSignIn} onOpenChange={setShowSignIn} />
     </div>
   );
 }
