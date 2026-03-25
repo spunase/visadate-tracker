@@ -5,8 +5,7 @@ import { PageHeader } from "@/components/layout/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { TrendLineChart } from "@/components/charts/trend-line-chart";
-import { MovementBarChart } from "@/components/charts/movement-bar-chart";
+import { JourneyChronicle } from "@/components/charts/journey-chronicle";
 import { TrendNarrative } from "@/components/charts/trend-narrative";
 import { useHistory } from "@/lib/hooks/use-history";
 import { useState, useEffect } from "react";
@@ -20,6 +19,7 @@ import {
   type PreferredCountry,
   type CategoryGroup,
 } from "@/stores/preferences-store";
+import { CountryFlagSelector } from "@/components/ui/country-flag-selector";
 
 const ebCategories = ["EB1", "EB2", "EB3"] as const;
 const familyCategories = ["F1", "F2A", "F2B", "F3", "F4"] as const;
@@ -154,32 +154,11 @@ export default function TrendsPage() {
         {/* Country & Category Selectors — consistent with home screen */}
         <motion.div variants={item}>
           <nav aria-label="Country and category filters" className="space-y-3">
-            {/* Country chips */}
-            <div>
-              <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-                Country of Charge
-              </label>
-              <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label="Select country">
-                {countries.map((c) => {
-                  const isActive = c === country;
-                  return (
-                    <button
-                      key={c}
-                      role="radio"
-                      aria-checked={isActive}
-                      onClick={() => setCountry(c)}
-                      className={`rounded-full px-3 py-1.5 text-xs font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2F6BFF] focus-visible:ring-offset-2 ${
-                        isActive
-                          ? "bg-[#2F6BFF] text-white shadow-md"
-                          : "border border-border bg-card text-muted-foreground hover:bg-accent"
-                      }`}
-                    >
-                      {c}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
+            {/* Country selector with flags */}
+            <CountryFlagSelector
+              value={country}
+              onChange={setCountry}
+            />
 
             {/* Employment / Family toggle */}
             <div>
@@ -262,11 +241,11 @@ export default function TrendsPage() {
           </div>
         </motion.div>
 
-        {/* Trend Line Chart */}
+        {/* Unified Journey Chronicle — trend line + movement stamps + stats */}
         <motion.div variants={item}>
           <Card className="riso-doc-neutral rounded-[18px] border border-border/50 shadow-sm">
             <CardHeader className="pb-2">
-              <CardTitle className="text-base font-semibold">
+              <CardTitle className="font-heading text-base font-semibold">
                 {category} {country} &mdash; {chartMode} Dates
               </CardTitle>
             </CardHeader>
@@ -278,41 +257,26 @@ export default function TrendsPage() {
                   </p>
                 </div>
               ) : isLoading ? (
-                <div className="flex h-48 flex-col items-center justify-center rounded-xl bg-muted/40">
-                  <Skeleton className="h-32 w-full rounded-lg" />
-                  <p className="mt-3 text-xs text-muted-foreground">
-                    Loading trend data&hellip;
-                  </p>
+                <div className="space-y-3">
+                  <div className="flex h-48 flex-col items-center justify-center rounded-xl bg-muted/40">
+                    <Skeleton className="h-32 w-full rounded-lg" />
+                    <p className="mt-3 text-xs text-muted-foreground">
+                      Loading your journey&hellip;
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    <Skeleton className="h-12 rounded-xl" />
+                    <Skeleton className="h-12 rounded-xl" />
+                    <Skeleton className="h-12 rounded-xl" />
+                  </div>
                 </div>
               ) : (
-                <TrendLineChart
+                <JourneyChronicle
                   data={history}
                   category={category}
                   country={country}
                   chartMode={chartMode}
                 />
-              )}
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        {/* Movement Bar Chart */}
-        <motion.div variants={item}>
-          <Card className="riso-doc-neutral rounded-[18px] border border-border/50 shadow-sm">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-semibold">
-                Monthly Movement
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-5 pt-0">
-              {error ? (
-                <div className="flex h-24 items-center justify-center rounded-xl bg-muted/40">
-                  <p className="text-xs text-destructive">Unable to load.</p>
-                </div>
-              ) : isLoading ? (
-                <Skeleton className="h-24 w-full rounded-lg" />
-              ) : (
-                <MovementBarChart data={history} />
               )}
             </CardContent>
           </Card>
