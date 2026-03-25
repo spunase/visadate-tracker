@@ -8,6 +8,12 @@ import {
 } from "framer-motion";
 import { CheckCircle2, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+  TooltipProvider,
+} from "@/components/ui/tooltip";
 
 // ─── Types ─────────────────────────────────────────────────────
 
@@ -234,17 +240,26 @@ export function JourneyProgress({
           </p>
         </div>
 
-        {/* Percentage badge */}
-        <span
-          className={cn(
-            "inline-flex items-center rounded-[var(--radius-pill)] px-2.5 py-0.5 text-caption font-semibold",
-            isCurrent
-              ? "bg-status-current text-status-current-foreground"
-              : "bg-status-filing text-status-filing-foreground",
-          )}
-        >
-          {isCurrent ? "Current!" : `${Math.round(progress)}%`}
-        </span>
+        {/* Percentage badge with explainer tooltip */}
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger
+              className={cn(
+                "inline-flex cursor-help items-center rounded-[var(--radius-pill)] px-2.5 py-0.5 text-caption font-semibold",
+                isCurrent
+                  ? "bg-status-current text-status-current-foreground"
+                  : "bg-status-filing text-status-filing-foreground",
+              )}
+            >
+              {isCurrent ? "Current!" : `${Math.round(progress)}%`}
+            </TooltipTrigger>
+            <TooltipContent side="bottom" sideOffset={6}>
+              {isCurrent
+                ? "The Final Action cutoff has reached your priority date — you\u2019re current!"
+                : `The Final Action date has covered ${Math.round(progress)}% of the distance from the earliest cutoff to your priority date.`}
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </div>
 
       {/* Progress bar */}
