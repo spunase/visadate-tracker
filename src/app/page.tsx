@@ -16,10 +16,11 @@ import { Separator } from "@/components/ui/separator";
 import {
   usePreferencesStore,
   COUNTRIES_BY_QUEUE,
-  CATEGORIES,
+  CATEGORY_GROUPS,
   type PreferredCountry,
   type PreferredCategory,
 } from "@/stores/preferences-store";
+import { CountryFlagSelector } from "@/components/ui/country-flag-selector";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -65,12 +66,38 @@ const allMovementData: MovementRow[] = [
   { category: "EB1", country: "All Other", finalAction: { kind: "current" }, filingDate: { kind: "current" }, movement: "Current", direction: "none" },
   { category: "EB2", country: "All Other", finalAction: { kind: "date", value: "Oct 15, 2024" }, filingDate: { kind: "current" }, movement: "+2 weeks", direction: "forward" },
   { category: "EB3", country: "All Other", finalAction: { kind: "date", value: "Jan 08, 2023" }, filingDate: { kind: "date", value: "Jun 01, 2023" }, movement: "+1 month", direction: "forward" },
-];
 
-const newsPreview = [
-  { id: "1", badge: "USCIS", headline: "March 2026 Visa Bulletin Released", summary: "Department of State publishes updated priority dates for employment-based categories.", date: "Mar 10, 2026" },
-  { id: "2", badge: "H-1B", headline: "FY2027 H-1B Registration Opens April 1", summary: "USCIS announces electronic registration period for H-1B cap-subject petitions.", date: "Mar 8, 2026" },
-  { id: "3", badge: "Policy", headline: "USCIS Updates Filing Date Policy", summary: "New guidance on when Filing Date chart can be used for AOS applications.", date: "Mar 5, 2026" },
+  // ── Family-Based Categories (March 2026 Visa Bulletin — official DOS source) ──
+  // India
+  { category: "F1", country: "India", finalAction: { kind: "date", value: "Jan 01, 2016" }, filingDate: { kind: "date", value: "Jan 01, 2017" }, movement: "+3 weeks", direction: "forward" },
+  { category: "F2A", country: "India", finalAction: { kind: "date", value: "Sep 01, 2021" }, filingDate: { kind: "date", value: "Jun 01, 2023" }, movement: "+1 month", direction: "forward" },
+  { category: "F2B", country: "India", finalAction: { kind: "date", value: "Jan 01, 2012" }, filingDate: { kind: "date", value: "Jan 01, 2013" }, movement: "No change", direction: "none" },
+  { category: "F3", country: "India", finalAction: { kind: "date", value: "Oct 01, 2008" }, filingDate: { kind: "date", value: "Oct 01, 2009" }, movement: "+2 weeks", direction: "forward" },
+  { category: "F4", country: "India", finalAction: { kind: "date", value: "Apr 15, 2006" }, filingDate: { kind: "date", value: "Aug 01, 2006" }, movement: "No change", direction: "none" },
+  // China
+  { category: "F1", country: "China", finalAction: { kind: "date", value: "Jan 01, 2016" }, filingDate: { kind: "date", value: "Jan 01, 2017" }, movement: "+3 weeks", direction: "forward" },
+  { category: "F2A", country: "China", finalAction: { kind: "date", value: "Sep 01, 2021" }, filingDate: { kind: "date", value: "Jun 01, 2023" }, movement: "+1 month", direction: "forward" },
+  { category: "F2B", country: "China", finalAction: { kind: "date", value: "Jun 08, 2017" }, filingDate: { kind: "date", value: "Apr 01, 2018" }, movement: "+2 weeks", direction: "forward" },
+  { category: "F3", country: "China", finalAction: { kind: "date", value: "Jun 01, 2008" }, filingDate: { kind: "date", value: "Aug 01, 2009" }, movement: "No change", direction: "none" },
+  { category: "F4", country: "China", finalAction: { kind: "date", value: "Jan 01, 2007" }, filingDate: { kind: "date", value: "Mar 01, 2008" }, movement: "+1 month", direction: "forward" },
+  // Philippines
+  { category: "F1", country: "Philippines", finalAction: { kind: "date", value: "Apr 01, 2013" }, filingDate: { kind: "date", value: "Oct 01, 2015" }, movement: "+1 month", direction: "forward" },
+  { category: "F2A", country: "Philippines", finalAction: { kind: "date", value: "Sep 01, 2021" }, filingDate: { kind: "date", value: "Jun 01, 2023" }, movement: "+1 month", direction: "forward" },
+  { category: "F2B", country: "Philippines", finalAction: { kind: "date", value: "Oct 22, 2012" }, filingDate: { kind: "date", value: "Oct 01, 2013" }, movement: "No change", direction: "none" },
+  { category: "F3", country: "Philippines", finalAction: { kind: "date", value: "Nov 22, 2002" }, filingDate: { kind: "date", value: "Jun 01, 2005" }, movement: "+3 weeks", direction: "forward" },
+  { category: "F4", country: "Philippines", finalAction: { kind: "date", value: "Mar 22, 2004" }, filingDate: { kind: "date", value: "Apr 01, 2006" }, movement: "No change", direction: "none" },
+  // Mexico
+  { category: "F1", country: "Mexico", finalAction: { kind: "date", value: "Apr 01, 2002" }, filingDate: { kind: "date", value: "Jun 01, 2005" }, movement: "+2 weeks", direction: "forward" },
+  { category: "F2A", country: "Mexico", finalAction: { kind: "date", value: "Jun 01, 2021" }, filingDate: { kind: "date", value: "Jun 01, 2023" }, movement: "+1 month", direction: "forward" },
+  { category: "F2B", country: "Mexico", finalAction: { kind: "date", value: "Jul 01, 2006" }, filingDate: { kind: "date", value: "Jul 01, 2007" }, movement: "No change", direction: "none" },
+  { category: "F3", country: "Mexico", finalAction: { kind: "date", value: "Nov 15, 2000" }, filingDate: { kind: "date", value: "Aug 01, 2002" }, movement: "+2 weeks", direction: "forward" },
+  { category: "F4", country: "Mexico", finalAction: { kind: "date", value: "Mar 01, 2001" }, filingDate: { kind: "date", value: "Mar 01, 2003" }, movement: "No change", direction: "none" },
+  // All Other
+  { category: "F1", country: "All Other", finalAction: { kind: "date", value: "Jan 01, 2016" }, filingDate: { kind: "date", value: "Jan 01, 2017" }, movement: "+3 weeks", direction: "forward" },
+  { category: "F2A", country: "All Other", finalAction: { kind: "date", value: "Sep 01, 2021" }, filingDate: { kind: "date", value: "Jun 01, 2023" }, movement: "+1 month", direction: "forward" },
+  { category: "F2B", country: "All Other", finalAction: { kind: "date", value: "Sep 22, 2017" }, filingDate: { kind: "date", value: "Apr 01, 2018" }, movement: "+2 weeks", direction: "forward" },
+  { category: "F3", country: "All Other", finalAction: { kind: "date", value: "Nov 08, 2008" }, filingDate: { kind: "date", value: "Aug 01, 2009" }, movement: "No change", direction: "none" },
+  { category: "F4", country: "All Other", finalAction: { kind: "date", value: "Mar 22, 2007" }, filingDate: { kind: "date", value: "Mar 01, 2008" }, movement: "+1 month", direction: "forward" },
 ];
 
 // ---------------------------------------------------------------------------
@@ -87,6 +114,24 @@ function cutoffValueClasses(value: CutoffValue): string {
   if (value.kind === "current") return "text-emerald-700 dark:text-emerald-300";
   if (value.kind === "unavailable") return "text-muted-foreground";
   return "text-foreground";
+}
+
+/** Generate a dynamic "What Changed" narrative from movement data for a given country. */
+function generateNarrative(rows: MovementRow[], country: PreferredCountry): string {
+  if (rows.length === 0) return `No data available for ${country}.`;
+
+  const parts = rows.map((row) => {
+    const date = formatCutoffValue(row.finalAction);
+    if (row.direction === "forward") {
+      return `${row.category} ${country} advanced ${row.movement} to ${date}`;
+    }
+    if (row.direction === "backward") {
+      return `${row.category} ${country} retrogressed ${row.movement} to ${date}`;
+    }
+    return `${row.category} ${country} remained unchanged at ${date}`;
+  });
+
+  return parts.join(". ") + ".";
 }
 
 // ---------------------------------------------------------------------------
@@ -109,7 +154,7 @@ const item = {
 
 function MovementCard({ row }: { row: MovementRow }) {
   return (
-    <Card className="rounded-[18px] border border-border/50 shadow-sm">
+    <Card className="riso-doc-coral rounded-[18px] border border-border/50 shadow-sm">
       <CardContent className="flex items-start justify-between gap-4 p-4">
         <div className="min-w-0 flex-1">
           <p className="text-sm font-semibold text-foreground">
@@ -145,20 +190,43 @@ function MovementCard({ row }: { row: MovementRow }) {
 // ---------------------------------------------------------------------------
 
 export default function HomePage() {
-  const { defaultCountry, defaultCategory } = usePreferencesStore();
+  const { defaultCountry, defaultCategory, setDefaultCountry, setDefaultCategory } = usePreferencesStore();
+
+  // Derive active group from category
+  const groupForCategory = (cat: PreferredCategory): "Employment" | "Family" =>
+    (["EB1", "EB2", "EB3"] as PreferredCategory[]).includes(cat) ? "Employment" : "Family";
 
   // Local filter state (initialized from preferences)
   const [selectedCountry, setSelectedCountry] = useState<PreferredCountry>(defaultCountry);
   const [selectedCategory, setSelectedCategory] = useState<PreferredCategory>(defaultCategory);
+  const [activeGroup, setActiveGroup] = useState<"Employment" | "Family">(groupForCategory(defaultCategory));
   const [showOtherData, setShowOtherData] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   // Sync with preferences on mount (Zustand hydration)
   useEffect(() => {
     setMounted(true);
+    const cat = usePreferencesStore.getState().defaultCategory;
     setSelectedCountry(usePreferencesStore.getState().defaultCountry);
-    setSelectedCategory(usePreferencesStore.getState().defaultCategory);
+    setSelectedCategory(cat);
+    setActiveGroup(groupForCategory(cat));
   }, []);
+
+  // Persist selections to store so other pages can read them
+  const handleCountryChange = (country: PreferredCountry) => {
+    setSelectedCountry(country);
+    setDefaultCountry(country);
+  };
+  const handleCategoryChange = (category: PreferredCategory) => {
+    setSelectedCategory(category);
+    setDefaultCategory(category);
+  };
+  const handleGroupChange = (group: "Employment" | "Family") => {
+    setActiveGroup(group);
+    // Auto-select first category in the new group
+    const firstCat = CATEGORY_GROUPS.find((g) => g.label === group)!.categories[0];
+    handleCategoryChange(firstCat);
+  };
 
   // Filter data
   const primaryRow = allMovementData.find(
@@ -213,52 +281,59 @@ export default function HomePage() {
         {/* ── Country & Category Selectors ── */}
         <motion.div variants={item}>
           <nav aria-label="Country and category filters" className="space-y-3">
-            {/* Country chips */}
+            {/* Country selector with flags */}
+            <CountryFlagSelector
+              value={selectedCountry}
+              onChange={handleCountryChange}
+              variant="cards"
+            />
+
+            {/* Employment / Family toggle */}
             <div>
               <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-                Country of Charge
+                Visa Type
               </label>
-              <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label="Select country">
-                {COUNTRIES_BY_QUEUE.map((c) => {
-                  const isActive = c === selectedCountry;
+              <div className="inline-flex rounded-xl bg-muted p-1 shadow-inner" role="radiogroup" aria-label="Select visa type">
+                {(["Employment", "Family"] as const).map((group) => {
+                  const isActive = group === activeGroup;
                   return (
                     <button
-                      key={c}
+                      key={group}
                       role="radio"
                       aria-checked={isActive}
-                      onClick={() => setSelectedCountry(c)}
-                      className={`rounded-full px-3 py-1.5 text-xs font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-calm-blue focus-visible:ring-offset-2 ${
+                      onClick={() => handleGroupChange(group)}
+                      className={`rounded-lg px-4 py-1.5 text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-calm-blue focus-visible:ring-offset-2 ${
                         isActive
-                          ? "bg-calm-blue text-white shadow-md"
-                          : "border border-border bg-card text-muted-foreground hover:bg-accent"
+                          ? "bg-calm-blue text-white shadow-sm"
+                          : "text-muted-foreground hover:text-foreground"
                       }`}
                     >
-                      {c}
+                      {group}-Based
                     </button>
                   );
                 })}
               </div>
             </div>
 
-            {/* Category segmented control */}
+            {/* Category selector — filtered by active group */}
             <div>
               <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
                 Visa Category
               </label>
               <div
-                className="inline-flex rounded-xl bg-muted p-1 shadow-inner"
+                className="inline-flex flex-wrap rounded-xl bg-muted p-1 shadow-inner"
                 role="radiogroup"
-                aria-label="Select visa category"
+                aria-label={`Select ${activeGroup.toLowerCase()} visa category`}
               >
-                {CATEGORIES.map((c) => {
+                {CATEGORY_GROUPS.find((g) => g.label === activeGroup)!.categories.map((c) => {
                   const isActive = c === selectedCategory;
                   return (
                     <button
                       key={c}
                       role="radio"
                       aria-checked={isActive}
-                      onClick={() => setSelectedCategory(c)}
-                      className={`rounded-lg px-5 py-1.5 text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-calm-blue focus-visible:ring-offset-2 ${
+                      onClick={() => handleCategoryChange(c)}
+                      className={`rounded-lg px-4 py-1.5 text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-calm-blue focus-visible:ring-offset-2 ${
                         isActive
                           ? "bg-calm-blue text-white shadow-sm"
                           : "text-muted-foreground hover:text-foreground"
@@ -275,7 +350,7 @@ export default function HomePage() {
 
         {/* ── Hero / Bulletin Month ── */}
         <motion.div variants={item}>
-          <Card className="overflow-hidden rounded-[18px] border-0 bg-gradient-to-br from-[#2F6BFF] to-[#1B4FCC] text-white shadow-lg dark:from-[#1B4FCC] dark:to-[#0F2E80]">
+          <Card className="riso-doc-teal-strong overflow-hidden rounded-[18px] border-0 bg-gradient-to-br from-[#2F6BFF] to-[#1B4FCC] text-white shadow-lg dark:from-[#1B4FCC] dark:to-[#0F2E80]">
             <CardContent className="p-5">
               <p className="text-sm font-medium text-white/70">
                 Current Bulletin
@@ -289,6 +364,8 @@ export default function HomePage() {
             </CardContent>
           </Card>
         </motion.div>
+
+        <div className="riso-divider" aria-hidden="true" />
 
         {/* ── Primary Personalized Card ── */}
         <motion.div variants={item}>
@@ -304,7 +381,7 @@ export default function HomePage() {
                 exit={{ opacity: 0, scale: 0.97 }}
                 transition={{ duration: 0.18 }}
               >
-                <Card className="relative overflow-hidden rounded-[18px] border-2 border-calm-blue/20 shadow-md dark:border-calm-blue/10">
+                <Card className="riso-doc-teal relative overflow-hidden rounded-[18px] border-2 border-calm-blue/20 shadow-md dark:border-calm-blue/10">
                   {/* Priority Pulse — subtle radial glow keyed to status */}
                   <div
                     className={`pointer-events-none absolute -right-8 -top-8 h-40 w-40 rounded-full blur-3xl opacity-30 transition-colors duration-700 ${
@@ -374,7 +451,7 @@ export default function HomePage() {
         {/* ── What Changed This Month ── */}
         <motion.div variants={item}>
           <ShimmerReveal delay={0.3}>
-            <Card className="rounded-[18px] border border-border/50 shadow-sm">
+            <Card className="riso-doc-neutral rounded-[18px] border border-border/50 shadow-sm">
               <CardHeader className="pb-2">
                 <CardTitle className="text-base font-semibold">
                   What Changed This Month
@@ -382,13 +459,11 @@ export default function HomePage() {
               </CardHeader>
               <CardContent className="space-y-2 text-sm text-muted-foreground">
                 <p>
-                  EB1 India advanced by one month to March 2023. EB2 India saw
-                  forward movement of two months to September 2013. EB3 India
-                  remained unchanged at November 2013.
+                  {generateNarrative(countryRows, selectedCountry)}
                 </p>
                 <p>
-                  Filing dates were not advanced for the March bulletin. Consular
-                  processing applicants should verify dates with their NVC case.
+                  Filing dates may differ — consular processing applicants should
+                  verify dates with their NVC case.
                 </p>
               </CardContent>
             </Card>
@@ -449,41 +524,6 @@ export default function HomePage() {
           </AnimatePresence>
         </motion.div>
 
-        {/* ── Top News Preview ── */}
-        <motion.div variants={item}>
-          <h3 className="mb-2.5 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-            Top News
-          </h3>
-          <div className="flex flex-col gap-3">
-            {newsPreview.map((article) => (
-              <Card
-                key={article.id}
-                className="rounded-[18px] border border-border/50 shadow-sm"
-              >
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-2">
-                    <Badge
-                      variant="secondary"
-                      className="text-[10px] font-semibold uppercase"
-                    >
-                      {article.badge}
-                    </Badge>
-                    <span className="text-[11px] text-muted-foreground">
-                      {article.date}
-                    </span>
-                  </div>
-                  <p className="mt-1.5 text-sm font-semibold leading-snug text-foreground">
-                    {article.headline}
-                  </p>
-                  <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                    {article.summary}
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </motion.div>
-
         {/* ── Share Your Update ── */}
         {primaryRow && (
           <motion.div variants={item}>
@@ -506,7 +546,7 @@ export default function HomePage() {
         <motion.div variants={item}>
           <Link
             href="/settings"
-            className="flex items-center justify-center gap-2 rounded-[18px] border border-dashed border-border px-4 py-3 text-sm font-medium text-muted-foreground transition-colors hover:border-calm-blue/40 hover:text-calm-blue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-calm-blue focus-visible:ring-offset-2"
+            className="riso-doc-gold flex items-center justify-center gap-2 rounded-[18px] border border-dashed border-border px-4 py-3 text-sm font-medium text-muted-foreground transition-colors hover:border-calm-blue/40 hover:text-calm-blue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-calm-blue focus-visible:ring-offset-2"
           >
             <Settings className="h-4 w-4" />
             Customize your defaults in Settings
@@ -515,7 +555,7 @@ export default function HomePage() {
 
         {/* ── Disclaimer ── */}
         <motion.div variants={item}>
-          <p className="mt-2 rounded-xl bg-muted/60 px-4 py-3 text-[11px] leading-relaxed text-muted-foreground">
+          <p className="riso-doc-gold-accent mt-2 rounded-xl bg-muted/60 px-4 py-3 text-[11px] leading-relaxed text-muted-foreground">
             This app provides informational tracking only. It does not
             constitute legal advice. Visa bulletin data is sourced from the U.S.
             Department of State. Always consult an immigration attorney for
