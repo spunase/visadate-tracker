@@ -1,9 +1,10 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
   ComposedChart,
   Line,
+  Area,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -32,6 +33,8 @@ export interface ConvergenceTimelineProps {
   category: string;
   country: string;
 }
+
+type FocusedLine = "fa" | "filing";
 
 // ─── Theme palettes ────────────────────────────────────────────
 
@@ -62,6 +65,19 @@ const palettes = {
     stageClose: "#DEAD45",
     stageAlmost: "#CF7B73",
     stageCurrent: "#4AADA3",
+    // Segmented control
+    segmentBg: "rgba(209,202,189,0.35)",
+    segmentIndicator: "rgba(250,245,237,0.92)",
+    segmentTextActive: "#2D2B2A",
+    segmentTextInactive: "#8A847E",
+    segmentBorder: "rgba(209,202,189,0.5)",
+    // Focus line gradients
+    faGlowFrom: "#6CC5BB",
+    faGlowTo: "#4AADA3",
+    filingGlowFrom: "#DEAD45",
+    filingGlowTo: "#D4A843",
+    faAreaFill: "rgba(108,197,187,0.12)",
+    filingAreaFill: "rgba(222,173,69,0.12)",
   },
   "quiet-clarity": {
     faLine: "#2F6BFF",
@@ -89,6 +105,19 @@ const palettes = {
     stageClose: "#0EA5A4",
     stageAlmost: "#D97706",
     stageCurrent: "#059669",
+    // Segmented control
+    segmentBg: "rgba(229,231,235,0.5)",
+    segmentIndicator: "rgba(255,255,255,0.95)",
+    segmentTextActive: "#111827",
+    segmentTextInactive: "#6B7280",
+    segmentBorder: "rgba(229,231,235,0.7)",
+    // Focus line gradients
+    faGlowFrom: "#2F6BFF",
+    faGlowTo: "#5B8CFF",
+    filingGlowFrom: "#0EA5A4",
+    filingGlowTo: "#14B8A6",
+    faAreaFill: "rgba(47,107,255,0.10)",
+    filingAreaFill: "rgba(14,165,164,0.10)",
   },
 } as const;
 
@@ -147,77 +176,65 @@ function formatAxisDate(ts: number): string {
   });
 }
 
-function daysBetween(a: string, b: string): number {
-  const msPerDay = 86_400_000;
-  return Math.round((toTs(a) - toTs(b)) / msPerDay);
-}
+// ─── Focused-line pulsing dot ──────────────────────────────────
 
-// ─── Movement footstep dot ─────────────────────────────────────
-
-interface FootstepDotProps {
+interface FocusDotProps {
   cx?: number;
   cy?: number;
-  payload?: {
-    filingDirection?: HistoryEntry["movementDirection"];
-    filingMovement?: number;
-    isLast?: boolean;
-  };
-  palette: (typeof palettes)[keyof typeof palettes];
+  payload?: { isLast?: boolean };
+  color: string;
+  isFocused: boolean;
 }
 
-function FilingFootstepDot({ cx, cy, payload, palette }: FootstepDotProps) {
-  if (cx == null || cy == null || !payload?.filingDirection) return null;
+function FocusDot({ cx, cy, payload, color, isFocused }: FocusDotProps) {
+  if (cx == null || cy == null) return null;
 
-  const { filingDirection, filingMovement = 0, isLast } = payload;
-  const color =
-    filingDirection === "forward"
-      ? palette.forward
-      : filingDirection === "backward"
-        ? palette.backward
-        : palette.unchanged;
+  // Non-focused line: small static dot
+  if (!isFocused) {
+    return <circle cx={cx} cy={cy} r={2} fill={color} opacity={0.4} />;
+  }
 
-  const r = Math.min(6, Math.max(3, Math.abs(filingMovement) / 15 + 3));
-
-  return (
-    <g>
-      {/* Outer ring on latest */}
-      {isLast && (
+  // Focused line: latest point gets pulsing ring
+  if (payload?.isLast) {
+    return (
+      <g>
         <circle
           cx={cx}
           cy={cy}
-          r={r + 3}
+          r={10}
           fill="none"
-          stroke={palette.pdLine}
+          stroke={color}
           strokeWidth={1.5}
-          opacity={0.6}
+          opacity={0.3}
         >
           <animate
+            attributeName="r"
+            values="8;13;8"
+            dur="2.5s"
+            repeatCount="indefinite"
+          />
+          <animate
             attributeName="opacity"
-            values="0.3;0.8;0.3"
-            dur="2s"
+            values="0.15;0.45;0.15"
+            dur="2.5s"
             repeatCount="indefinite"
           />
         </circle>
-      )}
-      {/* Main dot */}
-      <circle cx={cx} cy={cy} r={r} fill={color} opacity={0.85} />
-      {/* Direction indicator */}
-      {r >= 4 && filingDirection === "forward" && (
-        <path
-          d={`M${cx} ${cy - r * 0.45} L${cx - r * 0.3} ${cy + r * 0.2} L${cx + r * 0.3} ${cy + r * 0.2} Z`}
-          fill="white"
-          opacity={0.8}
+        <circle cx={cx} cy={cy} r={6} fill={color} opacity={0.15} />
+        <circle
+          cx={cx}
+          cy={cy}
+          r={4}
+          fill={color}
+          stroke="rgba(255,255,255,0.9)"
+          strokeWidth={2}
         />
-      )}
-      {r >= 4 && filingDirection === "backward" && (
-        <path
-          d={`M${cx} ${cy + r * 0.45} L${cx - r * 0.3} ${cy - r * 0.2} L${cx + r * 0.3} ${cy - r * 0.2} Z`}
-          fill="white"
-          opacity={0.8}
-        />
-      )}
-    </g>
-  );
+      </g>
+    );
+  }
+
+  // Focused line: regular points — small solid dot
+  return <circle cx={cx} cy={cy} r={2.5} fill={color} strokeWidth={0} />;
 }
 
 // ─── Custom tooltip ────────────────────────────────────────────
@@ -239,6 +256,7 @@ interface ConvergenceTooltipProps {
   payload?: ConvergenceTooltipPayload[];
   palette: (typeof palettes)[keyof typeof palettes];
   pdLabel: string;
+  focusedLine: FocusedLine;
 }
 
 function ConvergenceTooltip({
@@ -246,6 +264,7 @@ function ConvergenceTooltip({
   payload,
   palette,
   pdLabel,
+  focusedLine,
 }: ConvergenceTooltipProps) {
   if (!active || !payload?.length) return null;
   const d = payload[0].payload;
@@ -257,9 +276,31 @@ function ConvergenceTooltip({
     return `${sign}${abs}d`;
   };
 
+  // Show the focused line first, with emphasis
+  const lines = [
+    {
+      key: "fa" as const,
+      label: "Final Action",
+      date: d.faLabel,
+      dir: d.faDirection,
+      mov: d.faMovement,
+      color: palette.faLine,
+    },
+    {
+      key: "filing" as const,
+      label: "Filing",
+      date: d.filingLabel,
+      dir: d.filingDirection,
+      mov: d.filingMovement,
+      color: palette.filingLine,
+    },
+  ].sort((a, b) =>
+    a.key === focusedLine ? -1 : b.key === focusedLine ? 1 : 0,
+  );
+
   return (
     <div
-      className="max-w-[260px] rounded-xl border-2 px-4 py-3 shadow-lg"
+      className="max-w-[260px] rounded-xl border-2 px-4 py-3 shadow-lg backdrop-blur-sm"
       style={{
         backgroundColor: palette.tooltipBg,
         borderColor: palette.tooltipBorder,
@@ -272,30 +313,33 @@ function ConvergenceTooltip({
         {d.monthLabel}
       </p>
 
-      {d.faLabel && (
-        <p className="mt-1 text-xs" style={{ color: palette.tooltipMuted }}>
-          <span
-            className="mr-1.5 inline-block size-2 rounded-full"
-            style={{ backgroundColor: palette.faLine }}
-          />
-          Final Action: {d.faLabel}{" "}
-          <span style={{ color: palette.faLine, fontWeight: 600 }}>
-            {movLabel(d.faMovement, d.faDirection)}
-          </span>
-        </p>
-      )}
-
-      {d.filingLabel && (
-        <p className="mt-1 text-xs" style={{ color: palette.tooltipMuted }}>
-          <span
-            className="mr-1.5 inline-block size-2 rounded-full"
-            style={{ backgroundColor: palette.filingLine }}
-          />
-          Filing: {d.filingLabel}{" "}
-          <span style={{ color: palette.filingLine, fontWeight: 600 }}>
-            {movLabel(d.filingMovement, d.filingDirection)}
-          </span>
-        </p>
+      {lines.map(
+        (line) =>
+          line.date && (
+            <p
+              key={line.key}
+              className="mt-1 text-xs"
+              style={{
+                color:
+                  line.key === focusedLine
+                    ? palette.tooltipText
+                    : palette.tooltipMuted,
+                fontWeight: line.key === focusedLine ? 600 : 400,
+              }}
+            >
+              <span
+                className="mr-1.5 inline-block size-2 rounded-full"
+                style={{
+                  backgroundColor: line.color,
+                  opacity: line.key === focusedLine ? 1 : 0.5,
+                }}
+              />
+              {line.label}: {line.date}{" "}
+              <span style={{ color: line.color, fontWeight: 600 }}>
+                {movLabel(line.mov, line.dir)}
+              </span>
+            </p>
+          ),
       )}
 
       <p
@@ -325,7 +369,10 @@ function ProximityMeter({
   const pct = Math.min(100, Math.max(0, intensity * 100));
 
   return (
-    <div className="relative h-2 w-full overflow-hidden rounded-full" style={{ backgroundColor: palette.meterTrack }}>
+    <div
+      className="relative h-2 w-full overflow-hidden rounded-full"
+      style={{ backgroundColor: palette.meterTrack }}
+    >
       <motion.div
         className="h-full origin-left rounded-full"
         style={{
@@ -339,7 +386,6 @@ function ProximityMeter({
             : { type: "spring", stiffness: 60, damping: 20, mass: 0.8 }
         }
       />
-      {/* Glow pulse at the leading edge when intensity > 0.6 */}
       {intensity > 0.6 && !prefersReduced && (
         <motion.div
           className="absolute top-0 h-full w-4 rounded-full"
@@ -351,6 +397,77 @@ function ProximityMeter({
           transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
         />
       )}
+    </div>
+  );
+}
+
+// ─── Segmented control ─────────────────────────────────────────
+
+function SegmentedToggle({
+  value,
+  onChange,
+  palette,
+  prefersReduced,
+}: {
+  value: FocusedLine;
+  onChange: (v: FocusedLine) => void;
+  palette: (typeof palettes)[keyof typeof palettes];
+  prefersReduced: boolean | null;
+}) {
+  const options: { key: FocusedLine; label: string }[] = [
+    { key: "fa", label: "Final Action" },
+    { key: "filing", label: "Filing Dates" },
+  ];
+
+  return (
+    <div
+      className="relative flex items-center rounded-[12px] p-[3px]"
+      style={{
+        backgroundColor: palette.segmentBg,
+        border: `1px solid ${palette.segmentBorder}`,
+        backdropFilter: "blur(8px)",
+        WebkitBackdropFilter: "blur(8px)",
+      }}
+      role="tablist"
+      aria-label="Select date type to emphasize"
+    >
+      {/* Sliding indicator */}
+      <motion.div
+        className="absolute inset-y-[3px] rounded-[9px]"
+        style={{
+          backgroundColor: palette.segmentIndicator,
+          boxShadow:
+            "0 1px 3px rgba(0,0,0,0.08), 0 2px 8px rgba(0,0,0,0.04)",
+          width: "calc(50% - 3px)",
+        }}
+        animate={{ x: value === "fa" ? 0 : "calc(100% + 3px)" }}
+        transition={
+          prefersReduced
+            ? { duration: 0.1 }
+            : { type: "spring", stiffness: 320, damping: 30 }
+        }
+        aria-hidden="true"
+      />
+
+      {options.map((opt) => {
+        const isActive = value === opt.key;
+        return (
+          <button
+            key={opt.key}
+            onClick={() => onChange(opt.key)}
+            role="tab"
+            aria-selected={isActive}
+            className="relative z-10 flex-1 rounded-[9px] px-3 py-1.5 text-[11px] font-semibold transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2F6BFF] focus-visible:ring-offset-1"
+            style={{
+              color: isActive
+                ? palette.segmentTextActive
+                : palette.segmentTextInactive,
+            }}
+          >
+            {opt.label}
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -387,6 +504,8 @@ export function ConvergenceTimeline({
   const palette = palettes[theme] ?? palettes["quiet-clarity"];
   const prefersReduced = useReducedMotion();
 
+  const [focusedLine, setFocusedLine] = useState<FocusedLine>("fa");
+
   // ── Derived data ─────────────────────────────────────────────
   const {
     chartData,
@@ -401,7 +520,6 @@ export function ConvergenceTimeline({
     yMax,
     pdTs,
   } = useMemo(() => {
-    // Get latest cutoff dates
     const latestFA =
       finalActionHistory.length > 0
         ? finalActionHistory[finalActionHistory.length - 1]
@@ -411,13 +529,10 @@ export function ConvergenceTimeline({
         ? filingHistory[filingHistory.length - 1]
         : null;
 
-    // Determine effective date (whichever cutoff is closer/later = closer to PD)
     const faTs = latestFA ? toTs(latestFA.cutoffDate) : 0;
     const filTs = latestFiling ? toTs(latestFiling.cutoffDate) : 0;
     const pdTimestamp = toTs(priorityDate);
 
-    // The "effective" cutoff is whichever is closer to (but not past) the PD
-    // In visa terms, the later cutoff date is closer to the priority date
     const effectiveTs = Math.max(faTs, filTs);
     const effType = faTs >= filTs ? "Final Action" : "Filing";
     const effLabel =
@@ -427,17 +542,13 @@ export function ConvergenceTimeline({
           ? formatDateShort(latestFiling.cutoffDate)
           : "—";
 
-    // Gap calculation
     const gapMs = pdTimestamp - effectiveTs;
     const gapD = Math.max(0, Math.round(gapMs / 86_400_000));
-
-    // Intensity: 0 (far) → 1 (current), over a 2-year range
     const maxRange = 365 * 2;
     const inten = Math.max(0, Math.min(1, 1 - gapD / maxRange));
-
     const stg = getStage(gapD);
 
-    // Build unified chart data — merge FA and Filing by bulletinMonth
+    // Build unified chart data
     const monthMap = new Map<
       string,
       {
@@ -470,7 +581,6 @@ export function ConvergenceTimeline({
       monthMap.set(entry.bulletinMonth, existing);
     }
 
-    // Sort by bulletinMonth
     const sortedMonths = [...monthMap.keys()].sort();
     const cData = sortedMonths.map((month, i) => {
       const entry = monthMap.get(month)!;
@@ -489,7 +599,6 @@ export function ConvergenceTimeline({
       };
     });
 
-    // Y-axis range
     const allTs = cData.flatMap((d) =>
       [d.faCutoff, d.filingCutoff].filter((v): v is number => v != null),
     );
@@ -498,7 +607,6 @@ export function ConvergenceTimeline({
     const maxT = Math.max(...allTs);
     const pad = (maxT - minT) * 0.08 || 86_400_000 * 30;
 
-    // Average velocity (forward days/month on effective line)
     const effectiveHistory =
       effType === "Final Action" ? finalActionHistory : filingHistory;
     const forwardMonths = effectiveHistory.filter(
@@ -512,7 +620,6 @@ export function ConvergenceTimeline({
           )
         : 0;
 
-    // Estimated months to current
     const estMonths = avgVel > 0 ? Math.ceil(gapD / avgVel) : null;
 
     return {
@@ -542,12 +649,32 @@ export function ConvergenceTimeline({
   const isCurrent = gapDays <= 0;
   const stageColor = palette[stage.colorKey];
 
+  // Determine line visual properties based on focus
+  const faIsFocused = focusedLine === "fa";
+  const filingIsFocused = focusedLine === "filing";
+
+  // Unique gradient IDs
+  const faGradId = `ct-fa-grad-${category}-${country}`.replace(/\s+/g, "-");
+  const filingGradId = `ct-filing-grad-${category}-${country}`.replace(
+    /\s+/g,
+    "-",
+  );
+  const faAreaGradId = `ct-fa-area-${category}-${country}`.replace(
+    /\s+/g,
+    "-",
+  );
+  const filingAreaGradId = `ct-filing-area-${category}-${country}`.replace(
+    /\s+/g,
+    "-",
+  );
+  const glowFilterId = `ct-glow-${category}-${country}`.replace(/\s+/g, "-");
+
   // ── Accessibility ────────────────────────────────────────────
   const ariaLabel = `Convergence timeline for ${category} ${country}. ${
     isCurrent
       ? "Your priority date is current!"
       : `${gapDays} days until your priority date becomes current. Stage: ${stage.label}.`
-  } Showing Final Action and Filing cutoff date movements over ${chartData.length} months.`;
+  } Currently viewing ${focusedLine === "fa" ? "Final Action" : "Filing"} dates. Showing both Final Action and Filing cutoff date movements over ${chartData.length} months.`;
 
   return (
     <motion.div
@@ -558,7 +685,7 @@ export function ConvergenceTimeline({
       aria-label={ariaLabel}
       role="region"
     >
-      {/* ── Countdown Header ──────────────────────────────────── */}
+      {/* ── Header: Countdown + Segmented Toggle ─────────────── */}
       <motion.div
         variants={prefersReduced ? undefined : itemVariants}
         className="flex items-start justify-between gap-3"
@@ -573,7 +700,9 @@ export function ConvergenceTimeline({
             ) : (
               <motion.span
                 key={gapDays}
-                initial={prefersReduced ? false : { scale: 1.15, opacity: 0.6 }}
+                initial={
+                  prefersReduced ? false : { scale: 1.15, opacity: 0.6 }
+                }
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ type: "spring", stiffness: 200, damping: 18 }}
               >
@@ -587,20 +716,22 @@ export function ConvergenceTimeline({
         </div>
 
         {/* Stage badge */}
-        <AnimatePresence mode="wait">
-          <motion.span
-            key={stage.key}
-            initial={prefersReduced ? false : { scale: 0.85, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={prefersReduced ? undefined : { scale: 0.85, opacity: 0 }}
-            transition={{ type: "spring", stiffness: 250, damping: 20 }}
-            className="mt-1 inline-flex items-center rounded-full px-3 py-1 text-xs font-bold text-white shadow-sm"
-            style={{ backgroundColor: stageColor }}
-            aria-live="polite"
-          >
-            {stage.label}
-          </motion.span>
-        </AnimatePresence>
+        <div className="flex flex-col items-end gap-2">
+          <AnimatePresence mode="wait">
+            <motion.span
+              key={stage.key}
+              initial={prefersReduced ? false : { scale: 0.85, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={prefersReduced ? undefined : { scale: 0.85, opacity: 0 }}
+              transition={{ type: "spring", stiffness: 250, damping: 20 }}
+              className="inline-flex items-center rounded-full px-3 py-1 text-xs font-bold text-white shadow-sm"
+              style={{ backgroundColor: stageColor }}
+              aria-live="polite"
+            >
+              {stage.label}
+            </motion.span>
+          </AnimatePresence>
+        </div>
       </motion.div>
 
       {/* ── Proximity Meter ───────────────────────────────────── */}
@@ -612,14 +743,93 @@ export function ConvergenceTimeline({
         />
       </motion.div>
 
-      {/* ── Dual-line Convergence Chart ───────────────────────── */}
+      {/* ── Segmented Toggle (inside chart area) ──────────────── */}
+      <motion.div
+        variants={prefersReduced ? undefined : itemVariants}
+        className="flex justify-center"
+      >
+        <SegmentedToggle
+          value={focusedLine}
+          onChange={setFocusedLine}
+          palette={palette}
+          prefersReduced={prefersReduced}
+        />
+      </motion.div>
+
+      {/* ── Dual-line Chart with Focus Effect ─────────────────── */}
       <motion.div variants={prefersReduced ? undefined : itemVariants}>
-        <ResponsiveContainer width="100%" height={240}>
+        <ResponsiveContainer width="100%" height={260}>
           <ComposedChart
             data={chartData}
             margin={{ top: 8, right: 12, bottom: 4, left: 4 }}
           >
             <defs>
+              {/* FA line gradient */}
+              <linearGradient id={faGradId} x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stopColor={palette.faGlowFrom} />
+                <stop offset="100%" stopColor={palette.faGlowTo} />
+              </linearGradient>
+
+              {/* Filing line gradient */}
+              <linearGradient id={filingGradId} x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stopColor={palette.filingGlowFrom} />
+                <stop offset="100%" stopColor={palette.filingGlowTo} />
+              </linearGradient>
+
+              {/* FA area gradient */}
+              <linearGradient id={faAreaGradId} x1="0" y1="0" x2="0" y2="1">
+                <stop
+                  offset="0%"
+                  stopColor={palette.faLine}
+                  stopOpacity={0.14}
+                />
+                <stop
+                  offset="100%"
+                  stopColor={palette.faLine}
+                  stopOpacity={0.01}
+                />
+              </linearGradient>
+
+              {/* Filing area gradient */}
+              <linearGradient
+                id={filingAreaGradId}
+                x1="0"
+                y1="0"
+                x2="0"
+                y2="1"
+              >
+                <stop
+                  offset="0%"
+                  stopColor={palette.filingLine}
+                  stopOpacity={0.14}
+                />
+                <stop
+                  offset="100%"
+                  stopColor={palette.filingLine}
+                  stopOpacity={0.01}
+                />
+              </linearGradient>
+
+              {/* Glow filter for focused line */}
+              <filter
+                id={glowFilterId}
+                x="-20%"
+                y="-20%"
+                width="140%"
+                height="140%"
+              >
+                <feGaussianBlur
+                  in="SourceGraphic"
+                  stdDeviation="3"
+                  result="blur"
+                />
+                <feMerge>
+                  <feMergeNode in="blur" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
+
+              {/* PD glow */}
               <linearGradient
                 id="convergence-pd-glow"
                 x1="0"
@@ -668,6 +878,7 @@ export function ConvergenceTimeline({
                 <ConvergenceTooltip
                   palette={palette}
                   pdLabel={formatDateShort(priorityDate)}
+                  focusedLine={focusedLine}
                 />
               }
               cursor={{ stroke: palette.grid, strokeDasharray: "3 3" }}
@@ -688,52 +899,97 @@ export function ConvergenceTimeline({
               }}
             />
 
+            {/* ── Area fill for focused line (render first, behind lines) */}
+            {faIsFocused && (
+              <Area
+                type="monotone"
+                dataKey="faCutoff"
+                fill={`url(#${faAreaGradId})`}
+                stroke="none"
+                animationDuration={800}
+                animationEasing="ease-out"
+                connectNulls
+              />
+            )}
+            {filingIsFocused && (
+              <Area
+                type="monotone"
+                dataKey="filingCutoff"
+                fill={`url(#${filingAreaGradId})`}
+                stroke="none"
+                animationDuration={800}
+                animationEasing="ease-out"
+                connectNulls
+              />
+            )}
+
+            {/* ── Unfocused line renders first (behind) ──────── */}
+            {/* Filing line — renders as unfocused when FA is focused */}
+            <Line
+              type="monotone"
+              dataKey="filingCutoff"
+              stroke={
+                filingIsFocused
+                  ? `url(#${filingGradId})`
+                  : palette.filingLine
+              }
+              strokeWidth={filingIsFocused ? 3 : 1.5}
+              strokeLinecap="round"
+              strokeDasharray={filingIsFocused ? "" : "4 3"}
+              strokeOpacity={filingIsFocused ? 1 : 0.35}
+              filter={filingIsFocused ? `url(#${glowFilterId})` : undefined}
+              dot={(props: Record<string, unknown>) => (
+                <FocusDot
+                  cx={props.cx as number}
+                  cy={props.cy as number}
+                  payload={props.payload as FocusDotProps["payload"]}
+                  color={palette.filingLine}
+                  isFocused={filingIsFocused}
+                />
+              )}
+              activeDot={{
+                r: filingIsFocused ? 5 : 3,
+                fill: palette.filingLine,
+                stroke: "white",
+                strokeWidth: filingIsFocused ? 2 : 1,
+              }}
+              connectNulls
+              animationDuration={1400}
+              animationEasing="ease-out"
+              name="Filing"
+            />
+
             {/* Final Action line */}
             <Line
               type="monotone"
               dataKey="faCutoff"
-              stroke={palette.faLine}
-              strokeWidth={2.5}
+              stroke={
+                faIsFocused ? `url(#${faGradId})` : palette.faLine
+              }
+              strokeWidth={faIsFocused ? 3 : 1.5}
               strokeLinecap="round"
-              dot={{ r: 2.5, fill: palette.faLine, strokeWidth: 0 }}
+              strokeDasharray={faIsFocused ? "" : "4 3"}
+              strokeOpacity={faIsFocused ? 1 : 0.35}
+              filter={faIsFocused ? `url(#${glowFilterId})` : undefined}
+              dot={(props: Record<string, unknown>) => (
+                <FocusDot
+                  cx={props.cx as number}
+                  cy={props.cy as number}
+                  payload={props.payload as FocusDotProps["payload"]}
+                  color={palette.faLine}
+                  isFocused={faIsFocused}
+                />
+              )}
               activeDot={{
-                r: 5,
+                r: faIsFocused ? 5 : 3,
                 fill: palette.faLine,
                 stroke: "white",
-                strokeWidth: 2,
+                strokeWidth: faIsFocused ? 2 : 1,
               }}
               connectNulls
               animationDuration={1400}
               animationEasing="ease-out"
               name="Final Action"
-            />
-
-            {/* Filing line with movement footstep dots */}
-            <Line
-              type="monotone"
-              dataKey="filingCutoff"
-              stroke={palette.filingLine}
-              strokeWidth={2}
-              strokeLinecap="round"
-              strokeDasharray="4 2"
-              dot={(props: Record<string, unknown>) => (
-                <FilingFootstepDot
-                  cx={props.cx as number}
-                  cy={props.cy as number}
-                  payload={props.payload as FootstepDotProps["payload"]}
-                  palette={palette}
-                />
-              )}
-              activeDot={{
-                r: 5,
-                fill: palette.filingLine,
-                stroke: "white",
-                strokeWidth: 2,
-              }}
-              connectNulls
-              animationDuration={1600}
-              animationEasing="ease-out"
-              name="Filing"
             />
           </ComposedChart>
         </ResponsiveContainer>
@@ -758,44 +1014,37 @@ export function ConvergenceTimeline({
       >
         <span className="flex items-center gap-1.5">
           <span
-            className="inline-block h-0.5 w-3 rounded-full"
-            style={{ backgroundColor: palette.faLine }}
+            className="inline-block h-[3px] w-4 rounded-full"
+            style={{
+              backgroundColor: palette.faLine,
+              opacity: faIsFocused ? 1 : 0.4,
+            }}
           />
-          Final Action
+          <span style={{ fontWeight: faIsFocused ? 600 : 400 }}>
+            Final Action
+          </span>
         </span>
         <span className="flex items-center gap-1.5">
           <span
-            className="inline-block h-0.5 w-3 rounded-full border-b"
+            className="inline-block h-[3px] w-4 rounded-full"
             style={{
-              borderColor: palette.filingLine,
-              borderStyle: "dashed",
+              backgroundColor: palette.filingLine,
+              opacity: filingIsFocused ? 1 : 0.4,
+              borderBottom: filingIsFocused
+                ? "none"
+                : `1px dashed ${palette.filingLine}`,
             }}
           />
-          Filing
+          <span style={{ fontWeight: filingIsFocused ? 600 : 400 }}>
+            Filing
+          </span>
         </span>
         <span className="flex items-center gap-1.5">
           <span
             className="inline-block h-0.5 w-3 rounded-full"
-            style={{
-              backgroundColor: palette.pdLine,
-              borderStyle: "dashed",
-            }}
+            style={{ backgroundColor: palette.pdLine }}
           />
           Your PD
-        </span>
-        <span className="flex items-center gap-1.5">
-          <span
-            className="inline-block size-2 rounded-full"
-            style={{ backgroundColor: palette.forward }}
-          />
-          Forward
-        </span>
-        <span className="flex items-center gap-1.5">
-          <span
-            className="inline-block size-2 rounded-full"
-            style={{ backgroundColor: palette.backward }}
-          />
-          Backward
         </span>
       </motion.div>
 
@@ -824,7 +1073,9 @@ export function ConvergenceTimeline({
           </span>
           <span
             className="mt-0.5 text-sm font-bold"
-            style={{ color: avgVelocity > 0 ? palette.forward : palette.unchanged }}
+            style={{
+              color: avgVelocity > 0 ? palette.forward : palette.unchanged,
+            }}
           >
             {avgVelocity > 0 ? `+${avgVelocity}d` : "—"}
           </span>
@@ -861,7 +1112,12 @@ export function ConvergenceTimeline({
             initial={prefersReduced ? false : { scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
-            transition={{ type: "spring", stiffness: 200, damping: 18, delay: 0.3 }}
+            transition={{
+              type: "spring",
+              stiffness: 200,
+              damping: 18,
+              delay: 0.3,
+            }}
             className="flex items-center gap-2 rounded-[14px] px-4 py-3"
             style={{
               backgroundColor: `${stageColor}18`,
