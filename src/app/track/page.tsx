@@ -3,7 +3,12 @@
 import { useState, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Save, Trash2, Loader2, Lock, Pencil } from "lucide-react";
-import { usePreferencesStore } from "@/stores/preferences-store";
+import {
+  usePreferencesStore,
+  CATEGORY_GROUPS,
+  type PreferredCategory,
+  type CategoryGroup,
+} from "@/stores/preferences-store";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -31,9 +36,18 @@ import { CountryFlagSelector } from "@/components/ui/country-flag-selector";
 // Constants
 // ---------------------------------------------------------------------------
 
-const categories = ["EB1", "EB2", "EB3"] as const;
 const countries = ["India", "China", "Mexico", "Philippines", "All Other"] as const;
 const paths = ["AOS", "CP"] as const;
+
+const ebCategories = ["EB1", "EB2", "EB3"] as const;
+
+function groupForCategory(cat: string): CategoryGroup {
+  return (ebCategories as readonly string[]).includes(cat) ? "Employment" : "Family";
+}
+
+function categoriesForGroup(group: CategoryGroup) {
+  return CATEGORY_GROUPS.find((g) => g.label === group)!.categories;
+}
 
 /** Map display country names to the API's country_bucket values */
 const countryToApiKey: Record<string, string> = {
@@ -79,14 +93,30 @@ function findRow(
 export default function TrackPage() {
   const { defaultCountry, defaultCategory, defaultPath } = usePreferencesStore();
 
+  const [activeGroup, setActiveGroup] = useState<CategoryGroup>(groupForCategory(defaultCategory));
   const [category, setCategory] = useState<SavedTracker["category"]>(defaultCategory);
   const [country, setCountry] = useState<SavedTracker["country"]>(defaultCountry);
   const [priorityDate, setPriorityDate] = useState("");
   const [path, setPath] = useState<SavedTracker["path"]>(defaultPath);
 
+  const visibleCategories = categoriesForGroup(activeGroup);
+
+  // ── Reset result when form changes ────────────────────────────────────
+  const resetResult = () => {
+    setResult(null);
+    setError(null);
+  };
+
+  const handleGroupChange = (group: CategoryGroup) => {
+    setActiveGroup(group);
+    setCategory(categoriesForGroup(group)[0]);
+    resetResult();
+  };
+
   // Sync with preferences on hydration
   useEffect(() => {
     const prefs = usePreferencesStore.getState();
+    setActiveGroup(groupForCategory(prefs.defaultCategory));
     setCategory(prefs.defaultCategory);
     setCountry(prefs.defaultCountry);
     setPath(prefs.defaultPath);
@@ -160,12 +190,6 @@ export default function TrackPage() {
     }
   }, [priorityDate, category, country, path]);
 
-  // ── Reset result when form changes ────────────────────────────────────
-  const resetResult = () => {
-    setResult(null);
-    setError(null);
-  };
-
   // ── Save handler ──────────────────────────────────────────────────────
   const handleSave = () => {
     if (!priorityDate) return;
@@ -193,10 +217,10 @@ export default function TrackPage() {
         {/* ── Input Form ── */}
         <Card className="riso-doc-gold rounded-[18px] border border-border/50 shadow-sm">
           <CardContent className="flex flex-col gap-4 p-5">
-            {/* Category */}
-            <fieldset>
-              <legend className="mb-1.5 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Category
+            {/* Visa Type (Employment / Family) */}
+            <div>
+              <label className="mb-1.5 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                Visa Type
                 {result && (
                   <span className="inline-flex items-center gap-1 text-[10px] normal-case font-medium text-muted-foreground/70">
                     <Lock className="h-3 w-3" aria-hidden="true" />
@@ -208,17 +232,52 @@ export default function TrackPage() {
                     </button>
                   </span>
                 )}
-              </legend>
+              </label>
               <div
                 className={`inline-flex rounded-xl bg-muted p-1 shadow-inner ${result ? "opacity-60 pointer-events-none" : ""}`}
                 role="radiogroup"
-                aria-label="Category"
+                aria-label="Select visa type"
               >
-                {categories.map((c) => (
+                {(["Employment", "Family"] as const).map((group) => {
+                  const isActive = group === activeGroup;
+                  return (
+                    <button
+                      key={group}
+                      role="radio"
+                      aria-checked={isActive}
+                      aria-disabled={!!result}
+                      onClick={() => {
+                        if (result) return;
+                        handleGroupChange(group);
+                      }}
+                      className={`rounded-lg px-4 py-1.5 text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2F6BFF] focus-visible:ring-offset-2 ${
+                        isActive
+                          ? "bg-[#2F6BFF] text-white shadow-sm"
+                          : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      {group}-Based
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Category */}
+            <fieldset>
+              <legend className="mb-1.5 block text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                Visa Category
+              </legend>
+              <div
+                className={`inline-flex flex-wrap rounded-xl bg-muted p-1 shadow-inner ${result ? "opacity-60 pointer-events-none" : ""}`}
+                role="radiogroup"
+                aria-label={`Select ${activeGroup.toLowerCase()} visa category`}
+              >
+                {visibleCategories.map((c) => (
                   <button
                     key={c}
                     onClick={() => {
-                      if (result) return; // locked while results are shown
+                      if (result) return;
                       setCategory(c);
                       resetResult();
                     }}

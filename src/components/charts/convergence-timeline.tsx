@@ -233,7 +233,7 @@ function FocusDot({ cx, cy, payload, color, isFocused }: FocusDotProps) {
     );
   }
 
-  // Focused line: regular points — small solid dot
+  // Focused line: regular points - small solid dot
   return <circle cx={cx} cy={cy} r={2.5} fill={color} strokeWidth={0} />;
 }
 
@@ -540,7 +540,7 @@ export function ConvergenceTimeline({
         ? formatDateShort(latestFA.cutoffDate)
         : latestFiling
           ? formatDateShort(latestFiling.cutoffDate)
-          : "—";
+          : "-";
 
     const gapMs = pdTimestamp - effectiveTs;
     const gapD = Math.max(0, Math.round(gapMs / 86_400_000));
@@ -884,7 +884,7 @@ export function ConvergenceTimeline({
               cursor={{ stroke: palette.grid, strokeDasharray: "3 3" }}
             />
 
-            {/* Priority Date — golden reference line */}
+            {/* Priority Date - golden reference line */}
             <ReferenceLine
               y={pdTs}
               stroke={palette.pdLine}
@@ -900,8 +900,10 @@ export function ConvergenceTimeline({
             />
 
             {/* ── Area fill for focused line (render first, behind lines) */}
+            {/* key forces Recharts to fully re-mount when focus changes */}
             {faIsFocused && (
               <Area
+                key="fa-area-focused"
                 type="monotone"
                 dataKey="faCutoff"
                 fill={`url(#${faAreaGradId})`}
@@ -913,6 +915,7 @@ export function ConvergenceTimeline({
             )}
             {filingIsFocused && (
               <Area
+                key="filing-area-focused"
                 type="monotone"
                 dataKey="filingCutoff"
                 fill={`url(#${filingAreaGradId})`}
@@ -924,8 +927,9 @@ export function ConvergenceTimeline({
             )}
 
             {/* ── Unfocused line renders first (behind) ──────── */}
-            {/* Filing line — renders as unfocused when FA is focused */}
+            {/* Filing line - key includes focus state to force re-render */}
             <Line
+              key={`filing-${focusedLine}`}
               type="monotone"
               dataKey="filingCutoff"
               stroke={
@@ -935,7 +939,7 @@ export function ConvergenceTimeline({
               }
               strokeWidth={filingIsFocused ? 3 : 1.5}
               strokeLinecap="round"
-              strokeDasharray={filingIsFocused ? "" : "4 3"}
+              strokeDasharray={filingIsFocused ? undefined : "4 3"}
               strokeOpacity={filingIsFocused ? 1 : 0.35}
               filter={filingIsFocused ? `url(#${glowFilterId})` : undefined}
               dot={(props: Record<string, unknown>) => (
@@ -959,8 +963,9 @@ export function ConvergenceTimeline({
               name="Filing"
             />
 
-            {/* Final Action line */}
+            {/* Final Action line - key includes focus state to force re-render */}
             <Line
+              key={`fa-${focusedLine}`}
               type="monotone"
               dataKey="faCutoff"
               stroke={
@@ -968,7 +973,7 @@ export function ConvergenceTimeline({
               }
               strokeWidth={faIsFocused ? 3 : 1.5}
               strokeLinecap="round"
-              strokeDasharray={faIsFocused ? "" : "4 3"}
+              strokeDasharray={faIsFocused ? undefined : "4 3"}
               strokeOpacity={faIsFocused ? 1 : 0.35}
               filter={faIsFocused ? `url(#${glowFilterId})` : undefined}
               dot={(props: Record<string, unknown>) => (
@@ -1077,7 +1082,7 @@ export function ConvergenceTimeline({
               color: avgVelocity > 0 ? palette.forward : palette.unchanged,
             }}
           >
-            {avgVelocity > 0 ? `+${avgVelocity}d` : "—"}
+            {avgVelocity > 0 ? `+${avgVelocity}d` : "-"}
           </span>
         </div>
 
@@ -1100,7 +1105,7 @@ export function ConvergenceTimeline({
               ? "Now"
               : estimatedMonths
                 ? `~${estimatedMonths} mo`
-                : "—"}
+                : "-"}
           </span>
         </div>
       </motion.div>
