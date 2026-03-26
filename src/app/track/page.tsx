@@ -209,7 +209,11 @@ export default function TrackPage() {
                   </span>
                 )}
               </legend>
-              <div className="flex gap-2" role="radiogroup" aria-label="Category">
+              <div
+                className={`inline-flex rounded-xl bg-muted p-1 shadow-inner ${result ? "opacity-60 pointer-events-none" : ""}`}
+                role="radiogroup"
+                aria-label="Category"
+              >
                 {categories.map((c) => (
                   <button
                     key={c}
@@ -221,11 +225,11 @@ export default function TrackPage() {
                     role="radio"
                     aria-checked={category === c}
                     aria-disabled={!!result}
-                    className={`flex-1 rounded-xl py-2 text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2F6BFF] focus-visible:ring-offset-2 ${
+                    className={`rounded-lg px-4 py-1.5 text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2F6BFF] focus-visible:ring-offset-2 ${
                       category === c
-                        ? "bg-[#2F6BFF] text-white shadow-md"
-                        : "bg-muted text-muted-foreground hover:bg-accent"
-                    } ${result ? "pointer-events-none opacity-60" : ""} ${result && category === c ? "opacity-100" : ""}`}
+                        ? "bg-[#2F6BFF] text-white shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
+                    } ${result && category === c ? "opacity-100" : ""}`}
                   >
                     {c}
                   </button>
@@ -274,7 +278,11 @@ export default function TrackPage() {
               <legend className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Processing Path
               </legend>
-              <div className="flex gap-2" role="radiogroup" aria-label="Processing Path">
+              <div
+                className={`inline-flex rounded-xl bg-muted p-1 shadow-inner ${result ? "opacity-60 pointer-events-none" : ""}`}
+                role="radiogroup"
+                aria-label="Processing Path"
+              >
                 {paths.map((p) => (
                   <button
                     key={p}
@@ -286,11 +294,11 @@ export default function TrackPage() {
                     role="radio"
                     aria-checked={path === p}
                     aria-disabled={!!result}
-                    className={`flex-1 rounded-xl py-2 text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2F6BFF] focus-visible:ring-offset-2 ${
+                    className={`rounded-lg px-4 py-1.5 text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2F6BFF] focus-visible:ring-offset-2 ${
                       path === p
-                        ? "bg-[#2F6BFF] text-white shadow-md"
-                        : "bg-muted text-muted-foreground hover:bg-accent"
-                    } ${result ? "pointer-events-none opacity-60" : ""} ${result && path === p ? "opacity-100" : ""}`}
+                        ? "bg-[#2F6BFF] text-white shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
+                    } ${result && path === p ? "opacity-100" : ""}`}
                   >
                     {p === "AOS" ? "Adjustment of Status" : "Consular Processing"}
                   </button>
@@ -386,7 +394,7 @@ export default function TrackPage() {
                   </div>
                 )}
 
-                {/* Convergence Timeline — dual-line countdown visualization */}
+                {/* Convergence Timeline - dual-line countdown visualization */}
                 {priorityDate &&
                   !convergence.isLoading &&
                   convergence.finalActionHistory.length >= 2 && (
