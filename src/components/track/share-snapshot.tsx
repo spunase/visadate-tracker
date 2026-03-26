@@ -1,11 +1,12 @@
 "use client";
 
 import { useRef, useState, useCallback } from "react";
-import { Copy, Download, Check } from "lucide-react";
+import { Copy, Download, Check, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SnapshotCard } from "@/components/track/snapshot-card";
 import type { EvaluationResult } from "@/lib/rules-engine";
 import type { VisaStatus } from "@/lib/design-tokens";
+import { nativeShare, hapticNotification, isNativePlatform } from "@/lib/native-bridge";
 
 // ---------------------------------------------------------------------------
 // Props
@@ -211,9 +212,26 @@ export function ShareSnapshot({ evaluation, scenario, bulletinMonth }: ShareSnap
           ) : (
             <>
               <Copy className="h-3.5 w-3.5" aria-hidden="true" />
-              Copy Summary
+              Copy
             </>
           )}
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={async () => {
+            const text = buildPlainText(evaluation, scenario, bulletinMonth);
+            await nativeShare({
+              title: "VisaDateTracker Status",
+              text,
+              url: "https://visadate-tracker.netlify.app",
+            });
+            hapticNotification("Success");
+          }}
+          className="flex-1 gap-1.5 rounded-xl text-xs font-semibold transition-all duration-200 focus-visible:ring-2 focus-visible:ring-[#2F6BFF]"
+        >
+          <Share2 className="h-3.5 w-3.5" aria-hidden="true" />
+          Share
         </Button>
         <Button
           variant="outline"
@@ -223,7 +241,7 @@ export function ShareSnapshot({ evaluation, scenario, bulletinMonth }: ShareSnap
           className="flex-1 gap-1.5 rounded-xl text-xs font-semibold transition-all duration-200 focus-visible:ring-2 focus-visible:ring-[#2F6BFF]"
         >
           <Download className="h-3.5 w-3.5" aria-hidden="true" />
-          {capturing ? "Capturing..." : "Share Image"}
+          {capturing ? "..." : "Image"}
         </Button>
       </div>
     </div>

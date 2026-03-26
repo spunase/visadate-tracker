@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { ThemeProvider } from "@/components/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuthStore } from "@/stores/auth-store";
+import { NativeAppInit } from "@/components/native-app-init";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const init = useAuthStore((s) => s.init);
@@ -16,6 +17,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <ThemeProvider defaultTheme="system">
       <TooltipProvider>
+        <NativeAppInit />
         {children}
       </TooltipProvider>
     </ThemeProvider>

@@ -844,3 +844,46 @@
     animation: none;
   }
 }
+
+/* ============================================================
+   Native App (Capacitor) — Platform-specific adjustments
+   ============================================================ */
+
+/* When running inside Capacitor native shell */
+.native-app {
+  /* Prevent overscroll bounce showing white background */
+  overscroll-behavior: none;
+  /* Disable text selection on non-input elements for native feel */
+  -webkit-user-select: none;
+  user-select: none;
+  /* Disable tap highlight */
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Re-enable text selection on inputs and content areas */
+.native-app input,
+.native-app textarea,
+.native-app [contenteditable],
+.native-app p,
+.native-app span,
+.native-app li {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+/* Android-specific: edge-to-edge status bar */
+.native-app.platform-android {
+  padding-top: env(safe-area-inset-top);
+}
+
+/* Android ripple effect on interactive elements */
+.native-app.platform-android button,
+.native-app.platform-android a,
+.native-app.platform-android [role="button"] {
+  -webkit-tap-highlight-color: rgba(47, 107, 255, 0.12);
+}
+
+/* iOS-specific: momentum scrolling */
+.native-app.platform-ios {
+  -webkit-overflow-scrolling: touch;
+}

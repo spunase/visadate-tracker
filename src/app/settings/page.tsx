@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, Globe, TrendingUp, Route, Palette, RotateCcw, Bell, BellOff } from "lucide-react";
+import { ArrowLeft, Globe, TrendingUp, Route, Palette, RotateCcw, Bell, BellOff, Shield, Info } from "lucide-react";
 import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -364,6 +364,32 @@ export default function SettingsPage() {
                 <RotateCcw className="mr-1.5 h-3.5 w-3.5" />
                 Reset to Defaults
               </Button>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* ── About ── */}
+        <motion.div variants={cardVariants}>
+          <Card className="rounded-[18px] border border-border/50 shadow-sm">
+            <CardHeader className="pb-0">
+              <CardTitle className="flex items-center gap-2 text-base font-semibold">
+                <Info className="h-4 w-4 text-calm-blue" aria-hidden="true" />
+                About
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="px-5 pb-5">
+              <div className="flex flex-col gap-2 pt-3">
+                <Link
+                  href="/privacy"
+                  className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-calm-blue focus-visible:ring-offset-2"
+                >
+                  <Shield className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+                  Privacy Policy
+                </Link>
+                <p className="px-3 text-xs text-muted-foreground">
+                  Version 1.0.0
+                </p>
+              </div>
             </CardContent>
           </Card>
         </motion.div>

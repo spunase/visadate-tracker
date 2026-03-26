@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, Search, TrendingUp, Flag, Newspaper, BookOpen } from "lucide-react";
 import { motion } from "framer-motion";
+import { hapticImpact } from "@/lib/native-bridge";
 
 const tabs = [
   { href: "/", label: "Home", icon: Home },
@@ -36,6 +37,7 @@ export function BottomNav() {
               key={tab.href}
               href={tab.href}
               aria-current={isActive ? "page" : undefined}
+              onClick={() => { if (!isActive) hapticImpact("Light"); }}
               className="relative flex flex-col items-center gap-0.5 px-3 py-1.5 text-xs transition-colors duration-200 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2F6BFF] focus-visible:ring-offset-2"
             >
               <div className="relative">

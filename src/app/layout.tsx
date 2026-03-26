@@ -62,6 +62,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
+  viewportFit: "cover",
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#F7F8FA" },
     { media: "(prefers-color-scheme: dark)", color: "#0B1020" },
@@ -84,13 +85,13 @@ export default function RootLayout({
           >
             Skip to main content
           </a>
-          <header className="fixed top-0 right-0 z-50 flex items-center gap-1 p-3">
+          <header className="fixed top-0 right-0 z-50 flex items-center gap-1 p-3 pt-[max(0.75rem,env(safe-area-inset-top))]">
             <DesignThemeToggle />
             <SettingsLink />
             <ThemeToggle />
           </header>
           <ErrorBoundary>
-            <main id="main-content" className="flex-1 pb-20" tabIndex={-1}>{children}</main>
+            <main id="main-content" className="flex-1 pb-20 pt-[env(safe-area-inset-top)]" tabIndex={-1}>{children}</main>
           </ErrorBoundary>
           <BottomNav />
         </Providers>
