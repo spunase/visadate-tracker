@@ -239,105 +239,150 @@ function FocusDot({ cx, cy, payload, color, isFocused }: FocusDotProps) {
 
 // ─── Split-Flap Digit Display ──────────────────────────────────
 
-/** A single flap card that flips when its digit changes. */
+/**
+ * Single flap card with spin-up intro: cycles 0 -> 1 -> ... -> target digit
+ * ascending, then settles. On subsequent changes, does a single flip.
+ */
+const FLIP_DURATION = 100; // ms per flip step during spin-up
+
 function SplitFlapDigit({
   digit,
-  delay = 0,
+  staggerMs = 0,
   reduceMotion = false,
 }: {
   digit: string;
-  delay?: number;
+  /** Extra delay before this position starts spinning (ms) */
+  staggerMs?: number;
   reduceMotion?: boolean;
 }) {
-  const prevDigit = useRef(digit);
-  const [isFlipping, setIsFlipping] = useState(false);
+  const isNumeric = /^\d$/.test(digit);
+  // displayDigit is what's currently shown (animates through values)
+  const [displayDigit, setDisplayDigit] = useState(isNumeric && !reduceMotion ? "0" : digit);
+  const [flipFrom, setFlipFrom] = useState<string | null>(null);
+  const targetRef = useRef(digit);
+  const hasInitialized = useRef(false);
+  const animFrameRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Intro spin-up: cycle 0..target ascending
   useEffect(() => {
-    if (digit !== prevDigit.current) {
-      setIsFlipping(true);
-      const timer = setTimeout(() => {
-        prevDigit.current = digit;
-        setIsFlipping(false);
-      }, 350);
-      return () => clearTimeout(timer);
+    if (reduceMotion || !isNumeric || hasInitialized.current) {
+      hasInitialized.current = true;
+      setDisplayDigit(digit);
+      return;
     }
-  }, [digit]);
+    hasInitialized.current = true;
+    const target = parseInt(digit, 10);
 
-  const showDigit = digit;
-  const oldDigit = prevDigit.current;
+    // Start after stagger delay
+    const staggerTimer = setTimeout(() => {
+      let current = 0;
+      const step = () => {
+        if (current < target) {
+          const prev = String(current);
+          current++;
+          setFlipFrom(prev);
+          setDisplayDigit(String(current));
+          animFrameRef.current = setTimeout(step, FLIP_DURATION);
+        } else {
+          // Settle
+          setTimeout(() => setFlipFrom(null), FLIP_DURATION + 50);
+        }
+      };
+      // Show "0" briefly, then start flipping
+      animFrameRef.current = setTimeout(step, FLIP_DURATION);
+    }, staggerMs);
+
+    return () => {
+      clearTimeout(staggerTimer);
+      if (animFrameRef.current) clearTimeout(animFrameRef.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Subsequent value changes: single flip
+  useEffect(() => {
+    if (!hasInitialized.current) return;
+    if (digit !== targetRef.current) {
+      const old = targetRef.current;
+      targetRef.current = digit;
+      if (reduceMotion) {
+        setDisplayDigit(digit);
+        return;
+      }
+      setFlipFrom(displayDigit);
+      setDisplayDigit(digit);
+      setTimeout(() => {
+        setFlipFrom((prev) => (prev === old ? null : prev));
+      }, 350);
+    }
+  }, [digit, reduceMotion, displayDigit]);
+
+  const isComma = digit === ",";
 
   return (
     <span
       className="relative inline-flex flex-col overflow-hidden rounded-[5px]"
       style={{
-        width: digit === "," ? 12 : 28,
+        width: isComma ? 12 : 28,
         height: 42,
-        background: "linear-gradient(180deg, #1a1a1a 0%, #1a1a1a 49.5%, #141414 50%, #111 100%)",
+        background:
+          "linear-gradient(180deg, #1a1a1a 0%, #1a1a1a 49.5%, #141414 50%, #111 100%)",
         boxShadow:
           "0 2px 6px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06)",
+        perspective: 200,
       }}
     >
       {/* Center divider line */}
       <span
         className="pointer-events-none absolute inset-x-0 z-20"
-        style={{
-          top: "50%",
-          height: 1,
-          background: "rgba(0,0,0,0.6)",
-        }}
+        style={{ top: "50%", height: 1, background: "rgba(0,0,0,0.6)" }}
       />
 
-      {/* Static digit (back face) */}
+      {/* Static current digit (back face) */}
       <span
         className="absolute inset-0 z-0 flex items-center justify-center font-mono text-[26px] font-extrabold leading-none tracking-tight text-white"
         style={{ textShadow: "0 1px 2px rgba(0,0,0,0.5)" }}
       >
-        {showDigit}
+        {displayDigit}
       </span>
 
-      {/* Flip animation */}
-      {!reduceMotion && isFlipping && (
+      {/* Flip animation overlay */}
+      {flipFrom !== null && !reduceMotion && (
         <>
           {/* Top half flipping away - shows old digit */}
           <motion.span
+            key={`top-${flipFrom}-${displayDigit}`}
             className="absolute inset-x-0 top-0 z-10 flex items-center justify-center overflow-hidden rounded-t-[5px] font-mono text-[26px] font-extrabold leading-none tracking-tight text-white"
             style={{
               height: "50%",
-              background:
-                "linear-gradient(180deg, #1a1a1a 0%, #1a1a1a 100%)",
+              background: "linear-gradient(180deg, #1a1a1a 0%, #1a1a1a 100%)",
               transformOrigin: "bottom center",
               textShadow: "0 1px 2px rgba(0,0,0,0.5)",
+              backfaceVisibility: "hidden",
             }}
             initial={{ rotateX: 0 }}
             animate={{ rotateX: -90 }}
-            transition={{
-              duration: 0.2,
-              delay,
-              ease: "easeIn",
-            }}
+            transition={{ duration: 0.08, ease: "easeIn" }}
           >
-            <span className="translate-y-1/2">{oldDigit}</span>
+            <span className="translate-y-1/2">{flipFrom}</span>
           </motion.span>
 
           {/* Bottom half flipping in - shows new digit */}
           <motion.span
+            key={`bot-${flipFrom}-${displayDigit}`}
             className="absolute inset-x-0 bottom-0 z-10 flex items-center justify-center overflow-hidden rounded-b-[5px] font-mono text-[26px] font-extrabold leading-none tracking-tight text-white"
             style={{
               height: "50%",
-              background:
-                "linear-gradient(180deg, #141414 0%, #111 100%)",
+              background: "linear-gradient(180deg, #141414 0%, #111 100%)",
               transformOrigin: "top center",
               textShadow: "0 1px 2px rgba(0,0,0,0.5)",
+              backfaceVisibility: "hidden",
             }}
             initial={{ rotateX: 90 }}
             animate={{ rotateX: 0 }}
-            transition={{
-              duration: 0.2,
-              delay: delay + 0.15,
-              ease: "easeOut",
-            }}
+            transition={{ duration: 0.08, delay: 0.05, ease: "easeOut" }}
           >
-            <span className="-translate-y-1/2">{showDigit}</span>
+            <span className="-translate-y-1/2">{displayDigit}</span>
           </motion.span>
         </>
       )}
@@ -345,7 +390,7 @@ function SplitFlapDigit({
   );
 }
 
-/** Split-flap scoreboard display for a number. */
+/** Split-flap scoreboard display for a number with cascading spin-up. */
 function SplitFlapDisplay({
   value,
   reduceMotion = false,
@@ -361,7 +406,7 @@ function SplitFlapDisplay({
         <SplitFlapDigit
           key={`pos-${digits.length - i}`}
           digit={d}
-          delay={i * 0.04}
+          staggerMs={i * 120}
           reduceMotion={reduceMotion}
         />
       ))}
