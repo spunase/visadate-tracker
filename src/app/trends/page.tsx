@@ -193,7 +193,7 @@ export default function TrendsPage() {
                 Visa Category
               </label>
               <div
-                className="inline-flex flex-wrap rounded-xl bg-muted p-1 shadow-inner"
+                className="inline-flex rounded-xl bg-muted p-1 shadow-inner"
                 role="radiogroup"
                 aria-label={`Select ${activeGroup.toLowerCase()} visa category`}
               >
@@ -205,7 +205,7 @@ export default function TrendsPage() {
                       role="radio"
                       aria-checked={isActive}
                       onClick={() => setCategory(c)}
-                      className={`rounded-lg px-4 py-1.5 text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2F6BFF] focus-visible:ring-offset-2 ${
+                      className={`flex-1 rounded-lg px-3 py-1.5 text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2F6BFF] focus-visible:ring-offset-2 ${
                         isActive
                           ? "bg-[#2F6BFF] text-white shadow-sm"
                           : "text-muted-foreground hover:text-foreground"

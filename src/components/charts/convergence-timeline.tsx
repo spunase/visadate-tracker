@@ -1196,23 +1196,23 @@ export function ConvergenceTimeline({
       {/* ── Legend ─────────────────────────────────────────────── */}
       <motion.div
         variants={prefersReduced ? undefined : itemVariants}
-        className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-[10px] text-muted-foreground"
+        className="flex items-center justify-center gap-3 text-[10px] text-muted-foreground"
       >
-        <span className="flex items-center gap-1.5">
+        <span className="flex items-center gap-1">
           <span
-            className="inline-block h-[3px] w-4 rounded-full"
+            className="inline-block h-[3px] w-3 rounded-full"
             style={{
               backgroundColor: palette.faLine,
               opacity: faIsFocused ? 1 : 0.4,
             }}
           />
           <span style={{ fontWeight: faIsFocused ? 600 : 400 }}>
-            Final Action
+            Final
           </span>
         </span>
-        <span className="flex items-center gap-1.5">
+        <span className="flex items-center gap-1">
           <span
-            className="inline-block h-[3px] w-4 rounded-full"
+            className="inline-block h-[3px] w-3 rounded-full"
             style={{
               backgroundColor: palette.filingLine,
               opacity: filingIsFocused ? 1 : 0.4,
@@ -1225,12 +1225,12 @@ export function ConvergenceTimeline({
             Filing
           </span>
         </span>
-        <span className="flex items-center gap-1.5">
+        <span className="flex items-center gap-1">
           <span
-            className="inline-block h-0.5 w-3 rounded-full"
+            className="inline-block h-0.5 w-2.5 rounded-full"
             style={{ backgroundColor: palette.pdLine }}
           />
-          Your PD
+          PD
         </span>
       </motion.div>
 

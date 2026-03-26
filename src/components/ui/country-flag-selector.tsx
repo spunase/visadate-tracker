@@ -211,7 +211,7 @@ export function CountryFlagSelector({
   value,
   onChange,
   variant = "chips",
-  label = "Country of Charge",
+  label = "Country",
   disabled = false,
   ariaLabel = "Select country",
 }: CountryFlagSelectorProps) {
@@ -230,7 +230,7 @@ export function CountryFlagSelector({
         className={
           isCards
             ? "grid grid-cols-3 gap-2.5 sm:grid-cols-5"
-            : "flex flex-wrap gap-1.5"
+            : "flex items-center gap-2.5"
         }
         role="radiogroup"
         aria-label={ariaLabel}
@@ -292,55 +292,69 @@ function ChipOption({
   dark: boolean;
   onChange: (c: PreferredCountry) => void;
 }) {
+  const accentColor = accent(meta, dark);
+  const glowColor = glow(meta, dark);
+
   return (
     <motion.button
       variants={chipVariants}
+      layout
       role="radio"
       aria-checked={isActive}
       aria-disabled={disabled}
+      aria-label={`Select ${country}`}
       onClick={() => !disabled && onChange(country)}
-      whileHover={disabled ? undefined : { scale: 1.05, y: -1 }}
-      whileTap={disabled ? undefined : { scale: 0.97 }}
-      className={`relative flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors duration-200
+      whileHover={disabled ? undefined : { scale: 1.08, y: -1 }}
+      whileTap={disabled ? undefined : { scale: 0.95 }}
+      className={`relative flex items-center rounded-full transition-all duration-200
         focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-calm-blue focus-visible:ring-offset-2
         ${disabled ? "pointer-events-none opacity-60" : "cursor-pointer"}
         ${
           isActive
-            ? "text-white shadow-md"
-            : "border border-border bg-card text-muted-foreground hover:bg-accent"
+            ? "gap-2 border border-border/60 bg-card py-1 pl-1 pr-3 shadow-sm"
+            : "p-0.5"
         }`}
       style={
         isActive
           ? {
-              background: accent(meta, dark),
-              boxShadow: `0 4px 14px ${glow(meta, dark)}, 0 1px 3px rgba(0,0,0,0.08)`,
+              boxShadow: `0 1px 4px rgba(0,0,0,0.06), 0 4px 12px ${glowColor}`,
             }
-          : undefined
+          : { filter: "saturate(0.55) opacity(0.65)" }
       }
     >
-      {/* Flag in circular container */}
-      <CountryFlagImage
-        country={country}
-        size="sm"
-        shape="circle"
-        isActive={isActive}
-        accentColor={accent(meta, dark)}
-      />
+      {/* Flag circle */}
+      <motion.span
+        layout
+        className={`inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full transition-all duration-200 ${
+          isActive ? "h-6 w-6" : "h-7 w-7"
+        }`}
+        style={
+          isActive
+            ? { boxShadow: `0 0 0 1.5px ${accentColor}` }
+            : undefined
+        }
+      >
+        <CountryFlagImage
+          country={country}
+          size="sm"
+          shape="circle"
+          isActive={isActive}
+          accentColor={accentColor}
+        />
+      </motion.span>
 
-      {/* Country name */}
-      <span>{country}</span>
-
-      {/* Active indicator dot */}
-      <AnimatePresence>
+      {/* Label slides in inside the pill - only for active */}
+      <AnimatePresence mode="wait">
         {isActive && (
           <motion.span
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            exit={{ scale: 0 }}
-            transition={{ type: "spring", stiffness: 400, damping: 20 }}
-            className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-white shadow-sm"
-            aria-hidden="true"
-          />
+            initial={{ width: 0, opacity: 0 }}
+            animate={{ width: "auto", opacity: 1 }}
+            exit={{ width: 0, opacity: 0 }}
+            transition={{ type: "spring", stiffness: 280, damping: 26 }}
+            className="overflow-hidden whitespace-nowrap text-[11px] font-semibold text-foreground"
+          >
+            {country}
+          </motion.span>
         )}
       </AnimatePresence>
     </motion.button>

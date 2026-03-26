@@ -316,7 +316,7 @@ export default function HomePage() {
                 Visa Category
               </label>
               <div
-                className="inline-flex flex-wrap rounded-xl bg-muted p-1 shadow-inner"
+                className="inline-flex rounded-xl bg-muted p-1 shadow-inner"
                 role="radiogroup"
                 aria-label={`Select ${activeGroup.toLowerCase()} visa category`}
               >
@@ -328,7 +328,7 @@ export default function HomePage() {
                       role="radio"
                       aria-checked={isActive}
                       onClick={() => handleCategoryChange(c)}
-                      className={`rounded-lg px-4 py-1.5 text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-calm-blue focus-visible:ring-offset-2 ${
+                      className={`flex-1 rounded-lg px-3 py-1.5 text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-calm-blue focus-visible:ring-offset-2 ${
                         isActive
                           ? "bg-calm-blue text-white shadow-sm"
                           : "text-muted-foreground hover:text-foreground"

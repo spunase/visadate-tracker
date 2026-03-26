@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Save, Trash2, Loader2, Lock, Pencil } from "lucide-react";
 import {
@@ -105,6 +105,7 @@ export default function TrackPage() {
   const resetResult = () => {
     setResult(null);
     setError(null);
+    setActiveTrackerId(null);
   };
 
   const handleGroupChange = (group: CategoryGroup) => {
@@ -132,6 +133,8 @@ export default function TrackPage() {
   const { savedTrackers, addTracker, removeTracker } = useTrackerStore();
   const { user } = useAuthStore();
   const [showSignIn, setShowSignIn] = useState(false);
+  const [activeTrackerId, setActiveTrackerId] = useState<string | null>(null);
+  const pendingAutoCheck = useRef(false);
 
   // Fetch convergence data (both FA + Filing histories) when result is shown
   const convergence = useConvergence(category, country);
@@ -189,6 +192,28 @@ export default function TrackPage() {
       setLoading(false);
     }
   }, [priorityDate, category, country, path]);
+
+  // ── Load saved tracker into form and auto-check ─────────────────────
+  const loadTracker = useCallback((tracker: SavedTracker) => {
+    const grp = groupForCategory(tracker.category);
+    setActiveGroup(grp);
+    setCategory(tracker.category);
+    setCountry(tracker.country);
+    setPriorityDate(tracker.priorityDate);
+    setPath(tracker.path);
+    setActiveTrackerId(tracker.id);
+    setResult(null);
+    setError(null);
+    pendingAutoCheck.current = true;
+  }, []);
+
+  // Auto-trigger check after a tracker is loaded and state has settled
+  useEffect(() => {
+    if (pendingAutoCheck.current && priorityDate) {
+      pendingAutoCheck.current = false;
+      handleCheck();
+    }
+  }, [priorityDate, category, country, path, handleCheck]);
 
   // ── Save handler ──────────────────────────────────────────────────────
   const handleSave = () => {
@@ -269,7 +294,7 @@ export default function TrackPage() {
                 Visa Category
               </legend>
               <div
-                className={`inline-flex flex-wrap rounded-xl bg-muted p-1 shadow-inner ${result ? "opacity-60 pointer-events-none" : ""}`}
+                className={`inline-flex rounded-xl bg-muted p-1 shadow-inner ${result ? "opacity-60 pointer-events-none" : ""}`}
                 role="radiogroup"
                 aria-label={`Select ${activeGroup.toLowerCase()} visa category`}
               >
@@ -284,7 +309,7 @@ export default function TrackPage() {
                     role="radio"
                     aria-checked={category === c}
                     aria-disabled={!!result}
-                    className={`rounded-lg px-4 py-1.5 text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2F6BFF] focus-visible:ring-offset-2 ${
+                    className={`flex-1 rounded-lg px-3 py-1.5 text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2F6BFF] focus-visible:ring-offset-2 ${
                       category === c
                         ? "bg-[#2F6BFF] text-white shadow-sm"
                         : "text-muted-foreground hover:text-foreground"
@@ -304,9 +329,9 @@ export default function TrackPage() {
                   setCountry(c);
                   resetResult();
                 }}
-                label="Country of Chargeability"
+                label="Country"
                 disabled={!!result}
-                ariaLabel="Country of chargeability"
+                ariaLabel="Country"
               />
             </div>
 
@@ -542,48 +567,77 @@ export default function TrackPage() {
               Saved Trackers
             </h3>
             <div className="flex flex-col gap-2">
-              {savedTrackers.map((tracker) => (
-                <motion.div
-                  key={tracker.id}
-                  layout
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{ duration: 0.18 }}
-                >
-                  <Card className="riso-doc-neutral rounded-[18px] border border-border/50 shadow-sm">
-                    <CardContent className="flex items-center justify-between p-4">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <Badge variant="secondary" className="text-[10px] font-semibold">
-                            {tracker.category}
-                          </Badge>
-                          <Badge variant="outline" className="text-[10px]">
-                            {tracker.country}
-                          </Badge>
-                          <Badge variant="outline" className="text-[10px]">
-                            {tracker.path}
-                          </Badge>
+              {savedTrackers.map((tracker) => {
+                const isLoaded = activeTrackerId === tracker.id;
+                return (
+                  <motion.div
+                    key={tracker.id}
+                    layout
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ duration: 0.18 }}
+                  >
+                    <Card
+                      role="button"
+                      tabIndex={0}
+                      aria-label={`Load ${tracker.category} ${tracker.country} tracker`}
+                      aria-pressed={isLoaded}
+                      onClick={() => loadTracker(tracker)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          loadTracker(tracker);
+                        }
+                      }}
+                      className={`cursor-pointer rounded-[18px] border shadow-sm transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2F6BFF] focus-visible:ring-offset-2 ${
+                        isLoaded
+                          ? "border-[#2F6BFF] bg-[#2F6BFF]/5 shadow-[0_0_0_1px_#2F6BFF,0_4px_12px_rgba(47,107,255,0.12)] dark:bg-[#2F6BFF]/10"
+                          : "riso-doc-neutral border-border/50 hover:border-border"
+                      }`}
+                    >
+                      <CardContent className="flex items-center justify-between p-4">
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2">
+                            <Badge variant={isLoaded ? "default" : "secondary"} className="text-[10px] font-semibold">
+                              {tracker.category}
+                            </Badge>
+                            <Badge variant="outline" className="text-[10px]">
+                              {tracker.country}
+                            </Badge>
+                            <Badge variant="outline" className="text-[10px]">
+                              {tracker.path}
+                            </Badge>
+                            {isLoaded && (
+                              <span className="text-[10px] font-medium text-[#2F6BFF]">
+                                Active
+                              </span>
+                            )}
+                          </div>
+                          <p className="mt-1.5 text-xs text-muted-foreground">
+                            PD:{" "}
+                            {new Date(tracker.priorityDate + "T00:00:00").toLocaleDateString(
+                              "en-US",
+                              { year: "numeric", month: "short", day: "numeric" },
+                            )}
+                          </p>
                         </div>
-                        <p className="mt-1.5 text-xs text-muted-foreground">
-                          PD:{" "}
-                          {new Date(tracker.priorityDate + "T00:00:00").toLocaleDateString(
-                            "en-US",
-                            { year: "numeric", month: "short", day: "numeric" },
-                          )}
-                        </p>
-                      </div>
-                      <button
-                        onClick={() => removeTracker(tracker.id)}
-                        className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2F6BFF] focus-visible:ring-offset-2"
-                        aria-label="Remove tracker"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            removeTracker(tracker.id);
+                            if (isLoaded) setActiveTrackerId(null);
+                          }}
+                          className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2F6BFF] focus-visible:ring-offset-2"
+                          aria-label={`Remove ${tracker.category} ${tracker.country} tracker`}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                );
+              })}
             </div>
           </div>
         )}

@@ -515,18 +515,18 @@ export function JourneyChronicle({
       </div>
 
       {/* ─── Legend ──────────────────────────────────────────── */}
-      <div className="flex items-center justify-center gap-5 text-[10px] text-muted-foreground">
-        <span className="flex items-center gap-1.5">
-          <span className="inline-block h-[3px] w-4 rounded-full" style={{ background: `linear-gradient(90deg, ${flag.from}, ${flag.mid}, ${flag.to})` }} />
+      <div className="flex items-center justify-center gap-3 text-[10px] text-muted-foreground">
+        <span className="flex items-center gap-1">
+          <span className="inline-block h-[3px] w-3 rounded-full" style={{ background: `linear-gradient(90deg, ${flag.from}, ${flag.mid}, ${flag.to})` }} />
           Trend
         </span>
-        <span className="flex items-center gap-1.5">
-          <span className="inline-block h-[3px] w-4 rounded-full" style={{ backgroundColor: palette.ghostLine }} />
+        <span className="flex items-center gap-1">
+          <span className="inline-block h-[3px] w-3 rounded-full" style={{ backgroundColor: palette.ghostLine }} />
           Baseline
         </span>
-        <span className="flex items-center gap-1.5">
+        <span className="flex items-center gap-1">
           <span
-            className="inline-block size-2.5 rounded-full border-2"
+            className="inline-block size-2 rounded-full border-[1.5px]"
             style={{ borderColor: flag.dot, boxShadow: `0 0 4px ${flag.dotGlow}` }}
           />
           Latest
