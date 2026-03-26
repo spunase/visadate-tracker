@@ -1,13 +1,21 @@
 {
-  "name": "VisaDateTracker",
+  "name": "VisaDateTracker - Green Card Priority Date Tracker",
   "short_name": "VisaDate",
-  "description": "Track your green card priority date",
+  "description": "Track your employment-based green card priority date. View visa bulletin movement, EB2/EB3 trends, milestone checklists, and immigration news.",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
+  "orientation": "portrait-primary",
   "background_color": "#F7F8FA",
   "theme_color": "#2F6BFF",
+  "lang": "en-US",
+  "categories": ["productivity", "utilities"],
   "icons": [
-    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" }
-  ]
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "screenshots": [],
+  "prefer_related_applications": false
 }

@@ -41,8 +41,12 @@ const securityHeaders = [
   },
 ];
 
+const isCapacitorBuild = process.env.CAPACITOR_BUILD === "true";
+
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // Static export for Capacitor mobile builds
+  ...(isCapacitorBuild && { output: "export" }),
   async headers() {
     return [
       {

@@ -4,8 +4,12 @@ const config: CapacitorConfig = {
   appId: "com.visadatetracker.app",
   appName: "VisaDateTracker",
   webDir: "out",
-  // For development, point to local dev server:
-  // server: { url: "http://localhost:3000", cleartext: true },
+  server: {
+    // Production: load from deployed Netlify site
+    url: "https://visadate-tracker.netlify.app",
+    // Allow navigation within the app domain
+    allowNavigation: ["visadate-tracker.netlify.app", "*.supabase.co"],
+  },
   plugins: {
     SplashScreen: {
       launchShowDuration: 2000,
@@ -15,11 +19,10 @@ const config: CapacitorConfig = {
       showSpinner: false,
       splashFullScreen: true,
       splashImmersive: true,
-      layoutName: "launch_screen",
       useDialog: true,
     },
     StatusBar: {
-      style: "LIGHT",
+      style: "LIGHT" as unknown as import("@capacitor/status-bar").Style,
       backgroundColor: "#F7F8FA",
     },
     Keyboard: {

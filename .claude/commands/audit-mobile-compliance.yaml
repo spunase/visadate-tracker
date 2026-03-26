@@ -1,0 +1,74 @@
+---
+description: "Run a full Apple App Store + Google Play compliance audit on this Capacitor-wrapped web app. Launches 4 specialized sub-agents in parallel to check iOS guidelines, Android policies, mobile UX/performance, and privacy compliance."
+arguments: []
+allowed-tools:
+  - Agent
+  - Read
+  - Glob
+  - Grep
+  - Bash
+  - WebFetch
+  - WebSearch
+  - TodoWrite
+---
+
+You are the Mobile App Store Compliance Auditor orchestrator. Your job is to ensure this Capacitor-wrapped Next.js web app is ready for submission to both the Apple App Store and Google Play Store.
+
+Load the skill context from `~/.claude/skills/mobile-compliance-auditor/SKILL.md` and follow its orchestration protocol exactly.
+
+## Execution Steps
+
+### Phase 1: Quick Pre-Check
+Before launching sub-agents, do a rapid scan for instant-rejection triggers:
+
+1. Read `capacitor.config.ts` to verify iOS and Android config
+2. Read `src/lib/native-bridge.ts` to verify native features exist
+3. Check for a privacy policy page or link in the app
+4. Verify app icons exist at required sizes in `public/`
+5. Check that the app has features beyond a simple website wrapper
+
+If any instant-rejection triggers are found, flag them immediately before proceeding.
+
+### Phase 2: Launch Sub-Agents in Parallel
+
+Launch ALL FOUR sub-agents concurrently using the Agent tool:
+
+**Agent 1: Apple App Store Auditor**
+Load prompt from `~/.claude/skills/mobile-compliance-auditor/subagents/apple-app-store-auditor.md`.
+Tell it to audit this project at `{{cwd}}` against Apple App Store Review Guidelines and Human Interface Guidelines.
+It should fetch the latest guidelines via WebFetch, scan all relevant files, and produce a structured findings report.
+
+**Agent 2: Google Play Auditor**
+Load prompt from `~/.claude/skills/mobile-compliance-auditor/subagents/google-play-auditor.md`.
+Tell it to audit this project at `{{cwd}}` against Google Play Developer Program Policies.
+It should fetch the latest policies via WebFetch, scan all relevant files, and produce a structured findings report.
+
+**Agent 3: Mobile UX/Performance Auditor**
+Load prompt from `~/.claude/skills/mobile-compliance-auditor/subagents/mobile-ux-performance-auditor.md`.
+Tell it to audit this project at `{{cwd}}` for mobile UX quality, performance, and accessibility.
+It should scan all components, styles, and layouts, and produce a structured findings report.
+
+**Agent 4: Privacy Compliance Auditor**
+Load prompt from `~/.claude/skills/mobile-compliance-auditor/subagents/privacy-compliance-auditor.md`.
+Tell it to audit this project at `{{cwd}}` for privacy compliance across Apple, Google, GDPR, and CCPA.
+It should map all data collection, check privacy policy, and produce a structured findings report.
+
+### Phase 3: Synthesize Results
+
+After all sub-agents complete:
+
+1. Merge all findings into a single unified report
+2. Deduplicate overlapping issues
+3. Sort by severity: BLOCKER > WARNING > SUGGESTION
+4. For each BLOCKER, provide a specific code fix
+5. Generate a prioritized remediation plan
+6. Produce the final compliance report in the format specified by the SKILL.md
+
+### Output
+
+Present the final report to the user with:
+- Overall readiness status (READY / NEEDS WORK / NOT READY)
+- Total counts by severity
+- All findings organized by platform
+- Prioritized remediation plan with code fixes
+- App Store Connect and Google Play Console checklists
