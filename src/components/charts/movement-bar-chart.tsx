@@ -72,7 +72,7 @@ function BarTooltip({ active, payload }: CustomTooltipProps) {
       <p className="text-[11px] text-muted-foreground">{label}</p>
       {isRetrogression && (
         <p className="mt-1 border-t border-rose-200/40 pt-1 text-[10px] leading-relaxed text-muted-foreground dark:border-rose-800/30">
-          Temporary setback — recovery typically follows within 2-4 months.
+          Temporary setback - recovery typically follows within 2-4 months.
         </p>
       )}
     </div>
@@ -84,12 +84,12 @@ function BarTooltip({ active, payload }: CustomTooltipProps) {
 export function MovementBarChart({ data }: MovementBarChartProps) {
   if (!data.length) return null;
 
-  // Detect "current" categories — all zero movement
+  // Detect "current" categories - all zero movement
   const allZero = data.every((d) => d.movementDays === 0);
   if (allZero) {
     return (
       <p className="py-6 text-center text-xs text-muted-foreground">
-        No monthly movement to display — this category has been current
+        No monthly movement to display - this category has been current
         or unchanged throughout the period.
       </p>
     );

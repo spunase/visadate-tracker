@@ -11,12 +11,12 @@
 import type { Disclaimer } from "./types";
 
 /**
- * Shown on every page — the primary "not legal advice" notice.
+ * Shown on every page - the primary "not legal advice" notice.
  */
 export const GLOBAL_DISCLAIMER: Disclaimer = {
   id: "global",
   text: "This app provides informational tracking only. It is not legal advice. Always verify with official sources.",
-  shortText: "Informational only — not legal advice.",
+  shortText: "Informational only - not legal advice.",
   type: "global",
 } as const;
 
@@ -26,7 +26,7 @@ export const GLOBAL_DISCLAIMER: Disclaimer = {
 export const MILESTONE_DISCLAIMER: Disclaimer = {
   id: "milestone",
   text: "These are general preparation suggestions. Individual cases vary. Complex situations may require attorney review.",
-  shortText: "General guidance — consult an attorney for complex cases.",
+  shortText: "General guidance - consult an attorney for complex cases.",
   type: "milestone",
 } as const;
 

@@ -80,7 +80,7 @@ export function useUserBand(tracker: SavedTracker | null): UseUserBandResult {
           // User is current
           distanceDays = null;
         } else if (originalVal === "U") {
-          // Unavailable — treat as very far
+          // Unavailable - treat as very far
           distanceDays = -9999;
         } else if (faRow.cutoff_date) {
           const cutoffDate = new Date(faRow.cutoff_date);

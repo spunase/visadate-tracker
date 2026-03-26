@@ -32,7 +32,7 @@ function glow(meta: (typeof COUNTRY_META)[PreferredCountry], dark: boolean) {
 }
 
 // ---------------------------------------------------------------------------
-// Inline SVG flags — lightweight, resolution-independent, cross-platform
+// Inline SVG flags - lightweight, resolution-independent, cross-platform
 // Each renders a recognizable flag at any size via viewBox scaling
 // ---------------------------------------------------------------------------
 
@@ -43,7 +43,7 @@ function IndiaFlag({ className }: { className?: string }) {
       <rect y="200" width="900" height="200" fill="#FFFFFF" />
       <rect y="400" width="900" height="200" fill="#138808" />
       <circle cx="450" cy="300" r="60" fill="#000080" fillOpacity="0" stroke="#000080" strokeWidth="6" />
-      {/* Ashoka Chakra — simplified 24-spoke wheel */}
+      {/* Ashoka Chakra - simplified 24-spoke wheel */}
       <circle cx="450" cy="300" r="60" fill="none" stroke="#000080" strokeWidth="4" />
       <circle cx="450" cy="300" r="10" fill="#000080" />
       {[...Array(24)].map((_, i) => {
@@ -80,7 +80,7 @@ function PhilippinesFlag({ className }: { className?: string }) {
       <polygon points="0,0 450,300 0,600" fill="#FFFFFF" />
       {/* Sun */}
       <circle cx="165" cy="300" r="42" fill="#FCD116" />
-      {/* Sun rays — 8 major rays */}
+      {/* Sun rays - 8 major rays */}
       {[...Array(8)].map((_, i) => {
         const angle = (i * 45 * Math.PI) / 180;
         const x1 = 165 + 50 * Math.cos(angle);
@@ -103,7 +103,7 @@ function MexicoFlag({ className }: { className?: string }) {
       <rect width="300" height="600" fill="#006847" />
       <rect x="300" width="300" height="600" fill="#FFFFFF" />
       <rect x="600" width="300" height="600" fill="#CE1126" />
-      {/* Simplified coat of arms — eagle silhouette */}
+      {/* Simplified coat of arms - eagle silhouette */}
       <circle cx="450" cy="300" r="55" fill="#006847" fillOpacity="0.15" />
       <ellipse cx="450" cy="290" rx="30" ry="22" fill="#6B3A2A" />
       {/* Wings */}

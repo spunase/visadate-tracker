@@ -145,7 +145,7 @@ function CategoryColumn({
         <p className="mt-2 text-[11px] text-muted-foreground">
           {isCurrent
             ? "No backlog"
-            : `${days?.toLocaleString() ?? "—"} days from today`}
+            : `${days?.toLocaleString() ?? "-"} days from today`}
         </p>
       </CardContent>
     </Card>

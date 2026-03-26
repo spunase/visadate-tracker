@@ -1,5 +1,5 @@
 /**
- * Type C Rules — Milestone Banding
+ * Type C Rules - Milestone Banding
  *
  * Given the distance in days between a priority date and a cutoff,
  * returns a set of MilestoneCards with guidance appropriate to the band.
@@ -46,7 +46,7 @@ export function resolveBand(
   distanceDays: number | null,
   cutoffKind: CutoffKind,
 ): DistanceBand {
-  // Symbolic states (C/U) yield null distance — handled at the cutoff level.
+  // Symbolic states (C/U) yield null distance - handled at the cutoff level.
   // If the caller already determined the user is current, distanceDays >= 0.
   if (distanceDays === null) {
     // Treat null from Final Action as final_current, from Filing as filing_current.
@@ -56,7 +56,7 @@ export function resolveBand(
   if (distanceDays >= 0 && cutoffKind === "final_action") return "final_current";
   if (distanceDays >= 0 && cutoffKind === "dates_for_filing") return "filing_current";
 
-  // distanceDays is negative — user is behind the cutoff. Convert to positive months-behind.
+  // distanceDays is negative - user is behind the cutoff. Convert to positive months-behind.
   const absDays = Math.abs(distanceDays);
   const approxMonths = absDays / 30.44; // average days per month
 
@@ -107,7 +107,7 @@ function farCards(category: Category): MilestoneCard[] {
     {
       id: `${category}-far-track-patterns`,
       title: "Track Historical Movement Patterns",
-      body: `Review how the ${category} cutoff has moved over the past 12-24 months. Understanding patterns — steady forward movement, stalls, or retrogressions — helps set realistic expectations for your timeline.`,
+      body: `Review how the ${category} cutoff has moved over the past 12-24 months. Understanding patterns - steady forward movement, stalls, or retrogressions - helps set realistic expectations for your timeline.`,
       sourceRefs: ["https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin.html"],
       band: "far",
       disclaimer: DISCLAIMER,
@@ -152,7 +152,7 @@ function nearCards(category: Category, path: ProcessingPath): MilestoneCard[] {
     {
       id: `${category}-near-document-readiness`,
       title: "Ensure Document Readiness",
-      body: "Verify that all required documents are current, translations are certified, and medical exams are scheduled (they are valid for two years for AOS). Check form editions — USCIS rejects outdated form versions.",
+      body: "Verify that all required documents are current, translations are certified, and medical exams are scheduled (they are valid for two years for AOS). Check form editions - USCIS rejects outdated form versions.",
       sourceRefs: ["https://www.uscis.gov/i-693"],
       band: "near",
       disclaimer: DISCLAIMER,
@@ -160,7 +160,7 @@ function nearCards(category: Category, path: ProcessingPath): MilestoneCard[] {
     {
       id: `${category}-near-follow-both-charts`,
       title: "Follow Both Charts Monthly",
-      body: "At this stage, watch both the Final Action and Dates for Filing charts every month. USCIS announces which chart to use for AOS filings — this can change month to month.",
+      body: "At this stage, watch both the Final Action and Dates for Filing charts every month. USCIS announces which chart to use for AOS filings - this can change month to month.",
       sourceRefs: ["https://www.uscis.gov/green-card/green-card-processes-and-procedures/visa-availability-priority-dates"],
       band: "near",
       disclaimer: DISCLAIMER,
@@ -204,7 +204,7 @@ function filingCurrentCards(category: Category): MilestoneCard[] {
     {
       id: `${category}-filing-current-explain`,
       title: "Filing-Current Does Not Mean Approval",
-      body: "Being current on the Dates for Filing chart means you may be able to submit your adjustment application — but it does not guarantee approval or that a visa number is immediately available. Final Action determines when your case can be approved.",
+      body: "Being current on the Dates for Filing chart means you may be able to submit your adjustment application - but it does not guarantee approval or that a visa number is immediately available. Final Action determines when your case can be approved.",
       sourceRefs: [
         "https://www.uscis.gov/green-card/green-card-processes-and-procedures/visa-availability-priority-dates",
       ],

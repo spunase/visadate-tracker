@@ -4,7 +4,7 @@ import { requireAdminAuth } from "@/lib/admin-auth";
 import type { PolicyUpdate } from "@/types/database";
 
 // ---------------------------------------------------------------------------
-// Mock data — for development fallback
+// Mock data - for development fallback
 // ---------------------------------------------------------------------------
 
 const mockPolicyUpdates: PolicyUpdate[] = [

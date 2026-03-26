@@ -1,5 +1,5 @@
 /**
- * Rules Engine — Barrel Export
+ * Rules Engine - Barrel Export
  *
  * Re-exports all public functions and types from the rules engine modules.
  */

@@ -1,5 +1,5 @@
 /**
- * Visa Bulletin parser — barrel exports.
+ * Visa Bulletin parser - barrel exports.
  */
 
 export { parseDOSDate } from "./date-parser";

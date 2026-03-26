@@ -1,5 +1,5 @@
 /**
- * Type B Rules — Movement Detection
+ * Type B Rules - Movement Detection
  *
  * Compares the cutoff from the current bulletin against the previous
  * bulletin and determines the direction and magnitude of movement.
@@ -32,16 +32,16 @@ export function evaluateMovement(
     return transition("became_current", null, "The cutoff changed from Unavailable to Current.");
   }
   if (previousCutoff === "U" && currentCutoff instanceof Date) {
-    return transition("became_available", null, "The cutoff changed from Unavailable to a specific date — the category is now available.");
+    return transition("became_available", null, "The cutoff changed from Unavailable to a specific date - the category is now available.");
   }
   if (previousCutoff === "C" && currentCutoff === "U") {
     return transition("became_unavailable", null, "The cutoff changed from Current to Unavailable.");
   }
   if (previousCutoff === "C" && currentCutoff instanceof Date) {
-    return transition("became_date", null, "The cutoff changed from Current (C) to a specific date — this is a retrogression from the current state.");
+    return transition("became_date", null, "The cutoff changed from Current (C) to a specific date - this is a retrogression from the current state.");
   }
   if (previousCutoff instanceof Date && currentCutoff === "C") {
-    return transition("became_current", null, "The cutoff changed from a specific date to Current (C) — all dates are now current.");
+    return transition("became_current", null, "The cutoff changed from a specific date to Current (C) - all dates are now current.");
   }
   if (previousCutoff instanceof Date && currentCutoff === "U") {
     return transition("became_unavailable", null, "The cutoff changed from a specific date to Unavailable (U).");
@@ -66,7 +66,7 @@ export function evaluateMovement(
         days,
         isRetrogression: true,
         isNoChange: false,
-        summary: `The cutoff moved backward by ${Math.abs(days)} day(s) — this is a retrogression.`,
+        summary: `The cutoff moved backward by ${Math.abs(days)} day(s) - this is a retrogression.`,
       };
     }
     return noChange("The cutoff date did not change from last month.");

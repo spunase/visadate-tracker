@@ -56,7 +56,7 @@ export function ThemeProvider({
         setThemeState(stored);
       }
     } catch {
-      // localStorage unavailable — keep default
+      // localStorage unavailable - keep default
     }
   }, [storageKey]);
 
@@ -95,7 +95,7 @@ export function ThemeProvider({
       try {
         localStorage.setItem(storageKey, next);
       } catch {
-        // localStorage unavailable — preference won't persist
+        // localStorage unavailable - preference won't persist
       }
     },
     [storageKey],

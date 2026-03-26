@@ -3,7 +3,7 @@ import type { Category, CountryBucket, PathType, MilestoneCard } from "@/types/d
 
 // ---------------------------------------------------------------------------
 // NOTE: Milestones are computed client-side from static rule definitions in
-// this file. There is no corresponding Supabase table to fetch from — this
+// this file. There is no corresponding Supabase table to fetch from - this
 // endpoint intentionally stays as-is with inline rules.
 // ---------------------------------------------------------------------------
 

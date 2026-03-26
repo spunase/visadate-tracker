@@ -34,7 +34,7 @@ export function checkAndNotify(): void {
 
   // Fire the notification
   new Notification("Visa Bulletin Reminder", {
-    body: "New Visa Bulletin may be available — Check the latest priority dates for your category.",
+    body: "New Visa Bulletin may be available - Check the latest priority dates for your category.",
     icon: "/favicon.ico",
     tag: `visa-bulletin-${yearMonth}`,
   });

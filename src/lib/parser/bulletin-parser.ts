@@ -80,7 +80,7 @@ export function extractBulletinMonth(html: string): string {
 }
 
 /**
- * Minimal HTML table parser — extracts text content from table rows/cells.
+ * Minimal HTML table parser - extracts text content from table rows/cells.
  * Does not depend on any DOM library; uses regex-based extraction.
  */
 function extractTables(html: string): string[][][] {

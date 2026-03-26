@@ -8,7 +8,7 @@ interface NotificationState {
   permission: NotificationPermission;
   /** Day of month to send reminder (1-28) */
   reminderDay: number;
-  /** e.g. "2026-03" — prevents duplicate notifications in the same month */
+  /** e.g. "2026-03" - prevents duplicate notifications in the same month */
   lastNotifiedMonth: string | null;
 
   enableNotifications: () => Promise<void>;

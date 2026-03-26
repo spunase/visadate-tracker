@@ -25,7 +25,7 @@ export const ALLOWED_SOURCES: SourceInfo[] = [
   },
   {
     id: "dos-visa-bulletin",
-    name: "Department of State — Visa Bulletin",
+    name: "Department of State - Visa Bulletin",
     tier: 1,
     baseUrl: "https://travel.state.gov",
     type: "government",

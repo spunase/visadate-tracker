@@ -28,7 +28,7 @@ export function TrendNarrative({
     );
   }
 
-  // Detect "current" categories — no meaningful movement to narrate
+  // Detect "current" categories - no meaningful movement to narrate
   const allZero = data.every((d) => d.movementDays === 0);
   if (allZero) {
     return (
@@ -39,7 +39,7 @@ export function TrendNarrative({
           to report.
         </p>
         <p className="text-[11px] leading-relaxed text-muted-foreground/70 italic">
-          Categories that are &quot;current&quot; have no waiting queue — all
+          Categories that are &quot;current&quot; have no waiting queue - all
           eligible applicants can proceed immediately.
         </p>
       </div>

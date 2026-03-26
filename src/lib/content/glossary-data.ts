@@ -28,7 +28,7 @@ export const GLOSSARY_TERMS: GlossaryTerm[] = [
     id: "chargeability",
     term: "Chargeability",
     definition:
-      "Chargeability determines which country's visa queue you fall under for immigration purposes. In most cases you are 'charged' to the country of your birth, not your citizenship. Certain exceptions exist — for example, you may be able to cross-charge to a spouse's country of birth if it has shorter wait times.",
+      "Chargeability determines which country's visa queue you fall under for immigration purposes. In most cases you are 'charged' to the country of your birth, not your citizenship. Certain exceptions exist - for example, you may be able to cross-charge to a spouse's country of birth if it has shorter wait times.",
     relatedTerms: ["priority-date", "visa-bulletin", "retrogression"],
     officialSource: "https://travel.state.gov/content/travel/en/us-visas/visa-information-resources/visa-bulletin.html",
   },
@@ -36,7 +36,7 @@ export const GLOSSARY_TERMS: GlossaryTerm[] = [
     id: "chart-use",
     term: "Chart-Use (Filing Chart vs Final Action Chart)",
     definition:
-      "Each month USCIS decides whether applicants should use the 'Dates for Filing' chart or the 'Final Action Dates' chart from the Visa Bulletin to determine when they can submit their adjustment-of-status application. This decision — known as 'chart-use' — is published on the USCIS website and is only valid for that specific month. Checking the chart-use announcement is critical because it directly controls when you can file.",
+      "Each month USCIS decides whether applicants should use the 'Dates for Filing' chart or the 'Final Action Dates' chart from the Visa Bulletin to determine when they can submit their adjustment-of-status application. This decision - known as 'chart-use' - is published on the USCIS website and is only valid for that specific month. Checking the chart-use announcement is critical because it directly controls when you can file.",
     relatedTerms: ["dates-for-filing", "final-action-date", "visa-bulletin"],
     officialSource: "https://www.uscis.gov/green-card/green-card-processes-and-procedures/visa-availability-priority-dates/adjustment-of-status-filing-charts",
   },
@@ -52,7 +52,7 @@ export const GLOSSARY_TERMS: GlossaryTerm[] = [
     id: "current",
     term: "Current (Visa Availability)",
     definition:
-      "When a category and country combination shows 'C' (Current) on the Visa Bulletin, it means there is no backlog — a visa number is immediately available regardless of your priority date. Being current is the best-case scenario because it means you can file or have your case adjudicated right away.",
+      "When a category and country combination shows 'C' (Current) on the Visa Bulletin, it means there is no backlog - a visa number is immediately available regardless of your priority date. Being current is the best-case scenario because it means you can file or have your case adjudicated right away.",
     relatedTerms: ["visa-bulletin", "retrogression", "priority-date"],
     officialSource: "https://travel.state.gov/content/travel/en/us-visas/visa-information-resources/visa-bulletin.html",
   },
@@ -116,7 +116,7 @@ export const GLOSSARY_TERMS: GlossaryTerm[] = [
     id: "visa-bulletin",
     term: "Visa Bulletin",
     definition:
-      "The Visa Bulletin is a monthly publication by the U.S. Department of State that shows cutoff dates for immigrant visa availability. It contains two charts — Final Action Dates and Dates for Filing — organized by preference category and country of chargeability. Tracking the Visa Bulletin each month is the primary way employment-based applicants monitor their place in line.",
+      "The Visa Bulletin is a monthly publication by the U.S. Department of State that shows cutoff dates for immigrant visa availability. It contains two charts - Final Action Dates and Dates for Filing - organized by preference category and country of chargeability. Tracking the Visa Bulletin each month is the primary way employment-based applicants monitor their place in line.",
     relatedTerms: [
       "final-action-date",
       "dates-for-filing",

@@ -40,7 +40,7 @@ function daysUntil(target: string): number {
 
 /**
  * Estimate the next bulletin release window.
- * The State Department typically publishes around the 8th–15th
+ * The State Department typically publishes around the 8th-15th
  * of each month, for the following month.
  */
 function estimateReleaseDate(): string {
@@ -48,7 +48,7 @@ function estimateReleaseDate(): string {
   // Target the 12th of the current month as a midpoint estimate
   const target = new Date(now.getFullYear(), now.getMonth(), 12);
   if (target <= now) {
-    // Already past the window — estimate next month
+    // Already past the window - estimate next month
     target.setMonth(target.getMonth() + 1);
   }
   return target.toISOString().split("T")[0];
@@ -123,7 +123,7 @@ export function BulletinCountdown({
   const config = stateConfig[state];
   const Icon = config.icon;
 
-  // Progress: assume a ~30-day cycle, clamped 0–1
+  // Progress: assume a ~30-day cycle, clamped 0-1
   const progress = useMemo(() => {
     const total = 30;
     const elapsed = total - Math.max(0, daysLeft);

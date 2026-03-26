@@ -5,7 +5,7 @@
  * from the current cutoff) and provides actionable guidance with checklist
  * items and source references.
  *
- * All guidance carries the "milestone" disclaimer — these are general
+ * All guidance carries the "milestone" disclaimer -these are general
  * preparation suggestions, not legal advice.
  *
  * @module content/milestone-content
@@ -14,17 +14,17 @@
 import type { MilestoneCard, MilestoneBand } from "./types";
 
 /**
- * Complete milestone library — at least 3-4 cards per distance band.
+ * Complete milestone library -at least 3-4 cards per distance band.
  */
 export const MILESTONE_CARDS: MilestoneCard[] = [
   // ═══════════════════════════════════════════════════════════════════════
-  // FAR — priority date is many years from the cutoff
+  // FAR -priority date is many years from the cutoff
   // ═══════════════════════════════════════════════════════════════════════
   {
     id: "far-01-understand-process",
     band: "far",
     title: "Understand the Employment-Based Green Card Process",
-    body: "Your priority date is well behind the current cutoff dates. Use this time to thoroughly understand each step of the EB green card process — from labor certification (PERM) through I-140 approval to the final I-485 or consular processing stage.",
+    body: "Your priority date is well behind the current cutoff dates. Use this time to thoroughly understand each step of the EB green card process -from labor certification (PERM) through I-140 approval to the final I-485 or consular processing stage.",
     checklistItems: [
       "Read the USCIS overview of employment-based immigration categories",
       "Identify your EB preference category (EB-1, EB-2, or EB-3)",
@@ -76,7 +76,7 @@ export const MILESTONE_CARDS: MilestoneCard[] = [
     id: "far-04-document-prep",
     band: "far",
     title: "Begin Long-Lead Document Collection",
-    body: "Some documents take weeks or months to obtain — especially from overseas. Starting early avoids last-minute scrambles when your date gets closer.",
+    body: "Some documents take weeks or months to obtain -especially from overseas. Starting early avoids last-minute scrambles when your date gets closer.",
     checklistItems: [
       "Obtain birth certificates for yourself and all dependents",
       "Gather marriage certificate and any divorce/death certificates if applicable",
@@ -91,7 +91,7 @@ export const MILESTONE_CARDS: MilestoneCard[] = [
   },
 
   // ═══════════════════════════════════════════════════════════════════════
-  // APPROACHING — cutoff is getting closer (within a few years)
+  // APPROACHING -cutoff is getting closer (within a few years)
   // ═══════════════════════════════════════════════════════════════════════
   {
     id: "approaching-01-monitor-bulletin",
@@ -133,7 +133,7 @@ export const MILESTONE_CARDS: MilestoneCard[] = [
     id: "approaching-03-financial-prep",
     band: "approaching",
     title: "Financial Preparation",
-    body: "Green card filing involves significant fees — USCIS filing fees, medical exam costs, attorney fees, and potentially premium processing. Budget ahead so finances do not delay your filing.",
+    body: "Green card filing involves significant fees -USCIS filing fees, medical exam costs, attorney fees, and potentially premium processing. Budget ahead so finances do not delay your filing.",
     checklistItems: [
       "Estimate total filing costs (I-485, I-765 EAD, I-131 AP, medical exam)",
       "Clarify which fees your employer will cover vs. personal responsibility",
@@ -165,7 +165,7 @@ export const MILESTONE_CARDS: MilestoneCard[] = [
   },
 
   // ═══════════════════════════════════════════════════════════════════════
-  // NEAR — within about a year of current
+  // NEAR -within about a year of current
   // ═══════════════════════════════════════════════════════════════════════
   {
     id: "near-01-civil-surgeon",
@@ -174,7 +174,7 @@ export const MILESTONE_CARDS: MilestoneCard[] = [
     body: "The I-693 medical examination is required for AOS applicants and must be performed by a USCIS-designated civil surgeon. Results are valid for two years from the date of the civil surgeon's signature, so timing matters.",
     checklistItems: [
       "Find a USCIS-designated civil surgeon near you",
-      "Schedule the exam — popular civil surgeons may have multi-week wait times",
+      "Schedule the exam -popular civil surgeons may have multi-week wait times",
       "Bring your vaccination records to the appointment",
       "Obtain the sealed I-693 envelope (do not open it)",
     ],
@@ -238,7 +238,7 @@ export const MILESTONE_CARDS: MilestoneCard[] = [
   },
 
   // ═══════════════════════════════════════════════════════════════════════
-  // VERY NEAR — within a few months
+  // VERY NEAR -within a few months
   // ═══════════════════════════════════════════════════════════════════════
   {
     id: "very-near-01-attorney-review",
@@ -311,13 +311,13 @@ export const MILESTONE_CARDS: MilestoneCard[] = [
   },
 
   // ═══════════════════════════════════════════════════════════════════════
-  // FILING CURRENT — Dates for Filing chart shows your date as current
+  // FILING CURRENT -Dates for Filing chart shows your date as current
   // ═══════════════════════════════════════════════════════════════════════
   {
     id: "filing-current-01-submit",
     band: "filing_current",
     title: "Submit Your I-485 Application",
-    body: "Your priority date is current on the Dates for Filing chart and USCIS has authorized its use. File your I-485 as soon as possible — filing windows can close if dates retrogress next month.",
+    body: "Your priority date is current on the Dates for Filing chart and USCIS has authorized its use. File your I-485 as soon as possible -filing windows can close if dates retrogress next month.",
     checklistItems: [
       "Verify that USCIS has authorized the Dates for Filing chart for this month",
       "Confirm your priority date is before the published cutoff date",
@@ -355,7 +355,7 @@ export const MILESTONE_CARDS: MilestoneCard[] = [
     body: "USCIS will schedule a biometrics appointment at an Application Support Center (ASC) near you. This is typically required for fingerprinting and photograph capture for background checks.",
     checklistItems: [
       "Watch for the biometrics appointment notice (Form I-797C)",
-      "Attend the appointment on time — bring the notice and a valid photo ID",
+      "Attend the appointment on time -bring the notice and a valid photo ID",
       "If you cannot attend on the scheduled date, reschedule promptly",
       "Biometrics are usually scheduled within 3-6 weeks of receipt",
     ],
@@ -384,18 +384,18 @@ export const MILESTONE_CARDS: MilestoneCard[] = [
   },
 
   // ═══════════════════════════════════════════════════════════════════════
-  // FINAL CURRENT — Final Action Date shows your date as current
+  // FINAL CURRENT -Final Action Date shows your date as current
   // ═══════════════════════════════════════════════════════════════════════
   {
     id: "final-current-01-approval-watch",
     band: "final_current",
     title: "Watch for Case Approval",
-    body: "With your date current on the Final Action Dates chart, USCIS can adjudicate your I-485. Case approvals can happen at any time — keep your case information and notifications up to date.",
+    body: "With your date current on the Final Action Dates chart, USCIS can adjudicate your I-485. Case approvals can happen at any time -keep your case information and notifications up to date.",
     checklistItems: [
       "Check your USCIS case status regularly",
       "Ensure your mailing address is current with USCIS (file AR-11 if you moved)",
       "Be ready to respond quickly to any RFE (Request for Evidence)",
-      "Keep your phone line available — USCIS may call for an interview scheduling",
+      "Keep your phone line available -USCIS may call for an interview scheduling",
     ],
     sourceRefs: [
       "https://egov.uscis.gov/casestatus/landing.do",

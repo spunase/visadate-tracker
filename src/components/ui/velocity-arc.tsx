@@ -8,7 +8,7 @@ export type VelocityDirection = "forward" | "backward" | "none";
 export type VelocitySize = "sm" | "md" | "lg";
 
 export interface VelocityArcProps {
-  /** Direction of movement — determines icon, color, and motion */
+  /** Direction of movement - determines icon, color, and motion */
   direction: VelocityDirection;
   /** Human-readable movement label, e.g. "+2 months", "No change" */
   movement?: string;
@@ -121,7 +121,7 @@ export function VelocityArc({
     >
       <style dangerouslySetInnerHTML={{ __html: keyframesCSS }} />
 
-      {/* Tonal container — Material Design 3 filled tonal style */}
+      {/* Tonal container - Material Design 3 filled tonal style */}
       <span
         className={cn(
           "relative inline-flex items-center justify-center rounded-full border",
@@ -130,7 +130,7 @@ export function VelocityArc({
         )}
         style={{ width: ringSize, height: ringSize }}
       >
-        {/* Breathing ring — subtle expanding halo (forward/backward only) */}
+        {/* Breathing ring - subtle expanding halo (forward/backward only) */}
         {direction !== "none" && (
           <span
             className="absolute inset-0 rounded-full"
@@ -161,7 +161,7 @@ export function VelocityArc({
         >
           {direction === "forward" && (
             <>
-              {/* Upward bold arrow — Material Symbols Rounded "arrow_upward" style */}
+              {/* Upward bold arrow - Material Symbols Rounded "arrow_upward" style */}
               {/* Clean, bold, unmistakable upward direction */}
               <path
                 d="M12 4L12 20"
@@ -184,7 +184,7 @@ export function VelocityArc({
 
           {direction === "backward" && (
             <>
-              {/* Downward bold arrow — Material Symbols Rounded "arrow_downward" style */}
+              {/* Downward bold arrow - Material Symbols Rounded "arrow_downward" style */}
               <path
                 d="M12 4L12 20"
                 stroke="currentColor"
@@ -206,7 +206,7 @@ export function VelocityArc({
 
           {direction === "none" && (
             <>
-              {/* Horizontal line with dots — "no change" indicator */}
+              {/* Horizontal line with dots - "no change" indicator */}
               <line
                 x1="6"
                 y1="12"
@@ -240,7 +240,7 @@ export function VelocityArc({
         </svg>
       </span>
 
-      {/* Movement label — Material Design typography */}
+      {/* Movement label - Material Design typography */}
       {movement && (
         <span
           className={cn(

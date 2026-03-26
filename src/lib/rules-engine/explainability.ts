@@ -73,7 +73,7 @@ function buildCalculationNarrative(
   faResult: EligibilityResult,
 ): string {
   if (input.finalActionCutoff === "C") {
-    return `The ${input.category} ${input.country} Final Action cutoff for ${input.bulletinMonth} is Current (C). No date comparison is needed — all priority dates are current.`;
+    return `The ${input.category} ${input.country} Final Action cutoff for ${input.bulletinMonth} is Current (C). No date comparison is needed - all priority dates are current.`;
   }
 
   if (input.finalActionCutoff === "U") {

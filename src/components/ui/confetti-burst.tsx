@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 export interface ConfettiBurstProps {
   /** When toggled to true, fires one burst */
   trigger: boolean;
-  /** Visual style — confetti uses rectangular pieces, sparkle uses star shapes */
+  /** Visual style - confetti uses rectangular pieces, sparkle uses star shapes */
   variant?: "confetti" | "sparkle";
   /** Override the default particle colors */
   colors?: string[];
@@ -17,7 +17,7 @@ export interface ConfettiBurstProps {
 
 // ─── Defaults ──────────────────────────────────────────────────
 
-const DEFAULT_COLORS = ["#4AADA3", "#CF7B73", "#DEAD45"]; // teal, coral, gold — risograph inks
+const DEFAULT_COLORS = ["#4AADA3", "#CF7B73", "#DEAD45"]; // teal, coral, gold - risograph inks
 const PARTICLE_COUNT = 20;
 const ANIMATION_DURATION_MS = 1500;
 

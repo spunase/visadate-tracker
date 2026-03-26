@@ -66,7 +66,7 @@ function RetrogradeCard({
       tabIndex={0}
       role="button"
       aria-expanded={showNarrative}
-      aria-label={`Retrogression ${category} ${country} ${monthLabel} — hover for details`}
+      aria-label={`Retrogression ${category} ${country} ${monthLabel} - hover for details`}
     >
       <CardContent className="p-4">
         <div className="flex items-center gap-2">
@@ -151,7 +151,7 @@ export default function TrendsPage() {
         animate="show"
         className="flex flex-col gap-4 px-4 pb-8"
       >
-        {/* Country & Category Selectors — consistent with home screen */}
+        {/* Country & Category Selectors - consistent with home screen */}
         <motion.div variants={item}>
           <nav aria-label="Country and category filters" className="space-y-3">
             {/* Country selector with flags */}
@@ -187,7 +187,7 @@ export default function TrendsPage() {
               </div>
             </div>
 
-            {/* Category selector — filtered by active group */}
+            {/* Category selector - filtered by active group */}
             <div>
               <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
                 Visa Category
@@ -241,7 +241,7 @@ export default function TrendsPage() {
           </div>
         </motion.div>
 
-        {/* Unified Journey Chronicle — trend line + movement stamps + stats */}
+        {/* Unified Journey Chronicle - trend line + movement stamps + stats */}
         <motion.div variants={item}>
           <Card className="riso-doc-neutral rounded-[18px] border border-border/50 shadow-sm">
             <CardHeader className="pb-2">

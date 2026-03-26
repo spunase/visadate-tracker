@@ -1,5 +1,5 @@
 /**
- * Quiet Clarity Design System — Programmatic Tokens
+ * Quiet Clarity Design System - Programmatic Tokens
  *
  * Use these constants when you need color/spacing values in JS/TS
  * (e.g. Recharts fills, inline styles, or dynamic theming).
@@ -94,15 +94,15 @@ export const chartColors = {
 // ─── Spacing ─────────────────────────────────────────────────────
 
 export const spacing = {
-  /** 16px — padding inside cards */
+  /** 16px -padding inside cards */
   cardPadding: 16,
-  /** 12px — gap between elements inside a card */
+  /** 12px -gap between elements inside a card */
   intraCard: 12,
-  /** 16px — left/right page margins */
+  /** 16px -left/right page margins */
   side: 16,
-  /** 20px — vertical gap between sections */
+  /** 20px -vertical gap between sections */
   section: 20,
-  /** 24px — top of page */
+  /** 24px -top of page */
   pageTop: 24,
 } as const;
 
@@ -125,9 +125,9 @@ export const shadows = {
 // ─── Motion ──────────────────────────────────────────────────────
 
 export const motion = {
-  /** 180ms — snappy micro-interactions */
+  /** 180ms -snappy micro-interactions */
   fast: 180,
-  /** 220ms — standard transitions */
+  /** 220ms -standard transitions */
   normal: 220,
 } as const;
 

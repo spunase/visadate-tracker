@@ -196,7 +196,7 @@ function ShareButton({
         });
         setShareState("shared");
       } catch (err) {
-        // User cancelled or API failed — fall back to clipboard
+        // User cancelled or API failed - fall back to clipboard
         if ((err as DOMException)?.name !== "AbortError") {
           await copyToClipboard();
         }
@@ -303,7 +303,7 @@ export function JourneySnapshot({
 
   return (
     <div className="flex flex-col items-center">
-      {/* Snapshot card — 4:5 aspect ratio (optimal for Instagram/social) */}
+      {/* Snapshot card - 4:5 aspect ratio (optimal for Instagram/social) */}
       <motion.div
         ref={cardRef}
         className={cn(
@@ -457,7 +457,7 @@ export function JourneySnapshot({
         </div>
       </motion.div>
 
-      {/* Share button — outside the screenshot area for clean captures */}
+      {/* Share button - outside the screenshot area for clean captures */}
       <ShareButton
         snapshotRef={cardRef}
         category={category}

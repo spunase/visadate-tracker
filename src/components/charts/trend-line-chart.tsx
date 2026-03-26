@@ -131,7 +131,7 @@ function CustomTooltip({ active, payload }: CustomTooltipProps) {
       </p>
       {isRetrogression && (
         <p className="mt-1.5 border-t border-rose-200/40 pt-1.5 text-[10px] leading-relaxed text-muted-foreground dark:border-rose-800/30">
-          A temporary setback — retrogressions are typically followed by recovery
+          A temporary setback - retrogressions are typically followed by recovery
           within 2-4 months.
         </p>
       )}
@@ -155,7 +155,7 @@ export function TrendLineChart({
     );
   }
 
-  // Detect "current" categories — no backlog, no dates to chart
+  // Detect "current" categories - no backlog, no dates to chart
   const allCurrent = data.every(
     (d) => d.cutoffDate === "current" || d.movementDays === 0,
   );
@@ -166,7 +166,7 @@ export function TrendLineChart({
           {category} {country} is current
         </p>
         <p className="max-w-[260px] text-xs leading-relaxed text-muted-foreground">
-          No backlog exists for this category — all eligible applicants can
+          No backlog exists for this category - all eligible applicants can
           proceed immediately. There are no priority date movements to chart.
         </p>
       </div>

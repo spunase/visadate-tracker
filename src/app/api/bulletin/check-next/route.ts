@@ -6,7 +6,7 @@ import { NextResponse } from "next/server";
  * Probes the DOS website to check if the next month's visa bulletin
  * has been published. Returns availability status and the official URL.
  *
- * The DOS typically publishes bulletins around the 8th–15th of each month
+ * The DOS typically publishes bulletins around the 8th-15th of each month
  * for the following month. For example, in March 2026 they would publish
  * the April 2026 bulletin.
  */
@@ -48,7 +48,7 @@ export async function GET() {
   const next = getNextBulletinInfo();
 
   try {
-    // Use HEAD request to minimize bandwidth — we only need to know if the page exists
+    // Use HEAD request to minimize bandwidth - we only need to know if the page exists
     const response = await fetch(next.url, {
       method: "HEAD",
       headers: {
@@ -71,7 +71,7 @@ export async function GET() {
       { headers: cacheHeaders },
     );
   } catch {
-    // Network error or timeout — assume not available
+    // Network error or timeout - assume not available
     return NextResponse.json(
       {
         available: false,

@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 // ─── Types ─────────────────────────────────────────────────────
 
 export interface EmptyStateProps {
-  /** Optional custom icon — defaults to the built-in compass SVG */
+  /** Optional custom icon - defaults to the built-in compass SVG */
   icon?: ReactNode;
   title: string;
   description: string;
@@ -90,9 +90,9 @@ function CompassIllustration() {
       <line x1="14" y1="40" x2="20" y2="40" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round" opacity="0.4" />
       <line x1="60" y1="40" x2="66" y2="40" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round" opacity="0.4" />
 
-      {/* Compass needle — North (blue) */}
+      {/* Compass needle - North (blue) */}
       <polygon points="40,18 36,40 44,40" fill="currentColor" className="text-calm-blue" opacity="0.85" />
-      {/* Compass needle — South (muted) */}
+      {/* Compass needle - South (muted) */}
       <polygon points="40,62 36,40 44,40" fill="#cbd5e1" className="dark:fill-slate-600" opacity="0.6" />
 
       {/* Center beacon */}

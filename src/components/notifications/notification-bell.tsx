@@ -138,7 +138,7 @@ export function NotificationBell() {
                   </p>
                   <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
                     We&apos;ll remind you to check each month around bulletin release
-                    day. No account needed — notifications stay on this device.
+                    day. No account needed - notifications stay on this device.
                   </p>
                 </div>
               </div>

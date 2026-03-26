@@ -35,7 +35,7 @@ interface FlagGradient {
   to: string;
   /** Primary accent used for area fill wash */
   area: string;
-  /** Latest-dot ring color — strongest flag accent */
+  /** Latest-dot ring color - strongest flag accent */
   dot: string;
   /** Dot glow color */
   dotGlow: string;
@@ -153,7 +153,7 @@ function movementLabel(days: number, direction: string): string {
   return `${sign}${abs} day${abs !== 1 ? "s" : ""}`;
 }
 
-// ─── Minimal dot — only renders for latest point ───────────────
+// ─── Minimal dot - only renders for latest point ───────────────
 
 interface LatestDotProps {
   cx?: number;
@@ -169,7 +169,7 @@ function makeLatestDot(flag: FlagGradient) {
 
     return (
       <g>
-        {/* Outer glow ring — pulsing */}
+        {/* Outer glow ring - pulsing */}
         <circle cx={cx} cy={cy} r={12} fill="none" stroke={flag.dot} strokeWidth={1.5} opacity={0.4}>
           <animate attributeName="r" values="10;14;10" dur="2.5s" repeatCount="indefinite" />
           <animate attributeName="opacity" values="0.2;0.5;0.2" dur="2.5s" repeatCount="indefinite" />
@@ -192,7 +192,7 @@ function makeLatestDot(flag: FlagGradient) {
   };
 }
 
-// ─── Active dot — appears on hover/tap ─────────────────────────
+// ─── Active dot - appears on hover/tap ─────────────────────────
 
 function makeActiveDot(palette: (typeof palettes)[keyof typeof palettes]) {
   return function ActiveDotRenderer(props: {
@@ -280,7 +280,7 @@ function ChronicleTooltip({ active, payload, palette }: ChronicleTooltipProps) {
             color: palette.tooltipMuted,
           }}
         >
-          A temporary setback — recovery typically follows within 2-4 months.
+          A temporary setback - recovery typically follows within 2-4 months.
         </p>
       )}
     </div>
@@ -349,7 +349,7 @@ export function JourneyChronicle({
           {category} {country} is current
         </p>
         <p className="max-w-[260px] text-xs leading-relaxed text-muted-foreground">
-          No backlog exists — all eligible applicants can proceed immediately.
+          No backlog exists - all eligible applicants can proceed immediately.
           There are no priority date movements to chart.
         </p>
       </div>
@@ -419,14 +419,14 @@ export function JourneyChronicle({
             margin={{ top: 16, right: 12, bottom: 4, left: 4 }}
           >
             <defs>
-              {/* Horizontal gradient for the main line — flag colors */}
+              {/* Horizontal gradient for the main line - flag colors */}
               <linearGradient id={gradId} x1="0" y1="0" x2="1" y2="0">
                 <stop offset="0%" stopColor={flag.from} />
                 <stop offset="50%" stopColor={flag.mid} />
                 <stop offset="100%" stopColor={flag.to} />
               </linearGradient>
 
-              {/* Vertical gradient for area fill — flag primary */}
+              {/* Vertical gradient for area fill - flag primary */}
               <linearGradient id={areaGradId} x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor={flag.area} stopOpacity={0.14} />
                 <stop offset="100%" stopColor={flag.area} stopOpacity={0.01} />
@@ -463,7 +463,7 @@ export function JourneyChronicle({
               cursor={{ stroke: palette.axisText, strokeDasharray: "4 4", strokeWidth: 1, opacity: 0.3 }}
             />
 
-            {/* Area fill — soft gradient wash beneath the line */}
+            {/* Area fill - soft gradient wash beneath the line */}
             <Area
               type="monotone"
               dataKey="cutoff"
@@ -473,7 +473,7 @@ export function JourneyChronicle({
               animationEasing="ease-out"
             />
 
-            {/* Ghost reference line — subtle shadow of the main path */}
+            {/* Ghost reference line - subtle shadow of the main path */}
             <Line
               type="monotone"
               dataKey="cutoff"
@@ -486,7 +486,7 @@ export function JourneyChronicle({
               animationEasing="ease-out"
             />
 
-            {/* Main flowing line — thick, gradient-stroked, no dots */}
+            {/* Main flowing line - thick, gradient-stroked, no dots */}
             <Line
               type="monotone"
               dataKey="cutoff"
@@ -542,7 +542,7 @@ export function JourneyChronicle({
         />
         <StatPill
           label="Avg/Mo"
-          value={avgForward > 0 ? `+${avgForward}d` : "—"}
+          value={avgForward > 0 ? `+${avgForward}d` : "-"}
           color={palette.forward}
         />
         <StatPill
@@ -552,7 +552,7 @@ export function JourneyChronicle({
               ? `${streak} mo${streak > 1 ? "s" : ""} ↑`
               : backwardEntries.length > 0
                 ? `${backwardEntries.length} retro`
-                : "—"
+                : "-"
           }
           color={streak > 0 ? palette.forward : palette.backward}
         />

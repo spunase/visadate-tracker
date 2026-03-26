@@ -1,5 +1,5 @@
 /**
- * Main Orchestrator — evaluateScenario
+ * Main Orchestrator - evaluateScenario
  *
  * Combines eligibility (Type A), movement (Type B), milestones (Type C),
  * and explainability into a single EvaluationResult.
@@ -19,7 +19,7 @@ import { buildExplanation } from "./explainability";
 /**
  * Evaluate a complete visa tracking scenario.
  *
- * Pure function — no side effects, no API calls.
+ * Pure function - no side effects, no API calls.
  *
  * @param input  Everything the engine needs (priority date, cutoffs, etc.)
  * @returns      A full EvaluationResult with eligibility, movement,

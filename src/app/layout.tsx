@@ -23,7 +23,7 @@ const dmSerif = DM_Serif_Text({
 
 export const metadata: Metadata = {
   title: {
-    default: "VisaDateTracker — Green Card Priority Date Tracker",
+    default: "VisaDateTracker - Green Card Priority Date Tracker",
     template: "%s | VisaDateTracker",
   },
   description:
@@ -41,7 +41,7 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "VisaDateTracker" }],
   openGraph: {
-    title: "VisaDateTracker — Green Card Priority Date Tracker",
+    title: "VisaDateTracker - Green Card Priority Date Tracker",
     description:
       "Track visa bulletin movement, check your EB2/EB3 priority date status, and plan your immigration journey.",
     url: "https://visadate-tracker.netlify.app",
@@ -77,7 +77,7 @@ export default function RootLayout({
     <html lang="en" className={`${inter.variable} ${dmSerif.variable} h-full antialiased`} suppressHydrationWarning>
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <Providers>
-          {/* Skip to content link — visible on focus for keyboard users */}
+          {/* Skip to content link - visible on focus for keyboard users */}
           <a
             href="#main-content"
             className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-lg focus:bg-[#2F6BFF] focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-[#2F6BFF] focus:ring-offset-2"

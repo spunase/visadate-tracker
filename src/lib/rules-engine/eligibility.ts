@@ -1,5 +1,5 @@
 /**
- * Type A Rules — Eligibility Evaluation
+ * Type A Rules - Eligibility Evaluation
  *
  * Determines whether a user's priority date is "current" relative to a
  * visa bulletin cutoff date. Handles real dates, "C" (current for all),

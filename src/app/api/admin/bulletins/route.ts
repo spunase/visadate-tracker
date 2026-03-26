@@ -4,7 +4,7 @@ import { requireAdminAuth } from "@/lib/admin-auth";
 import type { VisaBulletin, VisaCutoffRow } from "@/types/database";
 
 // ---------------------------------------------------------------------------
-// Mock data — for development fallback
+// Mock data - for development fallback
 // ---------------------------------------------------------------------------
 
 const BULLETIN_ID_1 = "b0000001-0000-0000-0000-000000000001";

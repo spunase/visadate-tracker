@@ -105,7 +105,7 @@ function dateToPosition(baseline: Date, pdDate: Date, target: Date): number {
 }
 
 /**
- * Dynamic milestones — evenly-spaced date labels along the bar.
+ * Dynamic milestones - evenly-spaced date labels along the bar.
  * Count adapts to the span: 2 markers for short spans, 3 for longer.
  */
 function computeMilestones(
@@ -255,7 +255,7 @@ export function JourneyProgress({
             </TooltipTrigger>
             <TooltipContent side="bottom" sideOffset={6}>
               {isCurrent
-                ? "The Final Action cutoff has reached your priority date — you\u2019re current!"
+                ? "The Final Action cutoff has reached your priority date - you\u2019re current!"
                 : `The Final Action date has covered ${Math.round(progress)}% of the distance from the earliest cutoff to your priority date.`}
             </TooltipContent>
           </Tooltip>
@@ -265,7 +265,7 @@ export function JourneyProgress({
       {/* Progress bar */}
       <div className="mt-3">
         <div className="relative h-2.5 w-full overflow-hidden rounded-full bg-muted">
-          {/* Gradient fill — extends to whichever cutoff is further along */}
+          {/* Gradient fill - extends to whichever cutoff is further along */}
           <motion.div
             className="h-full origin-left rounded-full bg-gradient-to-r from-calm-blue to-success-emerald"
             variants={prefersReduced ? undefined : barVariants}
@@ -279,7 +279,7 @@ export function JourneyProgress({
             }
           />
 
-          {/* Final Action Date — vertical marker */}
+          {/* Final Action Date - vertical marker */}
           <div
             className="absolute top-0 z-10 flex h-full flex-col items-center"
             style={{ left: `${faPosition}%` }}
@@ -288,7 +288,7 @@ export function JourneyProgress({
             <div className="h-full w-[3px] rounded-full bg-calm-blue shadow-sm" />
           </div>
 
-          {/* Filing Date — vertical marker (if available and different from FA) */}
+          {/* Filing Date - vertical marker (if available and different from FA) */}
           {filingPosition != null &&
             Math.abs(filingPosition - faPosition) > 1.5 && (
               <div
@@ -311,7 +311,7 @@ export function JourneyProgress({
           ))}
         </div>
 
-        {/* FA / Filing indicator labels — positioned above the bar */}
+        {/* FA / Filing indicator labels - positioned above the bar */}
         <div className="relative mt-0.5 h-4">
           {/* FA label */}
           <span
@@ -352,7 +352,7 @@ export function JourneyProgress({
         </div>
       </div>
 
-      {/* Date labels — Filing (or baseline) on LEFT, PD on RIGHT */}
+      {/* Date labels - Filing (or baseline) on LEFT, PD on RIGHT */}
       <div className="mt-2 flex items-center justify-between text-tiny text-muted-foreground">
         <span>
           {currentFiling ? (
@@ -379,7 +379,7 @@ export function JourneyProgress({
         </span>
       </div>
 
-      {/* Secondary date row when filing is shown — show FA below */}
+      {/* Secondary date row when filing is shown - show FA below */}
       {currentFiling && (
         <div className="mt-0.5 flex items-center justify-between text-tiny text-muted-foreground">
           <span>

@@ -35,7 +35,7 @@ export function NextBulletinBanner() {
         if (json?.available) setData(json);
       })
       .catch(() => {
-        // Silently fail — this is a non-critical enhancement
+        // Silently fail - this is a non-critical enhancement
       });
   }, []);
 

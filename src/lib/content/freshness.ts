@@ -7,7 +7,7 @@
  * - **Policy content** has an explicit review window.
  * - **News items** carry their own `staleAfterDate`.
  *
- * Stale items must be visually demoted in the UI — this module provides the
+ * Stale items must be visually demoted in the UI - this module provides the
  * status and warning messages that the presentation layer needs.
  *
  * @module content/freshness
@@ -129,10 +129,10 @@ export function getBulletinFreshness(
   const nextMonthStart = startOfMonth(addMonths(monthDate, 1));
   const today = startOfDay(now);
 
-  // Before the bulletin's effective month — shouldn't happen often, but treat as fresh.
+  // Before the bulletin's effective month - shouldn't happen often, but treat as fresh.
   if (isBefore(today, monthStart)) return "fresh";
 
-  // Within the effective month — definitely fresh.
+  // Within the effective month - definitely fresh.
   if (!isAfter(today, endOfMonth(monthDate))) return "fresh";
 
   // After the effective month: use day-based thresholds relative to month end.
@@ -163,7 +163,7 @@ export function getChartUseFreshness(
   const monthEnd = endOfMonth(monthDate);
   const today = startOfDay(now);
 
-  if (isBefore(today, monthStart)) return "fresh"; // upcoming — treat as fresh
+  if (isBefore(today, monthStart)) return "fresh"; // upcoming - treat as fresh
   if (!isAfter(today, monthEnd)) return "fresh"; // within month
   return "expired"; // any time after the month ends
 }

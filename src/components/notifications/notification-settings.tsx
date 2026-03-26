@@ -75,7 +75,7 @@ export function NotificationSettings() {
               Bulletin Reminders
             </p>
             <p className="mt-0.5 text-xs text-muted-foreground">
-              Reminders active — next check around{" "}
+              Reminders active - next check around{" "}
               {getNextReminderLabel(reminderDay)}
             </p>
           </div>

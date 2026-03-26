@@ -23,7 +23,7 @@ export interface ShareSnapshotProps {
 }
 
 // ---------------------------------------------------------------------------
-// Helpers — plain text summary
+// Helpers - plain text summary
 // ---------------------------------------------------------------------------
 
 function formatPriorityDateShort(pd: string): string {
@@ -93,13 +93,13 @@ function buildPlainText(
   const dfState = df.state as VisaStatus;
 
   const lines = [
-    `VisaDateTracker Status \u2014 ${formatBulletinMonth(bulletinMonth)}`,
+    `VisaDateTracker Status - ${formatBulletinMonth(bulletinMonth)}`,
     `${scenario.category} ${scenario.country} (${scenario.path})`,
     `Priority Date: ${formatPriorityDateShort(scenario.priorityDate)}`,
     `Final Action: ${statusLabel(faState)}${faState !== "current" ? distanceText(fa.distanceDays) : ""}`,
     `Filing: ${statusLabel(dfState)}`,
     `Movement: ${movementText(evaluation.movement.finalAction)}`,
-    `\u2014`,
+    `-`,
     `visadate-tracker.netlify.app`,
   ];
   return lines.join("\n");

@@ -5,7 +5,7 @@ import type { User } from "@supabase/supabase-js";
 interface AuthState {
   user: User | null;
   loading: boolean;
-  /** Initialize auth listener — call once on mount */
+  /** Initialize auth listener - call once on mount */
   init: () => () => void;
   signInWithGoogle: () => Promise<void>;
   signInWithEmail: (email: string) => Promise<{ error: string | null }>;

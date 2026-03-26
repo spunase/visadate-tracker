@@ -7,7 +7,7 @@ export type CategoryGroup = "Employment" | "Family";
 export type PreferredPath = "AOS" | "CP";
 
 interface PreferencesState {
-  /** Default country — India has the longest queues */
+  /** Default country - India has the longest queues */
   defaultCountry: PreferredCountry;
   /** Default visa preference category */
   defaultCategory: PreferredCategory;

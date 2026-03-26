@@ -63,7 +63,7 @@ export function NotificationPrompt() {
             </p>
             <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
               We&apos;ll remind you to check each month around bulletin release
-              day. No account needed — notifications stay on this device.
+              day. No account needed - notifications stay on this device.
             </p>
             <div className="mt-3 flex items-center gap-2">
               <Button size="sm" onClick={handleEnable}>

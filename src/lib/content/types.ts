@@ -50,7 +50,7 @@ export interface GlossaryTerm {
 // Source Registry
 // ---------------------------------------------------------------------------
 
-/** Source trust tier — lower is more authoritative. */
+/** Source trust tier - lower is more authoritative. */
 export type SourceTier = 1 | 2 | 3;
 
 /** Whether the source is a government entity or legal commentary. */

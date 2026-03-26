@@ -3,7 +3,7 @@ import { supabase } from "@/lib/supabase";
 import type { VisaBulletin, VisaCutoffRow } from "@/types/database";
 
 // ---------------------------------------------------------------------------
-// Mock data — March 2026 visa bulletin (fallback)
+// Mock data - March 2026 visa bulletin (fallback)
 // ---------------------------------------------------------------------------
 
 const BULLETIN_ID = "b0000001-0000-0000-0000-000000000001";
@@ -97,7 +97,7 @@ export async function GET() {
         .single();
 
       if (bulletinError || !bulletin) {
-        // No published bulletin in DB — fall through to mock
+        // No published bulletin in DB - fall through to mock
       } else {
         // Fetch cutoff rows for this bulletin
         const { data: cutoffRows, error: cutoffError } = await supabase

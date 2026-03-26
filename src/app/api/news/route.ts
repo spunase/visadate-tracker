@@ -3,7 +3,7 @@ import { supabase } from "@/lib/supabase";
 import type { PolicyUpdate } from "@/types/database";
 
 // ---------------------------------------------------------------------------
-// Mock policy updates — realistic H-1B / EB immigration news (fallback)
+// Mock policy updates - realistic H-1B / EB immigration news (fallback)
 // ---------------------------------------------------------------------------
 
 const mockUpdates: PolicyUpdate[] = [

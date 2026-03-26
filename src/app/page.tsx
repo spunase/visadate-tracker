@@ -43,7 +43,7 @@ interface MovementRow {
 }
 
 // ---------------------------------------------------------------------------
-// Full dataset (March 2026 Visa Bulletin — official DOS source)
+// Full dataset (March 2026 Visa Bulletin - official DOS source)
 // ---------------------------------------------------------------------------
 
 const allMovementData: MovementRow[] = [
@@ -68,7 +68,7 @@ const allMovementData: MovementRow[] = [
   { category: "EB2", country: "All Other", finalAction: { kind: "date", value: "Oct 15, 2024" }, filingDate: { kind: "current" }, movement: "+2 weeks", direction: "forward" },
   { category: "EB3", country: "All Other", finalAction: { kind: "date", value: "Jan 08, 2023" }, filingDate: { kind: "date", value: "Jun 01, 2023" }, movement: "+1 month", direction: "forward" },
 
-  // ── Family-Based Categories (March 2026 Visa Bulletin — official DOS source) ──
+  // ── Family-Based Categories (March 2026 Visa Bulletin - official DOS source) ──
   // India
   { category: "F1", country: "India", finalAction: { kind: "date", value: "Jan 01, 2016" }, filingDate: { kind: "date", value: "Jan 01, 2017" }, movement: "+3 weeks", direction: "forward" },
   { category: "F2A", country: "India", finalAction: { kind: "date", value: "Sep 01, 2021" }, filingDate: { kind: "date", value: "Jun 01, 2023" }, movement: "+1 month", direction: "forward" },
@@ -117,11 +117,11 @@ function cutoffValueClasses(value: CutoffValue): string {
   return "text-foreground";
 }
 
-/** Generate a dynamic "What Changed" narrative from movement data for a given country. */
-function generateNarrative(rows: MovementRow[], country: PreferredCountry): string {
-  if (rows.length === 0) return `No data available for ${country}.`;
+/** Generate bullet-point summaries of movement data for a given country. */
+function generateBullets(rows: MovementRow[], country: PreferredCountry): string[] {
+  if (rows.length === 0) return [`No data available for ${country}.`];
 
-  const parts = rows.map((row) => {
+  return rows.map((row) => {
     const date = formatCutoffValue(row.finalAction);
     if (row.direction === "forward") {
       return `${row.category} ${country} advanced ${row.movement} to ${date}`;
@@ -131,8 +131,6 @@ function generateNarrative(rows: MovementRow[], country: PreferredCountry): stri
     }
     return `${row.category} ${country} remained unchanged at ${date}`;
   });
-
-  return parts.join(". ") + ".";
 }
 
 // ---------------------------------------------------------------------------
@@ -312,7 +310,7 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Category selector — filtered by active group */}
+            {/* Category selector - filtered by active group */}
             <div>
               <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
                 Visa Category
@@ -356,7 +354,7 @@ export default function HomePage() {
                 March 2026
               </h2>
               <p className="mt-2 text-sm text-white/80">
-                Showing {selectedCategory} {selectedCountry} — Final Action and Filing Dates.
+                Showing {selectedCategory} {selectedCountry} - Final Action and Filing Dates.
               </p>
             </CardContent>
           </Card>
@@ -379,7 +377,7 @@ export default function HomePage() {
                 transition={{ duration: 0.18 }}
               >
                 <Card className="riso-doc-teal relative overflow-hidden rounded-[18px] border-2 border-calm-blue/20 shadow-md dark:border-calm-blue/10">
-                  {/* Priority Pulse — subtle radial glow keyed to status */}
+                  {/* Priority Pulse - subtle radial glow keyed to status */}
                   <div
                     className={`pointer-events-none absolute -right-8 -top-8 h-40 w-40 rounded-full blur-3xl opacity-30 transition-colors duration-700 ${
                       primaryRow.finalAction.kind === "current"
@@ -483,13 +481,15 @@ export default function HomePage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2 text-sm text-muted-foreground">
-                <p>
-                  {generateNarrative(countryRows, selectedCountry)}
-                </p>
-                <p>
-                  Filing dates may differ — consular processing applicants should
-                  verify dates with their NVC case.
-                </p>
+                <ul className="list-disc space-y-1 pl-4">
+                  {generateBullets(countryRows, selectedCountry).map((bullet, i) => (
+                    <li key={i}>{bullet}</li>
+                  ))}
+                  <li>
+                    Filing dates may differ - consular processing applicants should
+                    verify dates with their NVC case.
+                  </li>
+                </ul>
               </CardContent>
             </Card>
           </ShimmerReveal>

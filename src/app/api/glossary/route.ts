@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 // ---------------------------------------------------------------------------
 // NOTE: Glossary terms are served from the static content library defined
-// below. There is no corresponding Supabase table — this endpoint
+// below. There is no corresponding Supabase table - this endpoint
 // intentionally stays as-is with inline data.
 // ---------------------------------------------------------------------------
 
@@ -43,7 +43,7 @@ const GLOSSARY: GlossaryTerm[] = [
     slug: "current",
     term: "Current (C)",
     definition:
-      "When a category/country shows 'C' (Current) on the visa bulletin, it means all priority dates are eligible — there is no backlog for that combination. Any applicant in that category and chargeability area can proceed.",
+      "When a category/country shows 'C' (Current) on the visa bulletin, it means all priority dates are eligible - there is no backlog for that combination. Any applicant in that category and chargeability area can proceed.",
     related: ["unavailable", "final-action-date", "dates-for-filing"],
   },
   {
