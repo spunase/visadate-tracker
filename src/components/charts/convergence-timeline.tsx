@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState, useEffect } from "react";
 import {
   ComposedChart,
   Line,
@@ -235,6 +235,138 @@ function FocusDot({ cx, cy, payload, color, isFocused }: FocusDotProps) {
 
   // Focused line: regular points - small solid dot
   return <circle cx={cx} cy={cy} r={2.5} fill={color} strokeWidth={0} />;
+}
+
+// ─── Split-Flap Digit Display ──────────────────────────────────
+
+/** A single flap card that flips when its digit changes. */
+function SplitFlapDigit({
+  digit,
+  delay = 0,
+  reduceMotion = false,
+}: {
+  digit: string;
+  delay?: number;
+  reduceMotion?: boolean;
+}) {
+  const prevDigit = useRef(digit);
+  const [isFlipping, setIsFlipping] = useState(false);
+
+  useEffect(() => {
+    if (digit !== prevDigit.current) {
+      setIsFlipping(true);
+      const timer = setTimeout(() => {
+        prevDigit.current = digit;
+        setIsFlipping(false);
+      }, 350);
+      return () => clearTimeout(timer);
+    }
+  }, [digit]);
+
+  const showDigit = digit;
+  const oldDigit = prevDigit.current;
+
+  return (
+    <span
+      className="relative inline-flex flex-col overflow-hidden rounded-[5px]"
+      style={{
+        width: digit === "," ? 12 : 28,
+        height: 42,
+        background: "linear-gradient(180deg, #1a1a1a 0%, #1a1a1a 49.5%, #141414 50%, #111 100%)",
+        boxShadow:
+          "0 2px 6px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06)",
+      }}
+    >
+      {/* Center divider line */}
+      <span
+        className="pointer-events-none absolute inset-x-0 z-20"
+        style={{
+          top: "50%",
+          height: 1,
+          background: "rgba(0,0,0,0.6)",
+        }}
+      />
+
+      {/* Static digit (back face) */}
+      <span
+        className="absolute inset-0 z-0 flex items-center justify-center font-mono text-[26px] font-extrabold leading-none tracking-tight text-white"
+        style={{ textShadow: "0 1px 2px rgba(0,0,0,0.5)" }}
+      >
+        {showDigit}
+      </span>
+
+      {/* Flip animation */}
+      {!reduceMotion && isFlipping && (
+        <>
+          {/* Top half flipping away - shows old digit */}
+          <motion.span
+            className="absolute inset-x-0 top-0 z-10 flex items-center justify-center overflow-hidden rounded-t-[5px] font-mono text-[26px] font-extrabold leading-none tracking-tight text-white"
+            style={{
+              height: "50%",
+              background:
+                "linear-gradient(180deg, #1a1a1a 0%, #1a1a1a 100%)",
+              transformOrigin: "bottom center",
+              textShadow: "0 1px 2px rgba(0,0,0,0.5)",
+            }}
+            initial={{ rotateX: 0 }}
+            animate={{ rotateX: -90 }}
+            transition={{
+              duration: 0.2,
+              delay,
+              ease: "easeIn",
+            }}
+          >
+            <span className="translate-y-1/2">{oldDigit}</span>
+          </motion.span>
+
+          {/* Bottom half flipping in - shows new digit */}
+          <motion.span
+            className="absolute inset-x-0 bottom-0 z-10 flex items-center justify-center overflow-hidden rounded-b-[5px] font-mono text-[26px] font-extrabold leading-none tracking-tight text-white"
+            style={{
+              height: "50%",
+              background:
+                "linear-gradient(180deg, #141414 0%, #111 100%)",
+              transformOrigin: "top center",
+              textShadow: "0 1px 2px rgba(0,0,0,0.5)",
+            }}
+            initial={{ rotateX: 90 }}
+            animate={{ rotateX: 0 }}
+            transition={{
+              duration: 0.2,
+              delay: delay + 0.15,
+              ease: "easeOut",
+            }}
+          >
+            <span className="-translate-y-1/2">{showDigit}</span>
+          </motion.span>
+        </>
+      )}
+    </span>
+  );
+}
+
+/** Split-flap scoreboard display for a number. */
+function SplitFlapDisplay({
+  value,
+  reduceMotion = false,
+}: {
+  value: number;
+  reduceMotion?: boolean;
+}) {
+  const digits = value.toLocaleString().split("");
+
+  return (
+    <span className="inline-flex items-center gap-[3px]" aria-label={`${value} days`}>
+      {digits.map((d, i) => (
+        <SplitFlapDigit
+          key={`pos-${digits.length - i}`}
+          digit={d}
+          delay={i * 0.04}
+          reduceMotion={reduceMotion}
+        />
+      ))}
+    </span>
+  );
 }
 
 // ─── Custom tooltip ────────────────────────────────────────────
@@ -694,22 +826,26 @@ export function ConvergenceTimeline({
           <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
             {isCurrent ? "Status" : "Days Until Current"}
           </p>
-          <p className="mt-0.5 tabular-nums text-3xl font-extrabold text-foreground">
+          <div className="mt-1.5 flex items-baseline gap-2">
             {isCurrent ? (
-              <span style={{ color: stageColor }}>Current!</span>
-            ) : (
-              <motion.span
-                key={gapDays}
-                initial={
-                  prefersReduced ? false : { scale: 1.15, opacity: 0.6 }
-                }
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ type: "spring", stiffness: 200, damping: 18 }}
+              <span
+                className="text-3xl font-extrabold"
+                style={{ color: stageColor }}
               >
-                {gapDays.toLocaleString()}
-              </motion.span>
+                Current!
+              </span>
+            ) : (
+              <>
+                <SplitFlapDisplay
+                  value={gapDays}
+                  reduceMotion={!!prefersReduced}
+                />
+                <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  days
+                </span>
+              </>
             )}
-          </p>
+          </div>
           <p className="mt-0.5 text-[11px] text-muted-foreground">
             via {effectiveType} &middot; {effectiveLabel}
           </p>
@@ -1064,10 +1200,21 @@ export function ConvergenceTimeline({
             Gap
           </span>
           <span
-            className="mt-0.5 text-sm font-bold"
+            className="relative mt-0.5 overflow-hidden text-sm font-bold"
             style={{ color: stageColor }}
           >
-            {isCurrent ? "0d" : `${gapDays.toLocaleString()}d`}
+            <AnimatePresence mode="popLayout">
+              <motion.span
+                key={gapDays}
+                initial={prefersReduced ? false : { y: 10, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={prefersReduced ? undefined : { y: -10, opacity: 0 }}
+                transition={{ type: "spring", stiffness: 300, damping: 22 }}
+                className="inline-block"
+              >
+                {isCurrent ? "0d" : `${gapDays.toLocaleString()}d`}
+              </motion.span>
+            </AnimatePresence>
           </span>
         </div>
 
@@ -1077,12 +1224,23 @@ export function ConvergenceTimeline({
             Avg/Mo
           </span>
           <span
-            className="mt-0.5 text-sm font-bold"
+            className="relative mt-0.5 overflow-hidden text-sm font-bold"
             style={{
               color: avgVelocity > 0 ? palette.forward : palette.unchanged,
             }}
           >
-            {avgVelocity > 0 ? `+${avgVelocity}d` : "-"}
+            <AnimatePresence mode="popLayout">
+              <motion.span
+                key={avgVelocity}
+                initial={prefersReduced ? false : { y: 10, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={prefersReduced ? undefined : { y: -10, opacity: 0 }}
+                transition={{ type: "spring", stiffness: 300, damping: 22 }}
+                className="inline-block"
+              >
+                {avgVelocity > 0 ? `+${avgVelocity}d` : "-"}
+              </motion.span>
+            </AnimatePresence>
           </span>
         </div>
 
@@ -1092,7 +1250,7 @@ export function ConvergenceTimeline({
             Est. ETA
           </span>
           <span
-            className="mt-0.5 text-sm font-bold"
+            className="relative mt-0.5 overflow-hidden text-sm font-bold"
             style={{
               color: isCurrent
                 ? palette.forward
@@ -1101,11 +1259,22 @@ export function ConvergenceTimeline({
                   : palette.unchanged,
             }}
           >
-            {isCurrent
-              ? "Now"
-              : estimatedMonths
-                ? `~${estimatedMonths} mo`
-                : "-"}
+            <AnimatePresence mode="popLayout">
+              <motion.span
+                key={isCurrent ? "now" : estimatedMonths ?? "none"}
+                initial={prefersReduced ? false : { y: 10, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={prefersReduced ? undefined : { y: -10, opacity: 0 }}
+                transition={{ type: "spring", stiffness: 300, damping: 22 }}
+                className="inline-block"
+              >
+                {isCurrent
+                  ? "Now"
+                  : estimatedMonths
+                    ? `~${estimatedMonths} mo`
+                    : "-"}
+              </motion.span>
+            </AnimatePresence>
           </span>
         </div>
       </motion.div>
