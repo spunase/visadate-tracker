@@ -21,6 +21,7 @@ import {
 } from "@/stores/preferences-store";
 import { CountryFlagSelector } from "@/components/ui/country-flag-selector";
 import { NotificationBell } from "@/components/notifications/notification-bell";
+import { NextBulletinBanner } from "@/components/ui/next-bulletin-banner";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -269,6 +270,11 @@ export default function HomePage() {
         animate="show"
         className="flex flex-col gap-4 px-4 pb-8"
       >
+        {/* ── Next Bulletin Notification ── */}
+        <motion.div variants={item}>
+          <NextBulletinBanner />
+        </motion.div>
+
         {/* ── Country & Category Selectors ── */}
         <motion.div variants={item}>
           <nav aria-label="Country and category filters" className="space-y-3">
