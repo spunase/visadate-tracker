@@ -8,7 +8,7 @@ export type VelocityDirection = "forward" | "backward" | "none";
 export type VelocitySize = "sm" | "md" | "lg";
 
 export interface VelocityArcProps {
-  /** Direction of movement — determines arc shape, color, and animation */
+  /** Direction of movement — determines icon, color, and motion */
   direction: VelocityDirection;
   /** Human-readable movement label, e.g. "+2 months", "No change" */
   movement?: string;
@@ -21,44 +21,74 @@ export interface VelocityArcProps {
 
 const sizeConfig: Record<
   VelocitySize,
-  { width: number; height: number; strokeWidth: number; textClass: string }
+  {
+    container: number;
+    icon: number;
+    strokeWidth: number;
+    textClass: string;
+    ringSize: number;
+  }
 > = {
-  sm: { width: 48, height: 28, strokeWidth: 2, textClass: "text-tiny" },
-  md: { width: 64, height: 36, strokeWidth: 2.5, textClass: "text-caption" },
-  lg: { width: 80, height: 44, strokeWidth: 3, textClass: "text-sm" },
+  sm: { container: 32, icon: 16, strokeWidth: 2, textClass: "text-[11px]", ringSize: 32 },
+  md: { container: 40, icon: 20, strokeWidth: 2.5, textClass: "text-caption", ringSize: 40 },
+  lg: { container: 48, icon: 24, strokeWidth: 2.5, textClass: "text-sm", ringSize: 48 },
 };
 
-// ─── Gradient IDs (stable per-direction to avoid SSR mismatch) ─
+// ─── Color tokens (Material Design 3 tonal palette approach) ──
 
-const gradientIds = {
-  forward: "velocity-grad-fwd",
-  backward: "velocity-grad-bwd",
-  none: "velocity-grad-none",
-} as const;
+const colorTokens = {
+  forward: {
+    // Emerald / green tonal
+    containerBg: "bg-emerald-50 dark:bg-emerald-950/40",
+    containerBorder: "border-emerald-200/60 dark:border-emerald-800/40",
+    iconColor: "#059669",
+    iconColorDark: "#34D399",
+    ringColor: "rgba(5,150,105,0.12)",
+    textColor: "text-emerald-700 dark:text-emerald-400",
+  },
+  backward: {
+    // Rose / red tonal
+    containerBg: "bg-rose-50 dark:bg-rose-950/40",
+    containerBorder: "border-rose-200/60 dark:border-rose-800/40",
+    iconColor: "#E11D48",
+    iconColorDark: "#FB7185",
+    ringColor: "rgba(225,29,72,0.12)",
+    textColor: "text-rose-700 dark:text-rose-400",
+  },
+  none: {
+    // Neutral / gray tonal
+    containerBg: "bg-gray-100 dark:bg-gray-800/40",
+    containerBorder: "border-gray-200/60 dark:border-gray-700/40",
+    iconColor: "#6B7280",
+    iconColorDark: "#9CA3AF",
+    ringColor: "rgba(107,114,128,0.10)",
+    textColor: "text-gray-500 dark:text-gray-400",
+  },
+};
 
-// ─── Keyframes (injected once via <style>) ────────────────────
+// ─── Keyframes ────────────────────────────────────────────────
 
 const keyframesCSS = `
-@keyframes velocity-pulse {
-  0%, 100% { opacity: 0.85; filter: drop-shadow(0 0 2px currentColor); }
-  50%      { opacity: 1;    filter: drop-shadow(0 0 6px currentColor); }
+@keyframes velocity-breathe {
+  0%, 100% { transform: scale(1); opacity: 0.7; }
+  50%      { transform: scale(1.15); opacity: 0; }
 }
-@keyframes velocity-shimmer {
-  0%   { stroke-dashoffset: 24; }
-  100% { stroke-dashoffset: 0; }
+@keyframes velocity-float-up {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-1.5px); }
 }
-@keyframes velocity-tip {
-  0%, 100% { transform: translateX(0); }
-  50%      { transform: translateX(2px); }
+@keyframes velocity-float-down {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(1.5px); }
 }
-@keyframes velocity-tip-back {
-  0%, 100% { transform: translateX(0); }
-  50%      { transform: translateX(-2px); }
+@keyframes velocity-pulse-dot {
+  0%, 100% { opacity: 0.4; }
+  50%      { opacity: 1; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .velocity-arc-animated,
-  .velocity-arc-animated * {
+  .velocity-indicator,
+  .velocity-indicator * {
     animation: none !important;
     transition: none !important;
   }
@@ -73,43 +103,9 @@ export function VelocityArc({
   size = "md",
   className,
 }: VelocityArcProps) {
-  const { width, height, strokeWidth, textClass } = sizeConfig[size];
-  const gradId = gradientIds[direction];
+  const { container, icon, strokeWidth, textClass, ringSize } = sizeConfig[size];
+  const colors = colorTokens[direction];
 
-  // Gradient stops per direction
-  const gradientStops = {
-    forward: { from: "#4AADA3", to: "#2D7A72" },   // teal — risograph positive
-    backward: { from: "#CF7B73", to: "#A85A52" },  // coral — risograph warning
-    none: { from: "#D1CABD", to: "#B8B2A8" },      // warm neutral
-  }[direction];
-
-  // Arc path data
-  const arcPath = {
-    forward: `M 4 ${height - 6} Q ${width / 2} ${-height * 0.15} ${width - 10} ${height * 0.35}`,
-    backward: `M 4 6 Q ${width / 2} ${height * 1.15} ${width - 10} ${height * 0.65}`,
-    none: `M 4 ${height / 2} L ${width - 10} ${height / 2}`,
-  }[direction];
-
-  // Arrow tip path
-  const arrowTip = {
-    forward: {
-      d: `M ${width - 14} ${height * 0.35 - 4} L ${width - 8} ${height * 0.35} L ${width - 14} ${height * 0.35 + 4}`,
-      animation: "velocity-tip 2s ease-in-out infinite",
-    },
-    backward: {
-      d: `M ${width - 14} ${height * 0.65 - 4} L ${width - 8} ${height * 0.65} L ${width - 14} ${height * 0.65 + 4}`,
-      animation: "velocity-tip-back 2s ease-in-out infinite",
-    },
-    none: null,
-  }[direction];
-
-  // Animation style for the main arc
-  const arcAnimation =
-    direction === "none"
-      ? { strokeDasharray: "6 6", animation: "velocity-shimmer 1.5s linear infinite" }
-      : { animation: "velocity-pulse 2.5s ease-in-out infinite" };
-
-  // ARIA label
   const ariaLabel = movement
     ? `Movement ${direction}: ${movement}`
     : `Movement: ${direction}`;
@@ -117,66 +113,140 @@ export function VelocityArc({
   return (
     <span
       className={cn(
-        "velocity-arc-animated inline-flex flex-col items-center gap-0.5",
+        "velocity-indicator inline-flex flex-col items-center gap-1",
         className,
       )}
       role="img"
       aria-label={ariaLabel}
     >
-      {/* Inject keyframes — React deduplicates identical <style> content */}
       <style dangerouslySetInnerHTML={{ __html: keyframesCSS }} />
 
-      <svg
-        width={width}
-        height={height}
-        viewBox={`0 0 ${width} ${height}`}
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-        aria-hidden="true"
-        className="overflow-visible"
+      {/* Tonal container — Material Design 3 filled tonal style */}
+      <span
+        className={cn(
+          "relative inline-flex items-center justify-center rounded-full border",
+          colors.containerBg,
+          colors.containerBorder,
+        )}
+        style={{ width: ringSize, height: ringSize }}
       >
-        <defs>
-          <linearGradient id={gradId} x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor={gradientStops.from} />
-            <stop offset="100%" stopColor={gradientStops.to} />
-          </linearGradient>
-        </defs>
-
-        {/* Main arc / line */}
-        <path
-          d={arcPath}
-          stroke={`url(#${gradId})`}
-          strokeWidth={strokeWidth}
-          strokeLinecap="round"
-          fill="none"
-          style={arcAnimation}
-        />
-
-        {/* Arrow tip (forward / backward only) */}
-        {arrowTip && (
-          <path
-            d={arrowTip.d}
-            stroke={`url(#${gradId})`}
-            strokeWidth={strokeWidth * 0.8}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            fill="none"
-            style={{ animation: arrowTip.animation }}
+        {/* Breathing ring — subtle expanding halo (forward/backward only) */}
+        {direction !== "none" && (
+          <span
+            className="absolute inset-0 rounded-full"
+            style={{
+              border: `1.5px solid ${direction === "forward" ? colorTokens.forward.iconColor : colorTokens.backward.iconColor}`,
+              animation: "velocity-breathe 2.5s ease-in-out infinite",
+            }}
+            aria-hidden="true"
           />
         )}
-      </svg>
 
-      {/* Movement label */}
+        {/* SVG Icon */}
+        <svg
+          width={icon}
+          height={icon}
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          aria-hidden="true"
+          style={{
+            animation:
+              direction === "forward"
+                ? "velocity-float-up 2s ease-in-out infinite"
+                : direction === "backward"
+                  ? "velocity-float-down 2s ease-in-out infinite"
+                  : undefined,
+          }}
+        >
+          {direction === "forward" && (
+            <>
+              {/* Upward bold arrow — Material Symbols Rounded "arrow_upward" style */}
+              {/* Clean, bold, unmistakable upward direction */}
+              <path
+                d="M12 4L12 20"
+                stroke="currentColor"
+                strokeWidth={strokeWidth}
+                strokeLinecap="round"
+                className="text-emerald-600 dark:text-emerald-400"
+              />
+              <path
+                d="M5 11L12 4L19 11"
+                stroke="currentColor"
+                strokeWidth={strokeWidth}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                fill="none"
+                className="text-emerald-600 dark:text-emerald-400"
+              />
+            </>
+          )}
+
+          {direction === "backward" && (
+            <>
+              {/* Downward bold arrow — Material Symbols Rounded "arrow_downward" style */}
+              <path
+                d="M12 4L12 20"
+                stroke="currentColor"
+                strokeWidth={strokeWidth}
+                strokeLinecap="round"
+                className="text-rose-600 dark:text-rose-400"
+              />
+              <path
+                d="M5 13L12 20L19 13"
+                stroke="currentColor"
+                strokeWidth={strokeWidth}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                fill="none"
+                className="text-rose-600 dark:text-rose-400"
+              />
+            </>
+          )}
+
+          {direction === "none" && (
+            <>
+              {/* Horizontal line with dots — "no change" indicator */}
+              <line
+                x1="6"
+                y1="12"
+                x2="18"
+                y2="12"
+                stroke="currentColor"
+                strokeWidth={strokeWidth}
+                strokeLinecap="round"
+                className="text-gray-400 dark:text-gray-500"
+              />
+              {/* Leading dot */}
+              <circle
+                cx="6"
+                cy="12"
+                r="1.5"
+                fill="currentColor"
+                className="text-gray-400 dark:text-gray-500"
+                style={{ animation: "velocity-pulse-dot 2s ease-in-out infinite" }}
+              />
+              {/* Trailing dot */}
+              <circle
+                cx="18"
+                cy="12"
+                r="1.5"
+                fill="currentColor"
+                className="text-gray-400 dark:text-gray-500"
+                style={{ animation: "velocity-pulse-dot 2s ease-in-out infinite 0.5s" }}
+              />
+            </>
+          )}
+        </svg>
+      </span>
+
+      {/* Movement label — Material Design typography */}
       {movement && (
         <span
           className={cn(
-            "font-medium leading-none transition-colors",
+            "font-semibold leading-none tracking-tight",
             textClass,
-            {
-              "text-emerald-600 dark:text-emerald-400": direction === "forward",
-              "text-rose-600 dark:text-rose-400": direction === "backward",
-              "text-slate-500 dark:text-slate-400": direction === "none",
-            },
+            colors.textColor,
           )}
         >
           {movement}
