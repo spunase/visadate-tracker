@@ -41,7 +41,9 @@ export const useAuthStore = create<AuthState>()((set) => ({
     if (!sb) return;
     await sb.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: window.location.origin + "/track" },
+      options: {
+        redirectTo: window.location.origin + "/auth/callback?next=/track",
+      },
     });
   },
 
@@ -51,7 +53,9 @@ export const useAuthStore = create<AuthState>()((set) => ({
 
     const { error } = await sb.auth.signInWithOtp({
       email,
-      options: { emailRedirectTo: window.location.origin + "/track" },
+      options: {
+        emailRedirectTo: window.location.origin + "/auth/callback?next=/track",
+      },
     });
 
     return { error: error?.message ?? null };
