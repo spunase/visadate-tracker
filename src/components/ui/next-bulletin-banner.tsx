@@ -25,7 +25,7 @@ export function NextBulletinBanner() {
     // Check sessionStorage so we don't re-dismiss across navigations
     const key = "next-bulletin-dismissed";
     if (sessionStorage.getItem(key)) {
-      setDismissed(true);
+      setDismissed(true); // eslint-disable-line react-hooks/set-state-in-effect
       return;
     }
 

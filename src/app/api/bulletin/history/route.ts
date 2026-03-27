@@ -80,7 +80,7 @@ function generateMockHistory(category: string, country: string, chartType: strin
   const rows: HistoryRow[] = [];
 
   // Work backwards from the end date to generate 12 months of history
-  let currentDate = new Date(endDate);
+  const currentDate = new Date(endDate);
   const monthEntries: { month: Date; cutoff: Date }[] = [];
 
   for (let i = 11; i >= 0; i--) {

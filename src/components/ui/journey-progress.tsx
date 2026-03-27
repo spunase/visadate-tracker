@@ -174,10 +174,8 @@ export function JourneyProgress({
     milestones,
     isCurrent,
     baseline,
-    pdDate,
     faPosition,
     filingPosition,
-    filingLabel,
   } = useMemo(() => {
     const bl = computeBaseline(currentFinalAction, currentFiling);
     const pd = parseDate(priorityDate);

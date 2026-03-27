@@ -6,7 +6,6 @@ import { Save, Trash2, Loader2, Lock, Pencil } from "lucide-react";
 import {
   usePreferencesStore,
   CATEGORY_GROUPS,
-  type PreferredCategory,
   type CategoryGroup,
 } from "@/stores/preferences-store";
 import { PageHeader } from "@/components/layout/page-header";
@@ -36,7 +35,6 @@ import { CountryFlagSelector } from "@/components/ui/country-flag-selector";
 // Constants
 // ---------------------------------------------------------------------------
 
-const countries = ["India", "China", "Mexico", "Philippines", "All Other"] as const;
 const paths = ["AOS", "CP"] as const;
 
 const ebCategories = ["EB1", "EB2", "EB3"] as const;

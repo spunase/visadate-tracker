@@ -103,7 +103,7 @@ export function VelocityArc({
   size = "md",
   className,
 }: VelocityArcProps) {
-  const { container, icon, strokeWidth, textClass, ringSize } = sizeConfig[size];
+  const { icon, strokeWidth, textClass, ringSize } = sizeConfig[size];
   const colors = colorTokens[direction];
 
   const ariaLabel = movement

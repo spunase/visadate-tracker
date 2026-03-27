@@ -53,6 +53,7 @@ android/capacitor-cordova-android-plugins/build/
 android/app/google-services.json
 android/keystore.properties
 android/local.properties
+android/.idea/
 
 # capacitor / ios build artifacts
 ios/App/Pods/

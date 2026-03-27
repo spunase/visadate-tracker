@@ -9,12 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import {
   usePreferencesStore,
-  COUNTRIES_BY_QUEUE,
   CATEGORIES,
   PATHS,
-  type PreferredCountry,
-  type PreferredCategory,
-  type PreferredPath,
 } from "@/stores/preferences-store";
 import { CountryFlagSelector } from "@/components/ui/country-flag-selector";
 import { useTheme, type Theme } from "@/components/theme-provider";
@@ -146,7 +142,7 @@ export default function SettingsPage() {
   // Hydration guard
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
-    setMounted(true);
+    setMounted(true); // eslint-disable-line react-hooks/set-state-in-effect
     syncPermission();
   }, [syncPermission]);
 

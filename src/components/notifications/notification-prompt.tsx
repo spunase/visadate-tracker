@@ -26,7 +26,7 @@ export function NotificationPrompt() {
     const supported =
       typeof window !== "undefined" && "Notification" in window;
     if (supported && !enabled && !isDismissed()) {
-      setVisible(true);
+      setVisible(true); // eslint-disable-line react-hooks/set-state-in-effect
     }
   }, [enabled]);
 

@@ -85,8 +85,8 @@ export default function PrivacyPolicyPage() {
           </CardHeader>
           <CardContent className="space-y-3 text-sm text-muted-foreground leading-relaxed">
             <p>
-              All user preferences are stored in your browser's local storage or
-              the device's native storage. This data never leaves your device
+              All user preferences are stored in your browser&apos;s local storage or
+              the device&apos;s native storage. This data never leaves your device
               and is not transmitted to any server.
             </p>
             <p>
@@ -158,7 +158,7 @@ export default function PrivacyPolicyPage() {
         <Card className="rounded-[18px] border border-border/50 shadow-sm">
           <CardHeader className="pb-2">
             <CardTitle className="text-base font-semibold">
-              Children's Privacy
+              Children&apos;s Privacy
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3 text-sm text-muted-foreground leading-relaxed">
@@ -185,11 +185,11 @@ export default function PrivacyPolicyPage() {
             </p>
             <ul className="list-disc space-y-1 pl-5">
               <li>
-                Use the "Reset to Defaults" button in Settings to clear all
+                Use the &quot;Reset to Defaults&quot; button in Settings to clear all
                 preferences
               </li>
               <li>
-                Clear your browser's local storage to remove all app data
+                Clear your browser&apos;s local storage to remove all app data
               </li>
               <li>Uninstall the app to remove all stored data</li>
             </ul>

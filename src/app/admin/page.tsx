@@ -478,7 +478,7 @@ function MovementDiffTab({
             </tr>
           </thead>
           <tbody className="divide-y divide-border/30">
-            {filteredRows.map((row, i) => {
+            {filteredRows.map((row) => {
               const prevDisplay =
                 row.previousKind === "current"
                   ? "Current"
@@ -628,9 +628,6 @@ export default function AdminConsolePage() {
   };
 
   // Summary stats
-  const publishedCount = bulletins.filter(
-    (b) => b.validation_status === "published"
-  ).length;
   const activeUpdates = updates.filter((u) => u.is_active).length;
   const expiredUpdates = updates.filter(
     (u) => getFreshnessStatus(u.freshness_expires_at) === "expired"

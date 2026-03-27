@@ -112,10 +112,10 @@ export function ConfettiBurst({
   useEffect(() => {
     if (!trigger) return;
 
-    setParticles(generateParticles(colors));
+    setParticles(generateParticles(colors)); // eslint-disable-line react-hooks/set-state-in-effect
 
     const timer = setTimeout(() => {
-      setParticles(null);
+      setParticles(null);  
     }, ANIMATION_DURATION_MS + 200);
 
     return () => clearTimeout(timer);

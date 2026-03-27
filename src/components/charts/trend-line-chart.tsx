@@ -1,14 +1,12 @@
 "use client";
 
 import {
-  LineChart,
   Line,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  ReferenceDot,
   Area,
   ComposedChart,
 } from "recharts";

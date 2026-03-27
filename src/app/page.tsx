@@ -14,7 +14,6 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import {
   usePreferencesStore,
-  COUNTRIES_BY_QUEUE,
   CATEGORY_GROUPS,
   type PreferredCountry,
   type PreferredCategory,
@@ -205,11 +204,11 @@ export default function HomePage() {
 
   // Sync with preferences on mount (Zustand hydration)
   useEffect(() => {
-    setMounted(true);
+    setMounted(true); // eslint-disable-line react-hooks/set-state-in-effect
     const cat = usePreferencesStore.getState().defaultCategory;
-    setSelectedCountry(usePreferencesStore.getState().defaultCountry);
-    setSelectedCategory(cat);
-    setActiveGroup(groupForCategory(cat));
+    setSelectedCountry(usePreferencesStore.getState().defaultCountry);  
+    setSelectedCategory(cat);  
+    setActiveGroup(groupForCategory(cat));  
   }, []);
 
   // Persist selections to store so other pages can read them

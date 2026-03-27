@@ -121,7 +121,6 @@ function CountryFlagImage({
   size,
   shape,
   isActive,
-  accentColor,
 }: {
   country: PreferredCountry;
   size: "sm" | "lg";

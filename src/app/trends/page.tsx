@@ -22,7 +22,6 @@ import {
 import { CountryFlagSelector } from "@/components/ui/country-flag-selector";
 
 const ebCategories = ["EB1", "EB2", "EB3"] as const;
-const familyCategories = ["F1", "F2A", "F2B", "F3", "F4"] as const;
 const countries = COUNTRIES_BY_QUEUE;
 const chartModes = ["Final Action", "Filing"] as const;
 
@@ -122,11 +121,11 @@ export default function TrendsPage() {
   // Re-sync when store changes (e.g. user navigated from home with a new selection)
   useEffect(() => {
     const grp = groupForCategory(defaultCategory);
-    setActiveGroup(grp);
-    setCategory(defaultCategory);
+    setActiveGroup(grp); // eslint-disable-line react-hooks/set-state-in-effect
+    setCategory(defaultCategory);  
     const cty = countries.includes(defaultCountry) ? defaultCountry : country;
     setCountry(cty);
-  }, [defaultCategory, defaultCountry]);
+  }, [defaultCategory, defaultCountry, country]);
 
   const handleGroupChange = (group: CategoryGroup) => {
     setActiveGroup(group);

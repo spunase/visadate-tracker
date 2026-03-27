@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { SnapshotCard } from "@/components/track/snapshot-card";
 import type { EvaluationResult } from "@/lib/rules-engine";
 import type { VisaStatus } from "@/lib/design-tokens";
-import { nativeShare, hapticNotification, isNativePlatform } from "@/lib/native-bridge";
+import { nativeShare, hapticNotification } from "@/lib/native-bridge";
 
 // ---------------------------------------------------------------------------
 // Props

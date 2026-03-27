@@ -43,22 +43,26 @@ export function ThemeProvider({
   defaultTheme = "system",
   storageKey = STORAGE_KEY,
 }: ThemeProviderProps) {
-  const [theme, setThemeState] = useState<Theme>(defaultTheme);
-  const [systemPreference, setSystemPreference] = useState<"light" | "dark">(
-    "light",
-  );
-
-  // Hydrate from localStorage on mount
-  useEffect(() => {
+  const [theme, setThemeState] = useState<Theme>(() => {
+    if (typeof window === "undefined") return defaultTheme;
     try {
       const stored = localStorage.getItem(storageKey) as Theme | null;
       if (stored && ["light", "dark", "system"].includes(stored)) {
-        setThemeState(stored);
+        return stored;
       }
     } catch {
-      // localStorage unavailable - keep default
+      // localStorage unavailable
     }
-  }, [storageKey]);
+    return defaultTheme;
+  });
+  const [systemPreference, setSystemPreference] = useState<"light" | "dark">(
+    () => {
+      if (typeof window === "undefined") return "light";
+      return window.matchMedia("(prefers-color-scheme: dark)").matches
+        ? "dark"
+        : "light";
+    },
+  );
 
   // Listen for system preference changes
   useEffect(() => {

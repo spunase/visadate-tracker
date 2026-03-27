@@ -41,14 +41,7 @@ const bandConfig: Record<DistanceBand, { label: string; colorClass: string }> = 
   final_current: { label: "Current", colorClass: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300" },
 };
 
-function formatCutoffDate(cutoffDate: string | null, kind: string): string {
-  if (!cutoffDate) return kind === "current" ? "Current (C)" : "Unavailable (U)";
-  return new Date(cutoffDate + "T00:00:00").toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-}
+
 
 function movementToChipProps(
   movement: MovementResult | null,

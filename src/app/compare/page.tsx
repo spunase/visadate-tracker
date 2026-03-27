@@ -22,11 +22,6 @@ import {
 type CountryBucket = "india" | "china" | "all_other";
 type ChartType = "final_action" | "dates_for_filing";
 
-const COUNTRY_OPTIONS: { value: CountryBucket; label: string; displayCountry: PreferredCountry }[] = [
-  { value: "india", label: "India", displayCountry: "India" },
-  { value: "china", label: "China", displayCountry: "China" },
-  { value: "all_other", label: "All Other", displayCountry: "All Other" },
-];
 
 const CHART_OPTIONS: { value: ChartType; label: string }[] = [
   { value: "final_action", label: "Final Action" },
@@ -173,8 +168,8 @@ export default function ComparePage() {
   // Re-sync when store changes
   useEffect(() => {
     const bucket = countryToBucket[defaultCountry] ?? "india";
-    setCountry(bucket);
-    setCompareDisplayCountry(defaultCountry);
+    setCountry(bucket); // eslint-disable-line react-hooks/set-state-in-effect
+    setCompareDisplayCountry(defaultCountry);  
   }, [defaultCountry]);
 
   const {

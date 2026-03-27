@@ -110,7 +110,7 @@ export function useUserBand(tracker: SavedTracker | null): UseUserBandResult {
     return () => {
       cancelled = true;
     };
-  }, [tracker?.id, tracker?.priorityDate, tracker?.category, tracker?.country]);
+  }, [tracker?.id, tracker?.priorityDate, tracker?.category, tracker?.country]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return { band, isLoading };
 }
