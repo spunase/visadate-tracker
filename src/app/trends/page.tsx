@@ -219,34 +219,31 @@ export default function TrendsPage() {
           </nav>
         </motion.div>
 
-        {/* Chart Mode Toggle */}
-        <motion.div variants={item}>
-          <div className="flex rounded-xl bg-muted p-1" role="radiogroup" aria-label="Chart mode">
-            {chartModes.map((mode) => (
-              <button
-                key={mode}
-                onClick={() => setChartMode(mode)}
-                role="radio"
-                aria-checked={chartMode === mode}
-                className={`flex-1 rounded-lg py-1.5 text-xs font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2F6BFF] focus-visible:ring-offset-2 ${
-                  chartMode === mode
-                    ? "bg-background text-foreground shadow-sm"
-                    : "text-muted-foreground"
-                }`}
-              >
-                {mode}
-              </button>
-            ))}
-          </div>
-        </motion.div>
-
         {/* Unified Journey Chronicle - trend line + movement stamps + stats */}
         <motion.div variants={item}>
           <Card className="riso-doc-neutral rounded-[18px] border border-border/50 shadow-sm">
-            <CardHeader className="pb-2">
+            <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
               <CardTitle className="font-heading text-base font-semibold">
-                {category} {country} &mdash; {chartMode} Dates
+                {category} {country}
               </CardTitle>
+              {/* Chart Mode Toggle */}
+              <div className="flex w-[160px] rounded-xl bg-muted p-1" role="radiogroup" aria-label="Chart mode">
+                {chartModes.map((mode) => (
+                  <button
+                    key={mode}
+                    onClick={() => setChartMode(mode)}
+                    role="radio"
+                    aria-checked={chartMode === mode}
+                    className={`flex-1 rounded-lg py-1.5 text-[10px] uppercase tracking-wider font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2F6BFF] focus-visible:ring-offset-2 ${
+                      chartMode === mode
+                        ? "bg-background text-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {mode}
+                  </button>
+                ))}
+              </div>
             </CardHeader>
             <CardContent className="p-5 pt-0">
               {error ? (
