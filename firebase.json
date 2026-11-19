@@ -1,0 +1,21 @@
+{
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "auth": {
+    "providers": {
+      "anonymous": false,
+      "emailPassword": true,
+      "googleSignIn": {
+        "oAuthBrandDisplayName": "VisaDateTracker",
+        "supportEmail": "spunase@gmail.com",
+        "authorizedRedirectUris": [
+          "https://visatracker-491402.firebaseapp.com/__/auth/handler",
+          "https://visadate-tracker.netlify.app/auth/callback",
+          "http://localhost:3000/auth/callback"
+        ]
+      }
+    }
+  }
+}

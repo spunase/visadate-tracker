@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase";
+import { getAdminDb } from "@/lib/firebase-admin";
 import { requireAdminAuth } from "@/lib/admin-auth";
 import type { PolicyUpdate } from "@/types/database";
 
@@ -63,20 +63,24 @@ export async function GET(request: Request) {
   const authError = requireAdminAuth(request);
   if (authError) return authError;
 
-  if (supabase) {
+  const db = getAdminDb();
+  if (db) {
     try {
-      const { data: updates, error } = await supabase
-        .from("policy_updates")
-        .select("*")
-        .order("freshness_expires_at", { ascending: true });
+      const snap = await db
+        .collection("policy_updates")
+        .orderBy("freshness_expires_at", "asc")
+        .get();
 
-      if (error || !updates) {
-        // Fall through to mock data
-      } else {
+      if (!snap.empty) {
+        const updates = snap.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        })) as PolicyUpdate[];
+
         return NextResponse.json({
-          updates: updates as PolicyUpdate[],
+          updates,
           _meta: {
-            source: "supabase",
+            source: "firebase",
             generatedAt: new Date().toISOString(),
           },
         });

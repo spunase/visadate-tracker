@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase";
+import { getAdminDb } from "@/lib/firebase-admin";
 import type { Category, CountryBucket, ChartType } from "@/types/database";
 
 // ---------------------------------------------------------------------------
-// Mock history generator (fallback when Supabase has no data)
+// Mock history generator (fallback when Firestore has no data)
 // Generates realistic 12-month movement patterns per category/country.
 // ---------------------------------------------------------------------------
 
@@ -137,59 +137,43 @@ export async function GET(request: NextRequest) {
   const country = (searchParams.get("country") ?? "india") as CountryBucket;
   const chartType = (searchParams.get("chart_type") ?? "final_action") as ChartType;
 
-  // --- Try Supabase first ---
-  if (supabase) {
+  // --- Try Firebase Firestore first ---
+  const db = getAdminDb();
+  if (db) {
     try {
-      // Join visa_cutoff_rows with visa_bulletins via bulletin_id,
-      // filter by category, country_bucket, chart_type,
-      // order by bulletin_month DESC, limit 24.
-      const { data: rows, error } = await supabase
-        .from("visa_cutoff_rows")
-        .select(`
-          bulletin_id,
-          chart_type,
-          category,
-          country_bucket,
-          cutoff_kind,
-          cutoff_date,
-          original_value,
-          visa_bulletins!inner ( bulletin_month )
-        `)
-        .eq("category", category)
-        .eq("country_bucket", country)
-        .eq("chart_type", chartType)
-        .order("visa_bulletins(bulletin_month)", { ascending: false })
-        .limit(24);
+      const rowsSnap = await db
+        .collection("visa_cutoff_rows")
+        .where("category", "==", category)
+        .where("country_bucket", "==", country)
+        .where("chart_type", "==", chartType)
+        .orderBy("bulletin_month", "desc")
+        .limit(24)
+        .get();
 
-      if (!error && rows && rows.length > 0) {
-        // Enrich with movement data from derived_monthly_movements
-        const bulletinMonths = rows.map((r: Record<string, unknown>) => {
-          const vb = r.visa_bulletins as Record<string, unknown> | Record<string, unknown>[];
-          return Array.isArray(vb) ? vb[0]?.bulletin_month : vb?.bulletin_month;
-        }).filter(Boolean) as string[];
-
-        // Fetch movements for these months
-        const { data: movements } = await supabase
-          .from("derived_monthly_movements")
-          .select("bulletin_month, movement_days, movement_direction")
-          .eq("category", category)
-          .eq("country_bucket", country)
-          .eq("chart_type", chartType)
-          .in("bulletin_month", bulletinMonths);
+      if (!rowsSnap.empty) {
+        const movementsSnap = await db
+          .collection("derived_monthly_movements")
+          .where("category", "==", category)
+          .where("country_bucket", "==", country)
+          .where("chart_type", "==", chartType)
+          .orderBy("bulletin_month", "desc")
+          .limit(24)
+          .get();
 
         const movementMap = new Map<string, { movement_days: number; movement_direction: string }>();
-        if (movements) {
-          for (const m of movements) {
+        for (const doc of movementsSnap.docs) {
+          const m = doc.data();
+          if (typeof m.bulletin_month === "string") {
             movementMap.set(m.bulletin_month, {
-              movement_days: m.movement_days,
-              movement_direction: m.movement_direction,
+              movement_days: m.movement_days as number,
+              movement_direction: m.movement_direction as string,
             });
           }
         }
 
-        const history = rows.map((r: Record<string, unknown>) => {
-          const vb = r.visa_bulletins as Record<string, unknown> | Record<string, unknown>[];
-          const bulletinMonth = (Array.isArray(vb) ? vb[0]?.bulletin_month : vb?.bulletin_month) as string;
+        const history = rowsSnap.docs.map((doc) => {
+          const r = doc.data();
+          const bulletinMonth = r.bulletin_month as string;
           const mov = movementMap.get(bulletinMonth);
           return {
             bulletin_month: bulletinMonth,
@@ -209,7 +193,7 @@ export async function GET(request: NextRequest) {
             months: history.length,
             history,
             _meta: {
-              source: "supabase",
+              source: "firebase",
               generatedAt: new Date().toISOString(),
             },
           },
@@ -220,7 +204,6 @@ export async function GET(request: NextRequest) {
           },
         );
       }
-
     } catch {
       // Fall through to mock data
     }

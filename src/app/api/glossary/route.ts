@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 // ---------------------------------------------------------------------------
 // NOTE: Glossary terms are served from the static content library defined
-// below. There is no corresponding Supabase table - this endpoint
+// below. There is no corresponding Firestore collection - this endpoint
 // intentionally stays as-is with inline data.
 // ---------------------------------------------------------------------------
 

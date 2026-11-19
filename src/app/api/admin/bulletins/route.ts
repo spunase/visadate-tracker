@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase";
+import { getAdminDb } from "@/lib/firebase-admin";
 import { requireAdminAuth } from "@/lib/admin-auth";
-import type { VisaBulletin, VisaCutoffRow } from "@/types/database";
+import type { VisaBulletin } from "@/types/database";
 
 // ---------------------------------------------------------------------------
 // Mock data - for development fallback
@@ -45,37 +45,36 @@ export async function GET(request: Request) {
   const authError = requireAdminAuth(request);
   if (authError) return authError;
 
-  if (supabase) {
+  const db = getAdminDb();
+  if (db) {
     try {
       // Fetch all bulletins ordered by month descending
-      const { data: bulletins, error: bulletinError } = await supabase
-        .from("visa_bulletins")
-        .select("*")
-        .order("bulletin_month", { ascending: false });
+      const bulletinSnap = await db
+        .collection("visa_bulletins")
+        .orderBy("bulletin_month", "desc")
+        .get();
 
-      if (bulletinError || !bulletins) {
-        // Fall through to mock data
-      } else {
-        // For each bulletin, count cutoff rows
-        const bulletinIds = bulletins.map((b: VisaBulletin) => b.id);
-        const { data: cutoffRows, error: cutoffError } = await supabase
-          .from("visa_cutoff_rows")
-          .select("bulletin_id")
-          .in("bulletin_id", bulletinIds);
-
-        if (cutoffError) {
-          // Non-fatal: proceed without cutoff counts
-        }
+      if (!bulletinSnap.empty) {
+        const bulletins = bulletinSnap.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        })) as VisaBulletin[];
 
         // Count cutoff rows per bulletin
+        const cutoffSnap = await db
+          .collection("visa_cutoff_rows")
+          .select("bulletin_id")
+          .get();
+
         const countMap: Record<string, number> = {};
-        if (cutoffRows) {
-          for (const row of cutoffRows as Pick<VisaCutoffRow, "bulletin_id">[]) {
-            countMap[row.bulletin_id] = (countMap[row.bulletin_id] ?? 0) + 1;
+        for (const doc of cutoffSnap.docs) {
+          const bId = doc.data().bulletin_id as string | undefined;
+          if (bId) {
+            countMap[bId] = (countMap[bId] ?? 0) + 1;
           }
         }
 
-        const enriched = bulletins.map((b: VisaBulletin) => ({
+        const enriched = bulletins.map((b) => ({
           ...b,
           cutoff_count: countMap[b.id] ?? 0,
         }));
@@ -83,7 +82,7 @@ export async function GET(request: Request) {
         return NextResponse.json({
           bulletins: enriched,
           _meta: {
-            source: "supabase",
+            source: "firebase",
             generatedAt: new Date().toISOString(),
           },
         });

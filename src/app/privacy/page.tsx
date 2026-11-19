@@ -108,16 +108,17 @@ export default function PrivacyPolicyPage() {
           <CardContent className="space-y-3 text-sm text-muted-foreground leading-relaxed">
             <ul className="list-disc space-y-1 pl-5">
               <li>
-                <span className="font-medium text-foreground">Supabase</span> -
-                Used to store and serve visa bulletin data (public immigration
-                data only, no personal data). See{" "}
+                <span className="font-medium text-foreground">Google Firebase</span> -
+                Used to store and serve visa bulletin data in Cloud Firestore
+                (public immigration data), and optionally to authenticate and
+                sync saved trackers across devices if you choose to sign in. See{" "}
                 <a
-                  href="https://supabase.com/privacy"
+                  href="https://firebase.google.com/support/privacy"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-calm-blue underline"
                 >
-                  Supabase Privacy Policy
+                  Firebase Privacy and Security
                 </a>
               </li>
               <li>

@@ -10,10 +10,10 @@ import type {
 
 // ---------------------------------------------------------------------------
 // NOTE: This endpoint performs client-side evaluation using a static cutoff
-// map. It does not fetch from Supabase directly - instead, the frontend
-// calls /api/bulletin/current (which is Supabase-backed) and passes results
+// map. It does not fetch from Firestore directly - instead, the frontend
+// calls /api/bulletin/current (which is Firebase-backed) and passes results
 // here. A future enhancement could have this endpoint fetch cutoffs from
-// Supabase on-the-fly, but for now the static map is kept as-is.
+// Firestore on-the-fly, but for now the static map is kept as-is.
 // ---------------------------------------------------------------------------
 
 // ---------------------------------------------------------------------------

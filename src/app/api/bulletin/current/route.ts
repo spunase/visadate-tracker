@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase";
+import { getAdminDb } from "@/lib/firebase-admin";
 import type { VisaBulletin, VisaCutoffRow } from "@/types/database";
 
 // ---------------------------------------------------------------------------
@@ -84,40 +84,47 @@ export async function GET() {
     "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
   };
 
-  // --- Try Supabase first ---
-  if (supabase) {
+  // --- Try Firebase Firestore first ---
+  const db = getAdminDb();
+  if (db) {
     try {
       // Fetch most recent published bulletin
-      const { data: bulletin, error: bulletinError } = await supabase
-        .from("visa_bulletins")
-        .select("*")
-        .eq("validation_status", "published")
-        .order("bulletin_month", { ascending: false })
+      const bulletinSnap = await db
+        .collection("visa_bulletins")
+        .where("validation_status", "==", "published")
+        .orderBy("bulletin_month", "desc")
         .limit(1)
-        .single();
+        .get();
 
-      if (bulletinError || !bulletin) {
-        // No published bulletin in DB - fall through to mock
-      } else {
+      if (!bulletinSnap.empty) {
+        const bulletinDoc = bulletinSnap.docs[0];
+        const bulletin = {
+          id: bulletinDoc.id,
+          ...bulletinDoc.data(),
+        } as VisaBulletin;
+
         // Fetch cutoff rows for this bulletin
-        const { data: cutoffRows, error: cutoffError } = await supabase
-          .from("visa_cutoff_rows")
-          .select("*")
-          .eq("bulletin_id", bulletin.id);
+        const cutoffSnap = await db
+          .collection("visa_cutoff_rows")
+          .where("bulletin_id", "==", bulletin.id)
+          .get();
 
-        if (!cutoffError) {
-          return NextResponse.json(
-            {
-              bulletin: bulletin as VisaBulletin,
-              cutoffRows: (cutoffRows ?? []) as VisaCutoffRow[],
-              _meta: {
-                source: "supabase",
-                generatedAt: new Date().toISOString(),
-              },
+        const cutoffRows = cutoffSnap.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        })) as VisaCutoffRow[];
+
+        return NextResponse.json(
+          {
+            bulletin,
+            cutoffRows,
+            _meta: {
+              source: "firebase",
+              generatedAt: new Date().toISOString(),
             },
-            { headers: cacheHeaders },
-          );
-        }
+          },
+          { headers: cacheHeaders },
+        );
       }
     } catch {
       // Fall through to mock data

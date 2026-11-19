@@ -7,9 +7,11 @@
         </trust-anchors>
     </base-config>
 
-    <!-- Allow the app's server and Supabase -->
+    <!-- Allow the app's server and Google Firebase -->
     <domain-config cleartextTrafficPermitted="false">
         <domain includeSubdomains="true">visadate-tracker.netlify.app</domain>
-        <domain includeSubdomains="true">supabase.co</domain>
+        <domain includeSubdomains="true">firebaseapp.com</domain>
+        <domain includeSubdomains="true">googleapis.com</domain>
+        <domain includeSubdomains="true">accounts.google.com</domain>
     </domain-config>
 </network-security-config>

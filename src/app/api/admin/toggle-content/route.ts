@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { supabaseAdmin } from "@/lib/supabase-admin";
+import { getAdminDb } from "@/lib/firebase-admin";
 import { requireAdminAuth } from "@/lib/admin-auth";
 
 // ---------------------------------------------------------------------------
@@ -9,7 +9,7 @@ import { requireAdminAuth } from "@/lib/admin-auth";
 // ---------------------------------------------------------------------------
 
 const ToggleContentSchema = z.object({
-  id: z.string().uuid("id must be a valid UUID"),
+  id: z.string().min(1, "id is required"),
   is_active: z.boolean(),
 });
 
@@ -33,8 +33,9 @@ export async function POST(request: Request) {
     }
 
     const { id, is_active } = parsed.data;
+    const db = getAdminDb();
 
-    if (!supabaseAdmin) {
+    if (!db) {
       // In mock mode, just acknowledge the toggle
       return NextResponse.json({
         success: true,
@@ -42,35 +43,32 @@ export async function POST(request: Request) {
         is_active,
         _meta: {
           source: "mock",
-          note: "No Supabase service role key configured. Toggle acknowledged but not persisted.",
+          note: "No Firebase Admin credentials configured. Toggle acknowledged but not persisted.",
           generatedAt: new Date().toISOString(),
         },
       });
     }
 
-    const { data, error } = await supabaseAdmin
-      .from("policy_updates")
-      .update({ is_active })
-      .eq("id", id)
-      .select()
-      .single();
-
-    if (error) {
+    const docRef = db.collection("policy_updates").doc(id);
+    const existing = await docRef.get();
+    if (!existing.exists) {
       return NextResponse.json(
         {
           success: false,
-          error: "Failed to update policy_updates",
-          ...(process.env.NODE_ENV === "development" && { message: error.message }),
+          error: "Policy update not found",
         },
-        { status: 500 }
+        { status: 404 }
       );
     }
 
+    await docRef.update({ is_active });
+    const updatedSnap = await docRef.get();
+
     return NextResponse.json({
       success: true,
-      updated: data,
+      updated: { id: updatedSnap.id, ...updatedSnap.data() },
       _meta: {
-        source: "supabase",
+        source: "firebase",
         generatedAt: new Date().toISOString(),
       },
     });

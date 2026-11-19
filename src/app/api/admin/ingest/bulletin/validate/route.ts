@@ -11,12 +11,12 @@
 
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { supabaseAdmin } from "@/lib/supabase-admin";
+import { getAdminDb } from "@/lib/firebase-admin";
 import { requireAdminAuth } from "@/lib/admin-auth";
 import type { ValidationStatus } from "@/types/database";
 
 const ValidateRequestSchema = z.object({
-  bulletinId: z.string().uuid(),
+  bulletinId: z.string().min(1),
   status: z.enum(["validated", "published", "superseded"]),
 });
 
@@ -33,12 +33,13 @@ export async function POST(request: Request) {
   if (authError) return authError;
 
   try {
-    if (!supabaseAdmin) {
+    const db = getAdminDb();
+    if (!db) {
       return NextResponse.json(
         {
           success: false,
           error: "Server configuration error",
-          message: "Supabase admin client is not configured.",
+          message: "Firebase Admin Firestore is not configured.",
         },
         { status: 503 }
       );
@@ -47,25 +48,10 @@ export async function POST(request: Request) {
     const body = await request.json();
     const validated = ValidateRequestSchema.parse(body);
 
-    // Look up the current bulletin
-    const { data: bulletin, error: lookupError } = await supabaseAdmin
-      .from("visa_bulletins")
-      .select("id, validation_status")
-      .eq("id", validated.bulletinId)
-      .maybeSingle();
+    const docRef = db.collection("visa_bulletins").doc(validated.bulletinId);
+    const bulletinSnap = await docRef.get();
 
-    if (lookupError) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Database error",
-          ...(process.env.NODE_ENV === "development" && { message: lookupError.message }),
-        },
-        { status: 503 }
-      );
-    }
-
-    if (!bulletin) {
+    if (!bulletinSnap.exists) {
       return NextResponse.json(
         {
           success: false,
@@ -75,6 +61,8 @@ export async function POST(request: Request) {
         { status: 404 }
       );
     }
+
+    const bulletin = bulletinSnap.data() ?? {};
 
     // Check valid transition
     const currentStatus = bulletin.validation_status as ValidationStatus;
@@ -101,27 +89,18 @@ export async function POST(request: Request) {
       updateData.validated_at = new Date().toISOString();
     }
 
-    const { data: updated, error: updateError } = await supabaseAdmin
-      .from("visa_bulletins")
-      .update(updateData)
-      .eq("id", validated.bulletinId)
-      .select("id, bulletin_month, validation_status, validated_at")
-      .single();
-
-    if (updateError) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Database error",
-          ...(process.env.NODE_ENV === "development" && { message: updateError.message }),
-        },
-        { status: 503 }
-      );
-    }
+    await docRef.update(updateData);
+    const updatedSnap = await docRef.get();
+    const updatedData = updatedSnap.data() ?? {};
 
     return NextResponse.json({
       success: true,
-      bulletin: updated,
+      bulletin: {
+        id: updatedSnap.id,
+        bulletin_month: updatedData.bulletin_month,
+        validation_status: updatedData.validation_status,
+        validated_at: updatedData.validated_at ?? null,
+      },
     });
   } catch (error) {
     if (error instanceof z.ZodError) {

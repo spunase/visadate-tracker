@@ -12,9 +12,11 @@ interface EnvVar {
 }
 
 const ENV_VARS: EnvVar[] = [
-  { name: "NEXT_PUBLIC_SUPABASE_URL", required: "never" },
-  { name: "NEXT_PUBLIC_SUPABASE_ANON_KEY", required: "never" },
-  { name: "SUPABASE_SERVICE_ROLE_KEY", required: "never" },
+  { name: "NEXT_PUBLIC_FIREBASE_API_KEY", required: "never" },
+  { name: "NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN", required: "never" },
+  { name: "NEXT_PUBLIC_FIREBASE_PROJECT_ID", required: "never" },
+  { name: "NEXT_PUBLIC_FIREBASE_APP_ID", required: "never" },
+  { name: "FIREBASE_SERVICE_ACCOUNT_KEY", required: "never" },
   { name: "ADMIN_API_KEY", required: "production" },
 ];
 

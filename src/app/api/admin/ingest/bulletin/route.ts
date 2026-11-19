@@ -8,7 +8,7 @@
  * 2. Auto-fetch:     { fetchLatest: true }
  * 3. Specific month: { year: 2026, month: 3 }
  *
- * After parsing, persists the bulletin to Supabase and returns the result.
+ * After parsing, persists the bulletin to Firestore and returns the result.
  */
 
 import { NextResponse } from "next/server";
@@ -118,7 +118,7 @@ export async function POST(request: Request) {
     // Parse the bulletin HTML
     const result = parseBulletin(html);
 
-    // Save to Supabase
+    // Save to Firestore
     const saveResult = await saveParsedBulletin(result, { sourceUrl });
 
     return NextResponse.json({
@@ -145,7 +145,8 @@ export async function POST(request: Request) {
 
     if (error instanceof Error) {
       const isDbError =
-        error.message.includes("Supabase") ||
+        error.message.includes("Firebase") ||
+        error.message.includes("Firestore") ||
         error.message.includes("Failed to insert") ||
         error.message.includes("Failed to check");
 

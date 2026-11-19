@@ -7,8 +7,13 @@ const config: CapacitorConfig = {
   server: {
     // Production: load from deployed Netlify site
     url: "https://visadate-tracker.netlify.app",
-    // Allow navigation within the app domain
-    allowNavigation: ["visadate-tracker.netlify.app", "*.supabase.co"],
+    // Allow navigation within the app domain and Firebase Auth
+    allowNavigation: [
+      "visadate-tracker.netlify.app",
+      "*.firebaseapp.com",
+      "*.googleapis.com",
+      "accounts.google.com",
+    ],
   },
   plugins: {
     SplashScreen: {

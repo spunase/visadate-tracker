@@ -1,0 +1,41 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "visa_bulletins",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "validation_status", "order": "ASCENDING" },
+        { "fieldPath": "bulletin_month", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "visa_cutoff_rows",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "category", "order": "ASCENDING" },
+        { "fieldPath": "country_bucket", "order": "ASCENDING" },
+        { "fieldPath": "chart_type", "order": "ASCENDING" },
+        { "fieldPath": "bulletin_month", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "derived_monthly_movements",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "category", "order": "ASCENDING" },
+        { "fieldPath": "country_bucket", "order": "ASCENDING" },
+        { "fieldPath": "chart_type", "order": "ASCENDING" },
+        { "fieldPath": "bulletin_month", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "policy_updates",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "is_active", "order": "ASCENDING" },
+        { "fieldPath": "published_at", "order": "DESCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

@@ -47,6 +47,7 @@ export interface VisaBulletin {
 export interface VisaCutoffRow {
   id: string;
   bulletin_id: string;
+  bulletin_month?: string; // YYYY-MM (denormalized in Firestore for single-query history)
   chart_type: ChartType;
   category: Category;
   country_bucket: CountryBucket;

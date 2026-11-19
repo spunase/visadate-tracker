@@ -21,11 +21,31 @@ export function SignInDialog({ open, onOpenChange }: SignInDialogProps) {
   const { signInWithGoogle, signInWithEmail } = useAuthStore();
   const [email, setEmail] = useState("");
   const [emailSent, setEmailSent] = useState(false);
-  const [emailError, setEmailError] = useState<string | null>(null);
+  const [authError, setAuthError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+
+  const handleClose = (value: boolean) => {
+    if (!value) {
+      setEmail("");
+      setEmailSent(false);
+      setAuthError(null);
+      setGoogleLoading(false);
+    }
+    onOpenChange(value);
+  };
 
   const handleGoogle = async () => {
-    await signInWithGoogle();
+    setGoogleLoading(true);
+    setAuthError(null);
+    const { error } = await signInWithGoogle();
+    setGoogleLoading(false);
+
+    if (error) {
+      setAuthError(error);
+    } else if (useAuthStore.getState().user) {
+      handleClose(false);
+    }
   };
 
   const handleEmail = async (e: React.FormEvent) => {
@@ -33,25 +53,16 @@ export function SignInDialog({ open, onOpenChange }: SignInDialogProps) {
     if (!email.trim()) return;
 
     setLoading(true);
-    setEmailError(null);
+    setAuthError(null);
 
     const { error } = await signInWithEmail(email.trim());
     setLoading(false);
 
     if (error) {
-      setEmailError(error);
+      setAuthError(error);
     } else {
       setEmailSent(true);
     }
-  };
-
-  const handleClose = (value: boolean) => {
-    if (!value) {
-      setEmail("");
-      setEmailSent(false);
-      setEmailError(null);
-    }
-    onOpenChange(value);
   };
 
   return (
@@ -76,10 +87,15 @@ export function SignInDialog({ open, onOpenChange }: SignInDialogProps) {
             {/* Google */}
             <Button
               variant="outline"
+              disabled={googleLoading || loading}
               className="w-full gap-2 rounded-xl py-5"
               onClick={handleGoogle}
             >
-              <GoogleIcon />
+              {googleLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <GoogleIcon />
+              )}
               Continue with Google
             </Button>
 
@@ -100,12 +116,12 @@ export function SignInDialog({ open, onOpenChange }: SignInDialogProps) {
                 required
                 className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none transition-colors focus:border-[#2F6BFF] focus:ring-2 focus:ring-[#2F6BFF]/20"
               />
-              {emailError && (
-                <p className="text-xs text-destructive">{emailError}</p>
+              {authError && (
+                <p className="text-xs text-destructive">{authError}</p>
               )}
               <Button
                 type="submit"
-                disabled={loading || !email.trim()}
+                disabled={loading || googleLoading || !email.trim()}
                 className="w-full rounded-xl bg-[#2F6BFF] py-5 text-sm font-semibold text-white hover:bg-[#254FCC]"
               >
                 {loading ? (

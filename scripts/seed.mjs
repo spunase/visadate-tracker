@@ -1,44 +1,237 @@
 // ============================================================================
-// VisaDateTracker — Database Seed Script
-// Usage: node scripts/seed.mjs
+// VisaDateTracker — Cloud Firestore Seed & Migration Script
+// Usage:
+//   node scripts/seed.mjs
+//   node scripts/seed.mjs --from-backup path/to/backup.json
 // ============================================================================
 
-import { createClient } from "@supabase/supabase-js";
-
-const SUPABASE_URL = "https://hftwxnporvqgyvwubvez.supabase.co";
-const SUPABASE_SERVICE_ROLE_KEY =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhmdHd4bnBvcnZxZ3l2d3VidmV6Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NDMwODU1NiwiZXhwIjoyMDg5ODg0NTU2fQ.Zb3JvHE-WxT9D3SimhqmE3RgOx6aJMvCIe7ycCyoBTc";
-
-const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
+import fs from "node:fs";
+import path from "node:path";
+import { initializeApp, cert, applicationDefault, getApps } from "firebase-admin/app";
+import { getFirestore } from "firebase-admin/firestore";
 
 function log(msg) {
   console.log(`[seed] ${msg}`);
 }
 
+function loadLocalEnv() {
+  const envPath = path.resolve(process.cwd(), ".env.local");
+  if (!fs.existsSync(envPath)) return;
+  if (typeof process.loadEnvFile === "function") {
+    process.loadEnvFile(envPath);
+    return;
+  }
+  const content = fs.readFileSync(envPath, "utf8");
+  for (const line of content.split(/\r?\n/)) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#")) continue;
+    const eq = trimmed.indexOf("=");
+    if (eq === -1) continue;
+    const key = trimmed.slice(0, eq).trim();
+    const val = trimmed.slice(eq + 1).trim();
+    if (!process.env[key]) {
+      process.env[key] = val;
+    }
+  }
+}
+
+function initFirestore() {
+  loadLocalEnv();
+
+  if (getApps().length === 0) {
+    const rawKey = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
+    if (rawKey) {
+      const sa = JSON.parse(rawKey);
+      if (sa.private_key && typeof sa.private_key === "string") {
+        sa.private_key = sa.private_key.replace(/\\n/g, "\n");
+      }
+      initializeApp({
+        credential: cert(sa),
+        projectId: sa.project_id ?? process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+      });
+    } else if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+      initializeApp({
+        credential: applicationDefault(),
+        projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+      });
+    } else {
+      throw new Error(
+        "Missing Firebase Admin credentials. Set FIREBASE_SERVICE_ACCOUNT_KEY in .env.local or GOOGLE_APPLICATION_CREDENTIALS.",
+      );
+    }
+  }
+
+  return getFirestore();
+}
+
+async function batchWrite(db, collectionName, items) {
+  const CHUNK_SIZE = 450;
+  for (let i = 0; i < items.length; i += CHUNK_SIZE) {
+    const chunk = items.slice(i, i + CHUNK_SIZE);
+    const batch = db.batch();
+    for (const item of chunk) {
+      batch.set(db.collection(collectionName).doc(item.id), item.data);
+    }
+    await batch.commit();
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Backup importer (--from-backup)
+// ---------------------------------------------------------------------------
+
+async function seedFromBackup(db, backupPath) {
+  log(`Importing backup from ${backupPath}...`);
+  const raw = JSON.parse(fs.readFileSync(backupPath, "utf8"));
+  const tables = raw.tables ?? {};
+
+  const bulletins = tables.visa_bulletins ?? [];
+  const cutoffRows = tables.visa_cutoff_rows ?? [];
+  const chartSelections = tables.uscis_chart_selection ?? [];
+  const policyUpdates = tables.policy_updates ?? [];
+  const milestoneRules = tables.milestone_rules ?? [];
+  const movements = tables.derived_monthly_movements ?? [];
+
+  const bulletinIdToMonth = new Map();
+  for (const b of bulletins) {
+    bulletinIdToMonth.set(b.id, b.bulletin_month);
+  }
+
+  // 1. visa_bulletins (keyed by bulletin_month)
+  const bulletinItems = bulletins.map((b) => ({
+    id: b.bulletin_month,
+    data: {
+      id: b.bulletin_month,
+      bulletin_month: b.bulletin_month,
+      source_url: b.source_url,
+      source_published_at: b.source_published_at,
+      raw_snapshot_path: b.raw_snapshot_path ?? null,
+      validation_status: b.validation_status,
+      validated_at: b.validated_at ?? null,
+      created_at: b.created_at,
+    },
+  }));
+  await batchWrite(db, "visa_bulletins", bulletinItems);
+  log(`  Imported ${bulletinItems.length} visa_bulletins`);
+
+  // 2. visa_cutoff_rows (enrich with denormalized bulletin_month & matching bulletin_id)
+  const cutoffItems = cutoffRows.map((r) => {
+    const month = bulletinIdToMonth.get(r.bulletin_id) ?? r.bulletin_month;
+    if (!month) {
+      throw new Error(`Cutoff row ${r.id} references unknown bulletin_id ${r.bulletin_id}`);
+    }
+    const id = `${month}_${r.chart_type}_${r.category}_${r.country_bucket}`;
+    return {
+      id,
+      data: {
+        id,
+        bulletin_id: month,
+        bulletin_month: month,
+        chart_type: r.chart_type,
+        category: r.category,
+        country_bucket: r.country_bucket,
+        cutoff_kind: r.cutoff_kind,
+        cutoff_date: r.cutoff_date ?? null,
+        original_value: r.original_value,
+        created_at: r.created_at,
+      },
+    };
+  });
+  await batchWrite(db, "visa_cutoff_rows", cutoffItems);
+  log(`  Imported ${cutoffItems.length} visa_cutoff_rows`);
+
+  // 3. uscis_chart_selection
+  const chartItems = chartSelections.map((c) => {
+    const id = `${c.bulletin_month}_${c.preference_scope}`;
+    return {
+      id,
+      data: {
+        id,
+        bulletin_month: c.bulletin_month,
+        preference_scope: c.preference_scope,
+        chart_to_use: c.chart_to_use,
+        source_url: c.source_url,
+        source_published_at: c.source_published_at,
+        created_at: c.created_at,
+      },
+    };
+  });
+  await batchWrite(db, "uscis_chart_selection", chartItems);
+  log(`  Imported ${chartItems.length} uscis_chart_selection`);
+
+  // 4. policy_updates
+  const policyItems = policyUpdates.map((p) => ({
+    id: p.id,
+    data: {
+      id: p.id,
+      topic: p.topic,
+      subtopic: p.subtopic ?? null,
+      title: p.title,
+      source_url: p.source_url,
+      publisher: p.publisher,
+      published_at: p.published_at,
+      summary: p.summary,
+      why_it_matters: p.why_it_matters,
+      freshness_expires_at: p.freshness_expires_at,
+      source_type: p.source_type,
+      is_active: Boolean(p.is_active),
+      created_at: p.created_at,
+    },
+  }));
+  await batchWrite(db, "policy_updates", policyItems);
+  log(`  Imported ${policyItems.length} policy_updates`);
+
+  // 5. milestone_rules (if any)
+  if (milestoneRules.length > 0) {
+    const ruleItems = milestoneRules.map((m) => ({
+      id: m.slug ?? m.id,
+      data: { ...m, id: m.slug ?? m.id },
+    }));
+    await batchWrite(db, "milestone_rules", ruleItems);
+    log(`  Imported ${ruleItems.length} milestone_rules`);
+  }
+
+  // 6. derived_monthly_movements
+  const movementItems = movements.map((m) => {
+    const id = `${m.bulletin_month}_${m.chart_type}_${m.category}_${m.country_bucket}`;
+    return {
+      id,
+      data: {
+        id,
+        category: m.category,
+        country_bucket: m.country_bucket,
+        chart_type: m.chart_type,
+        bulletin_month: m.bulletin_month,
+        prior_bulletin_month: m.prior_bulletin_month,
+        movement_days: m.movement_days,
+        movement_direction: m.movement_direction,
+        is_retrogression: Boolean(m.is_retrogression),
+        is_no_change: Boolean(m.is_no_change),
+        created_at: m.created_at,
+      },
+    };
+  });
+  await batchWrite(db, "derived_monthly_movements", movementItems);
+  log(`  Imported ${movementItems.length} derived_monthly_movements`);
+
+  log("Backup import complete!");
+}
+
+// ---------------------------------------------------------------------------
+// Deterministic Seed Data (standalone fallback)
+// ---------------------------------------------------------------------------
+
 function addMonths(dateStr, months) {
-  // dateStr = "YYYY-MM"
   const [y, m] = dateStr.split("-").map(Number);
   const d = new Date(y, m - 1 + months, 1);
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
 }
 
 function formatDate(d) {
-  // Date -> "YYYY-MM-DD"
   return d.toISOString().slice(0, 10);
 }
 
-function addDays(dateStr, days) {
-  const d = new Date(dateStr + "T00:00:00Z");
-  d.setUTCDate(d.getUTCDate() + days);
-  return formatDate(d);
-}
-
 function diffDays(a, b) {
-  // b - a in days
   const da = new Date(a + "T00:00:00Z");
   const db = new Date(b + "T00:00:00Z");
   return Math.round((db - da) / 86400000);
@@ -47,58 +240,23 @@ function diffDays(a, b) {
 function formatOriginalValue(cutoffKind, cutoffDate) {
   if (cutoffKind === "current") return "C";
   if (cutoffKind === "unavailable") return "U";
-  // format as "01SEP12"
   const d = new Date(cutoffDate + "T00:00:00Z");
-  const months = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
+  const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
   const day = String(d.getUTCDate()).padStart(2, "0");
   const mon = months[d.getUTCMonth()];
   const yr = String(d.getUTCFullYear()).slice(2);
   return `${day}${mon}${yr}`;
 }
 
-// ---------------------------------------------------------------------------
-// 1. Visa Bulletins (12 months: 2025-04 to 2026-03)
-// ---------------------------------------------------------------------------
-
 const MONTHS = [];
 for (let i = 0; i < 12; i++) {
   MONTHS.push(addMonths("2025-04", i));
 }
 
-function buildBulletins() {
-  const monthNames = [
-    "","January","February","March","April","May","June",
-    "July","August","September","October","November","December",
-  ];
-  return MONTHS.map((m) => {
-    const [y, mo] = m.split("-").map(Number);
-    const name = monthNames[mo];
-    // Published ~15th of prior month
-    const pubMonth = mo === 1 ? 12 : mo - 1;
-    const pubYear = mo === 1 ? y - 1 : y;
-    return {
-      bulletin_month: m,
-      source_url: `https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin/${y}/visa-bulletin-for-${name.toLowerCase()}-${y}.html`,
-      source_published_at: `${pubYear}-${String(pubMonth).padStart(2,"0")}-15T12:00:00Z`,
-      validation_status: "published",
-    };
-  });
-}
-
-// ---------------------------------------------------------------------------
-// 2. Visa Cutoff Rows — realistic progressions
-// ---------------------------------------------------------------------------
-
-// Progressions keyed by `${category}|${country}|${chartType}`
-// Each array has 12 entries (one per bulletin month).
-// For "all_other" we use cutoff_kind='current'.
-
-// Progressions corrected so March 2026 (index 11) matches the official DOS
-// Visa Bulletin for March 2026.  Prior months are plausible approximations.
 const EB2_INDIA_FA = [
   "2012-09-01", "2012-10-15", "2012-11-15", "2012-12-01", "2013-01-01",
-  "2013-02-01", "2013-03-01", "2013-01-01", // Nov 2025 retrogression (~2 months back)
-  "2013-02-01", "2013-04-01", "2013-07-15", "2013-09-15",
+  "2013-02-01", "2013-03-01", "2013-01-01", "2013-02-01", "2013-04-01",
+  "2013-07-15", "2013-09-15",
 ];
 
 const EB3_INDIA_FA = [
@@ -115,8 +273,8 @@ const EB1_INDIA_FA = [
 
 const EB2_CHINA_FA = [
   "2020-09-01", "2020-10-01", "2020-11-01", "2020-12-01", "2021-01-01",
-  "2021-02-01", "2021-03-01", "2021-01-01", // retrogression mirrors India timing
-  "2021-02-01", "2021-04-01", "2021-06-01", "2021-09-01",
+  "2021-02-01", "2021-03-01", "2021-01-01", "2021-02-01", "2021-04-01",
+  "2021-06-01", "2021-09-01",
 ];
 
 const EB3_CHINA_FA = [
@@ -131,7 +289,6 @@ const EB1_CHINA_FA = [
   "2023-03-01", "2023-03-01",
 ];
 
-// Dates for Filing: ~6-9 months more advanced than FA
 function advanceByMonths(dates, monthsAhead) {
   return dates.map((d) => {
     const dt = new Date(d + "T00:00:00Z");
@@ -140,17 +297,6 @@ function advanceByMonths(dates, monthsAhead) {
   });
 }
 
-// DFF offsets tuned so March 2026 (index 11) matches the official bulletin:
-//   EB2 India DFF: 01NOV14, EB3 India DFF: 15AUG14, EB1 India DFF: 01DEC23
-//   EB2 China DFF: 01JAN22, EB3 China DFF: 01JAN22, EB1 China DFF: 01DEC23
-const EB2_INDIA_DFF = advanceByMonths(EB2_INDIA_FA, 14);
-const EB3_INDIA_DFF = advanceByMonths(EB3_INDIA_FA, 9);
-const EB1_INDIA_DFF = advanceByMonths(EB1_INDIA_FA, 9);
-const EB2_CHINA_DFF = advanceByMonths(EB2_CHINA_FA, 4);
-const EB3_CHINA_DFF = advanceByMonths(EB3_CHINA_FA, 8);
-const EB1_CHINA_DFF = advanceByMonths(EB1_CHINA_FA, 9);
-
-// Build the progression map
 const progressions = {
   "EB1|india|final_action": EB1_INDIA_FA,
   "EB2|india|final_action": EB2_INDIA_FA,
@@ -158,89 +304,125 @@ const progressions = {
   "EB1|china_mainland|final_action": EB1_CHINA_FA,
   "EB2|china_mainland|final_action": EB2_CHINA_FA,
   "EB3|china_mainland|final_action": EB3_CHINA_FA,
-  "EB1|india|dates_for_filing": EB1_INDIA_DFF,
-  "EB2|india|dates_for_filing": EB2_INDIA_DFF,
-  "EB3|india|dates_for_filing": EB3_INDIA_DFF,
-  "EB1|china_mainland|dates_for_filing": EB1_CHINA_DFF,
-  "EB2|china_mainland|dates_for_filing": EB2_CHINA_DFF,
-  "EB3|china_mainland|dates_for_filing": EB3_CHINA_DFF,
+  "EB1|india|dates_for_filing": advanceByMonths(EB1_INDIA_FA, 9),
+  "EB2|india|dates_for_filing": advanceByMonths(EB2_INDIA_FA, 14),
+  "EB3|india|dates_for_filing": advanceByMonths(EB3_INDIA_FA, 9),
+  "EB1|china_mainland|dates_for_filing": advanceByMonths(EB1_CHINA_FA, 9),
+  "EB2|china_mainland|dates_for_filing": advanceByMonths(EB2_CHINA_FA, 4),
+  "EB3|china_mainland|dates_for_filing": advanceByMonths(EB3_CHINA_FA, 8),
 };
 
-function buildCutoffRows(bulletinIdMap) {
+async function seedDefaultData(db) {
+  log("Starting standalone Firestore seed...");
+  const nowIso = new Date().toISOString();
+  const monthNames = [
+    "", "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December",
+  ];
+
+  // 1. visa_bulletins
+  const bulletinItems = MONTHS.map((m) => {
+    const [y, mo] = m.split("-").map(Number);
+    const name = monthNames[mo];
+    const pubMonth = mo === 1 ? 12 : mo - 1;
+    const pubYear = mo === 1 ? y - 1 : y;
+    return {
+      id: m,
+      data: {
+        id: m,
+        bulletin_month: m,
+        source_url: `https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin/${y}/visa-bulletin-for-${name.toLowerCase()}-${y}.html`,
+        source_published_at: `${pubYear}-${String(pubMonth).padStart(2, "0")}-15T12:00:00Z`,
+        raw_snapshot_path: null,
+        validation_status: "published",
+        validated_at: null,
+        created_at: nowIso,
+      },
+    };
+  });
+  await batchWrite(db, "visa_bulletins", bulletinItems);
+  log(`  Seeded ${bulletinItems.length} visa_bulletins`);
+
+  // 2. visa_cutoff_rows
   const categories = ["EB1", "EB2", "EB3"];
   const countries = ["india", "china_mainland", "all_other"];
   const chartTypes = ["final_action", "dates_for_filing"];
-  const rows = [];
+  const cutoffItems = [];
 
   for (let mi = 0; mi < MONTHS.length; mi++) {
     const month = MONTHS[mi];
-    const bulletinId = bulletinIdMap[month];
-
     for (const cat of categories) {
       for (const country of countries) {
         for (const chartType of chartTypes) {
-          const key = `${cat}|${country}|${chartType}`;
+          const id = `${month}_${chartType}_${cat}_${country}`;
           if (country === "all_other") {
-            rows.push({
-              bulletin_id: bulletinId,
-              chart_type: chartType,
-              category: cat,
-              country_bucket: country,
-              cutoff_kind: "current",
-              cutoff_date: null,
-              original_value: "C",
+            cutoffItems.push({
+              id,
+              data: {
+                id,
+                bulletin_id: month,
+                bulletin_month: month,
+                chart_type: chartType,
+                category: cat,
+                country_bucket: country,
+                cutoff_kind: "current",
+                cutoff_date: null,
+                original_value: "C",
+                created_at: nowIso,
+              },
             });
           } else {
-            const dates = progressions[key];
-            if (!dates) {
-              throw new Error(`No progression for key: ${key}`);
-            }
-            const cutoffDate = dates[mi];
-            rows.push({
-              bulletin_id: bulletinId,
-              chart_type: chartType,
-              category: cat,
-              country_bucket: country,
-              cutoff_kind: "date",
-              cutoff_date: cutoffDate,
-              original_value: formatOriginalValue("date", cutoffDate),
+            const cutoffDate = progressions[`${cat}|${country}|${chartType}`][mi];
+            cutoffItems.push({
+              id,
+              data: {
+                id,
+                bulletin_id: month,
+                bulletin_month: month,
+                chart_type: chartType,
+                category: cat,
+                country_bucket: country,
+                cutoff_kind: "date",
+                cutoff_date: cutoffDate,
+                original_value: formatOriginalValue("date", cutoffDate),
+                created_at: nowIso,
+              },
             });
           }
         }
       }
     }
   }
-  return rows;
-}
+  await batchWrite(db, "visa_cutoff_rows", cutoffItems);
+  log(`  Seeded ${cutoffItems.length} visa_cutoff_rows`);
 
-// ---------------------------------------------------------------------------
-// 3. USCIS Chart Selection
-// ---------------------------------------------------------------------------
-
-function buildChartSelections() {
-  // Most months use final_action; a few use dates_for_filing
+  // 3. uscis_chart_selection
   const dffMonths = new Set(["2025-06", "2025-10", "2026-02"]);
-  return MONTHS.map((m) => {
+  const chartItems = MONTHS.map((m) => {
     const [y, mo] = m.split("-").map(Number);
     const pubMonth = mo === 1 ? 12 : mo - 1;
     const pubYear = mo === 1 ? y - 1 : y;
+    const id = `${m}_employment_based`;
     return {
-      bulletin_month: m,
-      preference_scope: "employment_based",
-      chart_to_use: dffMonths.has(m) ? "dates_for_filing" : "final_action",
-      source_url: `https://www.uscis.gov/visabulletininfo/${m}`,
-      source_published_at: `${pubYear}-${String(pubMonth).padStart(2,"0")}-18T12:00:00Z`,
+      id,
+      data: {
+        id,
+        bulletin_month: m,
+        preference_scope: "employment_based",
+        chart_to_use: dffMonths.has(m) ? "dates_for_filing" : "final_action",
+        source_url: `https://www.uscis.gov/visabulletininfo/${m}`,
+        source_published_at: `${pubYear}-${String(pubMonth).padStart(2, "0")}-18T12:00:00Z`,
+        created_at: nowIso,
+      },
     };
   });
-}
+  await batchWrite(db, "uscis_chart_selection", chartItems);
+  log(`  Seeded ${chartItems.length} uscis_chart_selection`);
 
-// ---------------------------------------------------------------------------
-// 4. Policy Updates
-// ---------------------------------------------------------------------------
-
-function buildPolicyUpdates() {
-  return [
+  // 4. policy_updates
+  const policyUpdates = [
     {
+      id: "pu-eb2-niw-stem",
       topic: "Employment-Based Immigration",
       subtopic: "EB-2 NIW",
       title: "USCIS Updates EB-2 NIW Filing Guidance for STEM Applicants",
@@ -252,8 +434,10 @@ function buildPolicyUpdates() {
       freshness_expires_at: "2025-11-12T16:00:00Z",
       source_type: "official",
       is_active: true,
+      created_at: nowIso,
     },
     {
+      id: "pu-nov-2025-retrogression",
       topic: "Visa Bulletin",
       subtopic: "Retrogression",
       title: "November 2025 Visa Bulletin Shows EB-2 India Retrogression",
@@ -265,8 +449,10 @@ function buildPolicyUpdates() {
       freshness_expires_at: "2026-01-15T12:00:00Z",
       source_type: "official",
       is_active: true,
+      created_at: nowIso,
     },
     {
+      id: "pu-i485-nebraska-times",
       topic: "Processing Times",
       subtopic: "I-485",
       title: "USCIS Reports Reduced I-485 Processing Times at Nebraska Service Center",
@@ -278,8 +464,10 @@ function buildPolicyUpdates() {
       freshness_expires_at: "2026-04-20T14:00:00Z",
       source_type: "official",
       is_active: true,
+      created_at: nowIso,
     },
     {
+      id: "pu-country-cap-bill",
       topic: "Legislation",
       subtopic: "Country Cap Reform",
       title: "Bipartisan Bill to Eliminate Per-Country Green Card Caps Reintroduced in Senate",
@@ -291,181 +479,63 @@ function buildPolicyUpdates() {
       freshness_expires_at: "2026-08-28T18:00:00Z",
       source_type: "secondary",
       is_active: true,
+      created_at: nowIso,
     },
   ];
-}
+  await batchWrite(
+    db,
+    "policy_updates",
+    policyUpdates.map((p) => ({ id: p.id, data: p })),
+  );
+  log(`  Seeded ${policyUpdates.length} policy_updates`);
 
-// ---------------------------------------------------------------------------
-// 5. Derived Monthly Movements (EB2/EB3 India FA only)
-// ---------------------------------------------------------------------------
-
-function buildMovements() {
+  // 5. derived_monthly_movements
   const combos = [
     { category: "EB2", country_bucket: "india", chart_type: "final_action", dates: EB2_INDIA_FA },
     { category: "EB3", country_bucket: "india", chart_type: "final_action", dates: EB3_INDIA_FA },
   ];
-  const rows = [];
-
+  const movementItems = [];
   for (const combo of combos) {
     for (let i = 1; i < MONTHS.length; i++) {
       const days = diffDays(combo.dates[i - 1], combo.dates[i]);
-      let direction;
-      if (days > 0) direction = "forward";
-      else if (days < 0) direction = "backward";
-      else direction = "unchanged";
-
-      rows.push({
-        category: combo.category,
-        country_bucket: combo.country_bucket,
-        chart_type: combo.chart_type,
-        bulletin_month: MONTHS[i],
-        prior_bulletin_month: MONTHS[i - 1],
-        movement_days: days,
-        movement_direction: direction,
-        is_retrogression: days < 0,
-        is_no_change: days === 0,
+      const direction = days > 0 ? "forward" : days < 0 ? "backward" : "unchanged";
+      const id = `${MONTHS[i]}_${combo.chart_type}_${combo.category}_${combo.country_bucket}`;
+      movementItems.push({
+        id,
+        data: {
+          id,
+          category: combo.category,
+          country_bucket: combo.country_bucket,
+          chart_type: combo.chart_type,
+          bulletin_month: MONTHS[i],
+          prior_bulletin_month: MONTHS[i - 1],
+          movement_days: days,
+          movement_direction: direction,
+          is_retrogression: days < 0,
+          is_no_change: days === 0,
+          created_at: nowIso,
+        },
       });
     }
   }
-  return rows;
+  await batchWrite(db, "derived_monthly_movements", movementItems);
+  log(`  Seeded ${movementItems.length} derived_monthly_movements`);
+
+  log("Seed complete!");
 }
 
-// ---------------------------------------------------------------------------
-// Main
-// ---------------------------------------------------------------------------
-
 async function main() {
-  log("Starting seed...");
-
-  // --- 1. Visa Bulletins (upsert on bulletin_month) ---
-  log("Upserting visa_bulletins...");
-  const bulletins = buildBulletins();
-  const { data: bulletinData, error: bulletinErr } = await supabase
-    .from("visa_bulletins")
-    .upsert(bulletins, { onConflict: "bulletin_month" })
-    .select("id, bulletin_month");
-
-  if (bulletinErr) {
-    console.error("Error upserting visa_bulletins:", bulletinErr);
-    process.exit(1);
-  }
-  log(`  Upserted ${bulletinData.length} bulletins`);
-
-  // Build month -> id map
-  const bulletinIdMap = {};
-  for (const b of bulletinData) {
-    bulletinIdMap[b.bulletin_month] = b.id;
-  }
-
-  // --- 2. Visa Cutoff Rows ---
-  log("Inserting visa_cutoff_rows...");
-  // Delete existing rows for these bulletins first to avoid unique constraint violations
-  const bulletinIds = Object.values(bulletinIdMap);
-  const { error: delCutoffErr } = await supabase
-    .from("visa_cutoff_rows")
-    .delete()
-    .in("bulletin_id", bulletinIds);
-
-  if (delCutoffErr) {
-    console.error("Error deleting old cutoff rows:", delCutoffErr);
-    process.exit(1);
-  }
-
-  const cutoffRows = buildCutoffRows(bulletinIdMap);
-  log(`  Prepared ${cutoffRows.length} cutoff rows`);
-
-  // Insert in batches of 50
-  for (let i = 0; i < cutoffRows.length; i += 50) {
-    const batch = cutoffRows.slice(i, i + 50);
-    const { error: cutoffErr } = await supabase
-      .from("visa_cutoff_rows")
-      .insert(batch);
-    if (cutoffErr) {
-      console.error(`Error inserting cutoff rows batch ${i}:`, cutoffErr);
-      process.exit(1);
+  const db = initFirestore();
+  const backupIdx = process.argv.indexOf("--from-backup");
+  if (backupIdx !== -1) {
+    const backupPath = process.argv[backupIdx + 1];
+    if (!backupPath) {
+      throw new Error("Usage: node scripts/seed.mjs --from-backup <path>");
     }
+    await seedFromBackup(db, path.resolve(backupPath));
+  } else {
+    await seedDefaultData(db);
   }
-  log(`  Inserted ${cutoffRows.length} cutoff rows`);
-
-  // --- 3. USCIS Chart Selection ---
-  log("Inserting uscis_chart_selection...");
-  // Delete existing for these months
-  const { error: delChartErr } = await supabase
-    .from("uscis_chart_selection")
-    .delete()
-    .in("bulletin_month", MONTHS);
-
-  if (delChartErr) {
-    console.error("Error deleting old chart selections:", delChartErr);
-    process.exit(1);
-  }
-
-  const chartSelections = buildChartSelections();
-  const { error: chartErr } = await supabase
-    .from("uscis_chart_selection")
-    .insert(chartSelections);
-
-  if (chartErr) {
-    console.error("Error inserting chart selections:", chartErr);
-    process.exit(1);
-  }
-  log(`  Inserted ${chartSelections.length} chart selections`);
-
-  // --- 4. Policy Updates ---
-  log("Inserting policy_updates...");
-  // Delete all existing policy updates to avoid duplicates on re-run
-  const { error: delPolicyErr } = await supabase
-    .from("policy_updates")
-    .delete()
-    .neq("id", "00000000-0000-0000-0000-000000000000"); // delete all
-
-  if (delPolicyErr) {
-    console.error("Error deleting old policy updates:", delPolicyErr);
-    process.exit(1);
-  }
-
-  const policyUpdates = buildPolicyUpdates();
-  const { error: policyErr } = await supabase
-    .from("policy_updates")
-    .insert(policyUpdates);
-
-  if (policyErr) {
-    console.error("Error inserting policy updates:", policyErr);
-    process.exit(1);
-  }
-  log(`  Inserted ${policyUpdates.length} policy updates`);
-
-  // --- 5. Derived Monthly Movements ---
-  log("Inserting derived_monthly_movements...");
-  // Delete existing for these combos/months
-  const { error: delMovErr } = await supabase
-    .from("derived_monthly_movements")
-    .delete()
-    .in("bulletin_month", MONTHS.slice(1)); // movements start from month index 1
-
-  if (delMovErr) {
-    console.error("Error deleting old movements:", delMovErr);
-    process.exit(1);
-  }
-
-  const movements = buildMovements();
-  const { error: movErr } = await supabase
-    .from("derived_monthly_movements")
-    .insert(movements);
-
-  if (movErr) {
-    console.error("Error inserting movements:", movErr);
-    process.exit(1);
-  }
-  log(`  Inserted ${movements.length} movement rows`);
-
-  // --- Summary ---
-  log("Seed complete!");
-  log(`  visa_bulletins:           ${bulletins.length}`);
-  log(`  visa_cutoff_rows:         ${cutoffRows.length}`);
-  log(`  uscis_chart_selection:    ${chartSelections.length}`);
-  log(`  policy_updates:           ${policyUpdates.length}`);
-  log(`  derived_monthly_movements: ${movements.length}`);
 }
 
 main().catch((err) => {

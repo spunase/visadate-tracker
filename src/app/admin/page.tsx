@@ -369,7 +369,7 @@ function MovementDiffTab({
         // Fetch cutoff rows for both bulletins via the current API
         const [currentRes, previousRes] = await Promise.all([
           fetch(`/api/bulletin/current`),
-          fetch(`/api/bulletin/current`), // In mock mode, same data; with Supabase we'd need a dedicated endpoint
+          fetch(`/api/bulletin/current`), // In mock mode, same data; with Firestore we'd need a dedicated endpoint
         ]);
 
         // For a real implementation, we'd fetch by bulletin_id.
