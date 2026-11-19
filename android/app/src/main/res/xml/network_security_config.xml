@@ -9,7 +9,7 @@
 
     <!-- Allow the app's server and Google Firebase -->
     <domain-config cleartextTrafficPermitted="false">
-        <domain includeSubdomains="true">visadate-tracker.netlify.app</domain>
+        <domain includeSubdomains="true">visadate-tracker.antakshari.workers.dev</domain>
         <domain includeSubdomains="true">firebaseapp.com</domain>
         <domain includeSubdomains="true">googleapis.com</domain>
         <domain includeSubdomains="true">accounts.google.com</domain>

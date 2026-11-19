@@ -12,7 +12,7 @@
         "supportEmail": "spunase@gmail.com",
         "authorizedRedirectUris": [
           "https://visatracker-491402.firebaseapp.com/__/auth/handler",
-          "https://visadate-tracker.netlify.app/auth/callback",
+          "https://visadate-tracker.antakshari.workers.dev/auth/callback",
           "http://localhost:3000/auth/callback"
         ]
       }

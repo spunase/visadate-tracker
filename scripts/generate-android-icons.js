@@ -15,11 +15,11 @@
  * - xxxhdpi: 192x192 (432x432 with safe zone)
  */
 
-const fs = require("fs");
-const path = require("path");
+import fs from "node:fs";
+import path from "node:path";
 
 const androidResDir = path.join(
-  __dirname,
+  import.meta.dirname,
   "..",
   "android",
   "app",

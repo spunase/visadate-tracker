@@ -5,7 +5,7 @@
  * Idempotent: skips if the bulletin_month already exists.
  */
 
-import { getAdminDb } from "@/lib/firebase-admin";
+import { getAdminDb, type AdminFirestore } from "@/lib/firebase-admin";
 import { calculateMovement } from "./movement-calculator";
 import type { BulletinParseResult, ParsedCutoffRow } from "./types";
 
@@ -41,7 +41,7 @@ function getPriorMonth(bulletinMonth: string): string {
  * Commit an array of Firestore set operations in batches of <= 450 docs.
  */
 async function batchSetDocs(
-  db: FirebaseFirestore.Firestore,
+  db: AdminFirestore,
   collectionName: string,
   items: Array<{ id: string; data: Record<string, unknown> }>,
 ): Promise<void> {
@@ -151,7 +151,7 @@ export async function saveParsedBulletin(
   if (!priorRowsSnap.empty) {
     const priorMap = new Map<string, ParsedCutoffRow>();
     for (const doc of priorRowsSnap.docs) {
-      const pr = doc.data();
+      const pr = doc.data() as Omit<ParsedCutoffRow, "bulletin_month">;
       const key = `${pr.chart_type}|${pr.category}|${pr.country_bucket}`;
       priorMap.set(key, {
         bulletin_month: priorMonth,

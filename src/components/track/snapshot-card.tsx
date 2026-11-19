@@ -219,7 +219,7 @@ export const SnapshotCard = forwardRef<HTMLDivElement, SnapshotCardProps>(
               Informational only. Verify with official sources.
             </p>
             <p className="text-[10px] font-medium text-[#2F6BFF]">
-              visadate-tracker.netlify.app
+              visadate-tracker.antakshari.workers.dev
             </p>
           </div>
         </div>

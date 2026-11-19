@@ -122,15 +122,16 @@ export default function PrivacyPolicyPage() {
                 </a>
               </li>
               <li>
-                <span className="font-medium text-foreground">Netlify</span> -
-                Used to host and serve the application. See{" "}
+                <span className="font-medium text-foreground">Cloudflare</span> -
+                Used to host, cache, and serve the application on Cloudflare
+                Workers. See{" "}
                 <a
-                  href="https://www.netlify.com/privacy/"
+                  href="https://www.cloudflare.com/privacypolicy/"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-calm-blue underline"
                 >
-                  Netlify Privacy Policy
+                  Cloudflare Privacy Policy
                 </a>
               </li>
             </ul>

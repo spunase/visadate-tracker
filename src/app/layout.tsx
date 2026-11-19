@@ -44,7 +44,7 @@ export const metadata: Metadata = {
     title: "VisaDateTracker - Green Card Priority Date Tracker",
     description:
       "Track visa bulletin movement, check your EB2/EB3 priority date status, and plan your immigration journey.",
-    url: "https://visadate-tracker.netlify.app",
+    url: "https://visadate-tracker.antakshari.workers.dev",
     siteName: "VisaDateTracker",
     type: "website",
     locale: "en_US",

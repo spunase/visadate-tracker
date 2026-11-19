@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 
-const BASE_URL = "https://visadate-tracker.netlify.app";
+const BASE_URL = "https://visadate-tracker.antakshari.workers.dev";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   return [

@@ -5,11 +5,11 @@ const config: CapacitorConfig = {
   appName: "VisaDateTracker",
   webDir: "out",
   server: {
-    // Production: load from deployed Netlify site
-    url: "https://visadate-tracker.netlify.app",
+    // Production: load from deployed Cloudflare Workers site
+    url: "https://visadate-tracker.antakshari.workers.dev",
     // Allow navigation within the app domain and Firebase Auth
     allowNavigation: [
-      "visadate-tracker.netlify.app",
+      "visadate-tracker.antakshari.workers.dev",
       "*.firebaseapp.com",
       "*.googleapis.com",
       "accounts.google.com",

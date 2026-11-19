@@ -3,11 +3,11 @@
  * Uses sharp (bundled with Next.js) for high-quality rasterization.
  */
 
-const sharp = require("sharp");
-const fs = require("fs");
-const path = require("path");
+import sharp from "sharp";
+import fs from "node:fs";
+import path from "node:path";
 
-const ROOT = path.join(__dirname, "..");
+const ROOT = path.join(import.meta.dirname, "..");
 const SVG_PATH = path.join(ROOT, "public", "icon.svg");
 const ANDROID_RES = path.join(ROOT, "android", "app", "src", "main", "res");
 

@@ -101,7 +101,7 @@ function buildPlainText(
     `Filing: ${statusLabel(dfState)}`,
     `Movement: ${movementText(evaluation.movement.finalAction)}`,
     `-`,
-    `visadate-tracker.netlify.app`,
+    `visadate-tracker.antakshari.workers.dev`,
   ];
   return lines.join("\n");
 }
@@ -224,7 +224,7 @@ export function ShareSnapshot({ evaluation, scenario, bulletinMonth }: ShareSnap
             await nativeShare({
               title: "VisaDateTracker Status",
               text,
-              url: "https://visadate-tracker.netlify.app",
+              url: "https://visadate-tracker.antakshari.workers.dev",
             });
             hapticNotification("Success");
           }}
